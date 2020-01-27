@@ -7,15 +7,12 @@ A chrome web extension to calculate & display the total duration of a youtube pl
 ## Previews
 
 <p align="center">
-  <img src="screenshots/default.png" width="800"
-  style="border: 1px solid black;">
+  <img src="screenshots/default.png" width="800">
 </p>
 
 <p align="center">
-  <img src="screenshots/example1.png" width="400"
-  style="border: 1px solid black;">
-  <img src="screenshots/example1_2.png" width="400"
-  style="border: 1px solid black;">
+  <img src="screenshots/example1.png" width="400">
+  <img src="screenshots/example1_2.png" width="400">
 </p>
 
 ## Installation
