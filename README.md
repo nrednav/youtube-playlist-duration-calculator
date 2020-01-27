@@ -17,7 +17,7 @@ A chrome web extension to calculate & display the total duration of a youtube pl
 
 ## Installation
 
-You can install the latest version of the extension from the Chrome Web Store (Pending Review).
+You can install the latest version of the extension from the [Chrome Web Store](https://chrome.google.com/webstore/detail/youtube-playlist-duration/pijbakhgmhhadeakaocjfockpndcpobk).
 
 Alternatively, you can install the extension manually using the following instructions:-
 
