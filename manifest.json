@@ -19,13 +19,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/playlist*"],
+      "matches": ["https://www.youtube.com/*"],
       "run_at": "document_idle",
       "js": ["content.js", "ytpdCalculator.js"]
     }
   ],
   "permissions": [
     "activeTab",
-    "https://www.youtube.com/playlist*"
+    "https://www.youtube.com/*"
   ]
 }

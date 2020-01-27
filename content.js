@@ -1,6 +1,13 @@
 // Make extension display as active 
 chrome.runtime.sendMessage({ todo: "showPageAction" });
 
+// Account for inter-playlist navigation
+document.addEventListener("yt-navigate-finish", function navFinish() {
+  if (getPageType() === "overview") {
+    main();
+  }
+}, false);
+
 // Start extension script
 main();
 
@@ -12,16 +19,9 @@ function main() {
 
   if (getPageType() === "overview") {
     observer = startPlaylistObserver();
-  }
-
-  window.addEventListener("yt-navigate-finish", function ytNavFinish() {
-    window.removeEventListener("yt-navigate-finish", ytNavFinish, 0);
+  } else {
     if (observer) observer.disconnect();
-
-    if (getPageType() === "overview") {
-      main();
-    } else return;
-  }, false);
+  } 
 }
 
 function getPageType() {
@@ -63,10 +63,11 @@ function pollPlaylistReady() {
 
     if (videos.length === timestamps.length || playableLength === timestamps.length) {
 
-      if (playlistLength > 100 && videos.length >= 100)
+      if (playlistLength > 100 && videos.length >= 100) {
         createDurationElement(videos);
-      else if (videos.length === playlistLength)
+      } else if (videos.length === playlistLength) {
         createDurationElement(videos);
+      }
 
       clearInterval(interval);
     }
