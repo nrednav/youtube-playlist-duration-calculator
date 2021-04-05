@@ -55,7 +55,7 @@ function pollPlaylistReady() {
     timestamps = Array.from(timestamps);
 
     // Determine number of videos in playlist that are unplayable
-    let unplayableLength = parent.querySelectorAll("span[title='[Private video]']").length + parent.querySelectorAll("span[title='[Deleted video]']").length;
+    let unplayableLength = parent.querySelectorAll("a[title='[Private video]']").length + parent.querySelectorAll("a[title='[Deleted video]']").length;
 
     let playableLength = (unplayableLength > 0)
      ? videos.length - unplayableLength
