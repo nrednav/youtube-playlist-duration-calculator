@@ -65,7 +65,7 @@ function pollPlaylistReady() {
 
       if (playlistLength > 100 && videos.length >= 100) {
         createDurationElement(videos);
-      } else if (videos.length === playlistLength) {
+      } else if (videos.length === playableLength) {
         createDurationElement(videos);
       }
 
