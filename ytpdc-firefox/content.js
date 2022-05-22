@@ -63,8 +63,8 @@ function pollPlaylistReady() {
 
     // Determine number of videos in playlist that are unplayable
     let unplayableLength =
-      parent.querySelectorAll("span[title='[Private video]']").length +
-      parent.querySelectorAll("span[title='[Deleted video]']").length;
+      parent.querySelectorAll("a[title='[Private video]']").length +
+      parent.querySelectorAll("a[title='[Deleted video]']").length;
 
     let playableLength =
       unplayableLength > 0 ? videos.length - unplayableLength : videos.length;
@@ -75,7 +75,7 @@ function pollPlaylistReady() {
     ) {
       if (playlistLength > 100 && videos.length >= 100) {
         createDurationElement(videos);
-      } else if (videos.length === playlistLength) {
+      } else if (videos.length === playableLength) {
         createDurationElement(videos);
       }
 
