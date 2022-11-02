@@ -20,7 +20,7 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "run_at": "document_end",
-      "js": ["content.js", "ytpdCalculator.js"]
+      "js": ["library.js", "content.js"]
     }
   ],
   "permissions": ["activeTab"],
