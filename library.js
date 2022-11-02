@@ -188,7 +188,7 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
 
     const tooltipText = document.createElement("p");
     tooltipText.style.paddingLeft = "8px";
-    tooltipText.textContent = "Scroll down to load more videos";
+    tooltipText.textContent = "Scroll down to count more videos";
     tooltip.appendChild(tooltipText);
 
     summaryContainer.appendChild(tooltip);
