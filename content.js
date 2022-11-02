@@ -1,150 +1,251 @@
-// Make extension display as active 
+// Make extension display as active
 chrome.runtime.sendMessage({ todo: "showPageAction" });
 
-// Account for inter-playlist navigation
-document.addEventListener("yt-navigate-finish", function navFinish() {
-  if (getPageType() === "overview") {
-    main();
-  }
-}, false);
+// Library
+const pollPlaylistReady = () => {
+  const playlistSummary = document.querySelector("#ytpdc-playlist-summary");
+  if (playlistSummary) {
+    const loading = document.createElement("div");
+    loading.style.minHeight = "128px";
+    loading.style.width = "100%";
+    loading.style.display = "flex";
+    loading.style.justifyContent = "center";
+    loading.style.alignItems = "center";
+    loading.textContent = "Calculating...";
 
-// Start extension script
-main();
-
-// Functions
-function main() {
-  pollPlaylistReady();
-
-  let observer = null;
-
-  if (getPageType() === "overview") {
-    observer = startPlaylistObserver();
-  } else {
-    if (observer) observer.disconnect();
-  } 
-}
-
-function getPageType() {
-  let pageUrl = window.location.href;
-  let type = "";
-  
-  if (pageUrl.startsWith("https://www.youtube.com/playlist")) {
-    type = "overview"
+    playlistSummary.innerHTML = "";
+    playlistSummary.appendChild(loading);
   }
 
-  return type;
-}
+  const maxPollCount = 60;
+  let pollCount = 0;
 
-function pollPlaylistReady() {
-  let interval = setInterval(() => {
+  let playlistPoll = setInterval(() => {
+    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-    let videos = [];
-    let pageType = getPageType();
-    let parent = '';
-
-    if (pageType === "overview") {
-      videos = Array.from(document.querySelectorAll("ytd-playlist-video-renderer"));
-      if (videos.length > 0) parent = videos[0].parentElement;
-      else return;
-    } else return;
-
-    let playlistLength = getPlaylistLength(pageType);
-
-    // Determine if timestamps are loaded too
-    let timestamps = parent.querySelectorAll("ytd-thumbnail-overlay-time-status-renderer");
-    timestamps = Array.from(timestamps);
-
-    // Determine number of videos in playlist that are unplayable
-    let unplayableLength = parent.querySelectorAll("span[title='[Private video]']").length + parent.querySelectorAll("span[title='[Deleted video]']").length;
-
-    let playableLength = (unplayableLength > 0)
-     ? videos.length - unplayableLength
-     : videos.length;
-
-    if (videos.length === timestamps.length || playableLength === timestamps.length) {
-
-      if (playlistLength > 100 && videos.length >= 100) {
-        createDurationElement(videos);
-      } else if (videos.length === playlistLength) {
-        createDurationElement(videos);
-      }
-
-      clearInterval(interval);
+    if (document.querySelector("ytd-playlist-video-list-renderer")) {
+      clearInterval(playlistPoll);
+      start();
     }
+
+    pollCount++;
   }, 1000);
-}
+};
 
-function getPlaylistLength(pageType) {
-  let playlistLength = 0;
+const configurePage = () => {
+  if (window.ytpdc) return;
+  window.ytpdc = { playlistObserver: false, interPlaylistNavigation: false };
+};
 
-  if (pageType === "overview") {
-    let tag = "#stats.style-scope.ytd-playlist-sidebar-primary-info-renderer";
-    playlistLength = document.querySelector(tag).children[0].innerText;
-    playlistLength = playlistLength.split(" ")[0];
-    playlistLength = playlistLength.replace(/\,+/, "")
+const setupPlaylistObserver = () => {
+  if (window.ytpdc.playlistObserver) return;
+  window.ytpdc.playlistObserver = true;
+
+  const playlistObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.addedNodes.length > 0) pollPlaylistReady();
+    });
+  });
+
+  const targetNode = document.querySelector(
+    "ytd-playlist-video-list-renderer #contents"
+  );
+  if (targetNode) {
+    playlistObserver.observe(targetNode, { childList: true });
+  }
+};
+
+const setupEventListeners = () => {
+  if (!window.ytpdc.interPlaylistNavigation) {
+    window.ytpdc.interPlaylistNavigation = true;
+    document.addEventListener(
+      "yt-navigate-finish",
+      () => pollPlaylistReady(),
+      false
+    );
+  }
+};
+
+const getVideos = () => {
+  const videos = document.getElementsByTagName("ytd-playlist-video-renderer");
+  return [...videos];
+};
+
+const unformatTimestamp = (formattedTimestamp) => {
+  let components = formattedTimestamp.split(":");
+  let seconds = 0;
+  let minutes = 1;
+
+  while (components.length > 0) {
+    seconds += minutes * parseInt(components.pop(), 10);
+    minutes *= 60;
   }
 
-  return Number(playlistLength);
-}
+  return seconds;
+};
 
-function createDurationElement(videos) {
-  let parentElement = getPlaylistParentElement(); 
+const formatTimestamp = (timestamp) => {
+  let totalSeconds = timestamp;
+  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
+  totalSeconds %= 3600;
+  const minutes = `${Math.floor(totalSeconds / 60)}`.padStart(2, "0");
+  const seconds = `${totalSeconds % 60}`.padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+};
 
-  let durationElement = document.createElement("div");
-  durationElement.className = "playlistTotalDuration";
-  durationElement.style.fontSize = '1.6rem';
-  durationElement.style.fontWeight = 500;
-  durationElement.style.color = 'var(--google-blue-500)';
+const getTimestamps = (videos) => {
+  return videos.map((video) => {
+    if (!video) return null;
 
-  durationElement.innerHTML = `<span style='color: var(--yt-spec-text-primary);'>Playlist Duration (1-${videos.length}):</span> ${calculateDuration(videos)}`;
+    const timestampContainer = video.querySelector(
+      "ytd-thumbnail-overlay-time-status-renderer"
+    );
 
-  let currentDurationElement = parentElement.querySelector(".playlistTotalDuration");
+    if (!timestampContainer) return null;
 
-  if (currentDurationElement) {
-    parentElement.replaceChild(durationElement, currentDurationElement);
-  } else {
-    parentElement.appendChild(durationElement);
+    const formattedTimestamp = timestampContainer.innerText;
+
+    if (!formattedTimestamp) return null;
+
+    const timestamp = unformatTimestamp(formattedTimestamp);
+
+    return timestamp;
+  });
+};
+
+const createSummaryItem = (label, value, valueColor = "#facc15") => {
+  const container = document.createElement("div");
+  container.style.margin = "8px 0px";
+  container.style.display = "flex";
+  container.style.flexDirection = "row";
+  container.style.justifyContent = "between";
+
+  const labelContainer = document.createElement("p");
+  labelContainer.textContent = label;
+
+  const valueContainer = document.createElement("p");
+  valueContainer.style.color = valueColor;
+  valueContainer.style.fontWeight = 700;
+  valueContainer.style.paddingLeft = "8px";
+  valueContainer.textContent = value;
+
+  container.appendChild(labelContainer);
+  container.appendChild(valueContainer);
+
+  return container;
+};
+
+const createPlaylistSummary = ({ videos, playlistDuration }) => {
+  const summaryContainer = document.createElement("div");
+  summaryContainer.id = "ytpdc-playlist-summary";
+
+  summaryContainer.style.display = "flex";
+  summaryContainer.style.flexDirection = "column";
+  summaryContainer.style.justifyContent = "center";
+  summaryContainer.style.alignItems = "start";
+  summaryContainer.style.minHeight = "128px";
+  summaryContainer.style.margin = "16px 0px";
+  summaryContainer.style.padding = "16px";
+  summaryContainer.style.borderRadius = "16px";
+  summaryContainer.style.background = "rgba(255,255,255,0.2)";
+  summaryContainer.style.fontSize = "1.5rem";
+
+  // Total Duration
+  const totalDuration = createSummaryItem(
+    "Total duration:",
+    `${playlistDuration}`,
+    "#86efac"
+  );
+  summaryContainer.appendChild(totalDuration);
+
+  // Videos counted
+  const videosCounted = createSummaryItem(
+    "Videos counted:",
+    `${videos.length}`,
+    "#fdba74"
+  );
+  summaryContainer.appendChild(videosCounted);
+
+  // Videos not counted
+  const totalVideosInPlaylist = countTotalVideosInPlaylist();
+  const videosNotCounted = createSummaryItem(
+    "Videos not counted:",
+    `${totalVideosInPlaylist ? totalVideosInPlaylist - videos.length : "N/A"}`,
+    "#fca5a5"
+  );
+  summaryContainer.appendChild(videosNotCounted);
+
+  // Tooltip
+  if (videos.length >= 100) {
+    const tooltip = document.createElement("div");
+    tooltip.style.marginTop = "16px";
+    tooltip.style.display = "flex";
+    tooltip.style.flexDirection = "row";
+    tooltip.style.alignItems = "center";
+
+    const icon = document.createElement("div");
+    icon.style.color = "#000";
+    icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0 2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/></svg>`;
+    tooltip.appendChild(icon);
+
+    const tooltipText = document.createElement("p");
+    tooltipText.style.paddingLeft = "8px";
+    tooltipText.textContent = "Scroll down to load more videos";
+    tooltip.appendChild(tooltipText);
+
+    summaryContainer.appendChild(tooltip);
   }
-}
 
-function startPlaylistObserver() {
-  let targetNode = null;
+  return summaryContainer;
+};
 
-  if (getPageType() === "overview") {
-    targetNode = document.querySelector("ytd-playlist-video-renderer");
-    if (targetNode) targetNode = targetNode.parentElement;
-    else return;
-  } else return;
+const addSummaryToPage = (summaryContainer) => {
+  let metadataSection = document.querySelector(
+    ".immersive-header-content .metadata-action-bar"
+  );
+  if (!metadataSection) return null;
 
-  const config = {childList: true};
+  const playlistSummary = document.querySelector("#ytpdc-playlist-summary");
 
-  const callback = function(mutationsList, observer) {
-      for(let mutation of mutationsList) {
-          if (mutation.type === 'childList') {
-            pollPlaylistReady();
-          }
-      }
-  };
-
-  const observer = new MutationObserver(callback);
-  observer.observe(targetNode, config);
-
-  return observer;
-}
-
-function getPlaylistParentElement() {
-  let userPlaylist = document.querySelector("#title-form");
-  let parentElementTag = "";
-
-  if (userPlaylist) {
-    parentElementTag = "#stats";
-  } else {
-    let stats = document.querySelector("#stats");
-    let previousTotalDuration = stats.querySelector(".playlistTotalDuration");
-    if (previousTotalDuration) stats.removeChild(previousTotalDuration);
-
-    parentElementTag = "#title.style-scope.ytd-playlist-sidebar-primary-info-renderer";
+  if (playlistSummary) {
+    playlistSummary.parentNode.removeChild(playlistSummary);
   }
 
-  return document.querySelector(parentElementTag);
+  metadataSection.parentNode.insertBefore(
+    summaryContainer,
+    metadataSection.nextSibling
+  );
+};
+
+const countTotalVideosInPlaylist = () => {
+  const totalVideosStat = document.querySelector(
+    ".metadata-stats yt-formatted-string"
+  );
+
+  if (!totalVideosStat) return null;
+
+  const totalVideoCount = parseInt(totalVideosStat.firstChild.innerText);
+
+  return totalVideoCount;
+};
+
+const start = () => {
+  configurePage();
+  setupPlaylistObserver();
+  setupEventListeners();
+  const videos = getVideos();
+  const timestamps = getTimestamps(videos);
+  const totalDurationInSeconds = timestamps.reduce((a, b) => a + b);
+  const playlistDuration = formatTimestamp(totalDurationInSeconds);
+  const playlistSummary = createPlaylistSummary({ videos, playlistDuration });
+  addSummaryToPage(playlistSummary);
+};
+
+// Entry-point
+if (document.readyState !== "loading") {
+  pollPlaylistReady();
+} else {
+  document.addEventListener("DOMContentLoaded", () => {
+    pollPlaylistReady();
+  });
 }

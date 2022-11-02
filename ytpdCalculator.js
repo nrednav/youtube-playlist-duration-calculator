@@ -1,8 +1,7 @@
 function calculateDuration(videos) {
-  
   let totalMinutes = 0;
 
-  videos.forEach(video => {
+  videos.forEach((video) => {
     let durationTag = "ytd-thumbnail-overlay-time-status-renderer";
     let durationElement = video.querySelector(durationTag);
 
@@ -17,12 +16,11 @@ function calculateDuration(videos) {
         minutes = Number(timeSlices[0]);
         seconds = Number(timeSlices[1]);
         minutes += seconds / 60;
-      }
-      else if (timeSlices.length === 3) {
+      } else if (timeSlices.length === 3) {
         let hours = Number(timeSlices[0]);
         minutes = Number(timeSlices[1]);
         seconds = Number(timeSlices[2]);
-        minutes += ((hours * 60) + (seconds / 60))
+        minutes += hours * 60 + seconds / 60;
       }
 
       totalMinutes += minutes;
@@ -36,4 +34,5 @@ function calculateDuration(videos) {
   let playlistDuration = `${hours}h ${minutes}m ${seconds}s`;
 
   return playlistDuration;
-};
+}
+
