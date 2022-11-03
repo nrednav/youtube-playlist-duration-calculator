@@ -23,15 +23,18 @@ A Firefox & Chrome web extension that calculates & displays the total duration o
 Alternatively, you can install the extension manually using the following instructions:-
 
 For Chrome:
+
 1. Download this project as a zip file.
 2. Navigate to `chrome://extensions` in Google Chrome or a chromium-based fork such as Brave Browser.
 3. Check the box for **Developer Mode**
 4. Look for a button that says **Load unpacked extension** and click it
 5. Select the project zip file you downloaded in Step 1.
 6. You should now see the extension installed amongst your other extensions.
-7. To verify that it works, navigate to a youtube playlist overview page, such as: https://www.youtube.com/playlist?list=PL5o3ll3G4acxgDMSO7JXvDsosQ-UDPL6n. You should see the playlist's total duration appear under the playlist title.
+7. To verify that it works, navigate to a youtube playlist overview page, for example: https://www.youtube.com/playlist?list=PLAhTBeRe8IhMmRve_rSfAgL_dtEXkKh8Z
+8. You should see the playlist's total duration appear under the playlist title.
 
 For Firefox:
+
 1. Download this project as a zip file.
 2. Extract out the ytpdc-firefox folder
 3. Install Mozilla's web-ext tool: [Link to workshop](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/)
