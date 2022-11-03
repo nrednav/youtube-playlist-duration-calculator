@@ -1,6 +1,3 @@
-// Make extension display as active
-browser.runtime.sendMessage({ todo: "showPageAction" });
-
 const start = () => {
   console.log("start");
   configurePage();
