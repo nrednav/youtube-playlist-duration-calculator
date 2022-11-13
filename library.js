@@ -1,3 +1,16 @@
+// Config
+const config = {
+  videosContainer: "ytd-playlist-video-list-renderer",
+  observerTarget: "ytd-playlist-video-list-renderer #contents",
+  videoElement: "ytd-playlist-video-renderer",
+  timestampContainer: "ytd-thumbnail-overlay-time-status-renderer",
+  metadataContainer: {
+    main: ".immersive-header-content .metadata-action-bar",
+    fallback: "ytd-playlist-sidebar-renderer #items",
+  },
+  statsContainer: ".metadata-stats yt-formatted-string",
+};
+
 // Library
 const displayLoader = () => {
   const playlistSummary = document.querySelector("#ytpdc-playlist-summary");
@@ -24,7 +37,7 @@ const pollPlaylistReady = () => {
   let playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-    if (document.querySelector("ytd-playlist-video-list-renderer")) {
+    if (document.querySelector(config.videosContainer)) {
       clearInterval(playlistPoll);
       start();
     }
@@ -48,9 +61,7 @@ const setupPlaylistObserver = () => {
     });
   });
 
-  const targetNode = document.querySelector(
-    "ytd-playlist-video-list-renderer #contents"
-  );
+  const targetNode = document.querySelector(config.observerTarget);
   if (targetNode) {
     playlistObserver.observe(targetNode, { childList: true });
   }
@@ -68,7 +79,7 @@ const setupEventListeners = () => {
 };
 
 const getVideos = () => {
-  const videos = document.getElementsByTagName("ytd-playlist-video-renderer");
+  const videos = document.getElementsByTagName(config.videoElement);
   return [...videos];
 };
 
@@ -98,9 +109,7 @@ const getTimestamps = (videos) => {
   return videos.map((video) => {
     if (!video) return null;
 
-    const timestampContainer = video.querySelector(
-      "ytd-thumbnail-overlay-time-status-renderer"
-    );
+    const timestampContainer = video.querySelector(config.timestampContainer);
     if (!timestampContainer) return null;
 
     const formattedTimestamp = timestampContainer.innerText;
@@ -137,6 +146,7 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
   const summaryContainer = document.createElement("div");
   summaryContainer.id = "ytpdc-playlist-summary";
 
+  // Styles for new design
   summaryContainer.style.display = "flex";
   summaryContainer.style.flexDirection = "column";
   summaryContainer.style.justifyContent = "center";
@@ -147,6 +157,16 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
   summaryContainer.style.borderRadius = "16px";
   summaryContainer.style.background = "rgba(255,255,255,0.2)";
   summaryContainer.style.fontSize = "1.5rem";
+
+  // Fallback styles for old design
+  if (!isNewDesign()) {
+    if (isDarkMode()) {
+      summaryContainer.style.color = "white";
+    } else {
+      summaryContainer.style.background = "rgba(0,0,0,0.8)";
+      summaryContainer.style.color = "white";
+    }
+  }
 
   // Total Duration
   const totalDuration = createSummaryItem(
@@ -199,7 +219,9 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
 
 const addSummaryToPage = (summaryContainer) => {
   let metadataSection = document.querySelector(
-    ".immersive-header-content .metadata-action-bar"
+    isNewDesign()
+      ? config.metadataContainer.main
+      : config.metadataContainer.fallback
   );
   if (!metadataSection) return null;
 
@@ -216,9 +238,7 @@ const addSummaryToPage = (summaryContainer) => {
 };
 
 const countTotalVideosInPlaylist = () => {
-  const totalVideosStat = document.querySelector(
-    ".metadata-stats yt-formatted-string"
-  );
+  const totalVideosStat = document.querySelector(config.statsContainer);
 
   if (!totalVideosStat) return null;
 
@@ -227,4 +247,12 @@ const countTotalVideosInPlaylist = () => {
   );
 
   return totalVideoCount;
+};
+
+const isDarkMode = () => {
+  return document.documentElement.getAttribute("dark") !== null;
+};
+
+const isNewDesign = () => {
+  return document.querySelector(config.metadataContainer.main) !== null;
 };
