@@ -1,8 +1,8 @@
 // Config
 const config = {
-  videosContainer: "ytd-playlist-video-list-renderer",
-  observerTarget: "ytd-playlist-video-list-renderer #contents",
   videoElement: "ytd-playlist-video-renderer",
+  videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
+  playlistReadyAnchor: "ytd-playlist-video-list-renderer",
   timestampContainer: "ytd-thumbnail-overlay-time-status-renderer",
   metadataContainer: {
     main: ".immersive-header-content .metadata-action-bar",
@@ -37,7 +37,7 @@ const pollPlaylistReady = () => {
   let playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-    if (document.querySelector(config.videosContainer)) {
+    if (document.querySelector(config.playlistReadyAnchor)) {
       clearInterval(playlistPoll);
       start();
     }
@@ -62,7 +62,7 @@ const setupPlaylistObserver = () => {
     });
   });
 
-  const targetNode = document.querySelector(config.observerTarget);
+  const targetNode = document.querySelector(config.videoElementsContainer);
   if (targetNode) {
     playlistObserver.observe(targetNode, { childList: true });
   }
