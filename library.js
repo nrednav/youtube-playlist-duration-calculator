@@ -57,7 +57,8 @@ const setupPlaylistObserver = () => {
 
   const playlistObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (mutation.addedNodes.length > 0) pollPlaylistReady();
+      if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
+        pollPlaylistReady();
     });
   });
 
