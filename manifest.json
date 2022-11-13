@@ -13,9 +13,6 @@
     "default_icon": "icon16.png",
     "default_title": "YTPD Calculator"
   },
-  "background": {
-    "service_worker": "eventPage.js"
-  },
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],

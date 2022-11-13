@@ -1,6 +1,3 @@
-// Make extension display as active
-chrome.runtime.sendMessage({ todo: "showPageAction" });
-
 const start = () => {
   configurePage();
   setupPlaylistObserver();
