@@ -1,5 +1,4 @@
 const start = () => {
-  console.log("start");
   configurePage();
   setupPlaylistObserver();
   setupEventListeners();
