@@ -8,7 +8,10 @@ const config = {
     main: ".immersive-header-content .metadata-action-bar",
     fallback: "ytd-playlist-sidebar-renderer #items",
   },
-  statsContainer: ".metadata-stats yt-formatted-string",
+  statsContainer: {
+    main: ".metadata-stats yt-formatted-string",
+    fallback: "#stats yt-formatted-string",
+  },
 };
 
 // Library
@@ -239,7 +242,9 @@ const addSummaryToPage = (summaryContainer) => {
 };
 
 const countTotalVideosInPlaylist = () => {
-  const totalVideosStat = document.querySelector(config.statsContainer);
+  const totalVideosStat = document.querySelector(
+    isNewDesign() ? config.statsContainer.main : config.statsContainer.fallback
+  );
 
   if (!totalVideosStat) return null;
 
