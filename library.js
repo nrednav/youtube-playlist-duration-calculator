@@ -2,7 +2,6 @@
 const config = {
   videoElement: "ytd-playlist-video-renderer",
   videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
-  playlistReadyAnchor: "ytd-playlist-video-list-renderer",
   timestampContainer: "ytd-thumbnail-overlay-time-status-renderer",
   metadataContainer: {
     main: ".immersive-header-content .metadata-action-bar",
@@ -12,11 +11,39 @@ const config = {
     main: ".metadata-stats yt-formatted-string",
     fallback: "#stats yt-formatted-string",
   },
+  // Design anchor = Element that helps distinguish between old & new layout
+  designAnchor: {
+    old: "ytd-playlist-sidebar-renderer",
+    new: "ytd-playlist-header-renderer",
+  },
 };
 
 // Library
+const pollPlaylistReady = () => {
+  displayLoader();
+
+  const maxPollCount = 60;
+  let pollCount = 0;
+
+  let playlistPoll = setInterval(() => {
+    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
+
+    if (document.querySelector(config.timestampContainer)) {
+      clearInterval(playlistPoll);
+      start();
+    }
+
+    pollCount++;
+  }, 1000);
+};
+
 const displayLoader = () => {
-  const playlistSummary = document.querySelector("#ytpdc-playlist-summary");
+  const playlistSummary = document.querySelector(
+    isNewDesign()
+      ? "#ytpdc-playlist-summary-new"
+      : "#ytpdc-playlist-summary-old"
+  );
+
   if (playlistSummary) {
     const loading = document.createElement("div");
     loading.style.minHeight = "128px";
@@ -31,24 +58,6 @@ const displayLoader = () => {
   }
 };
 
-const pollPlaylistReady = () => {
-  displayLoader();
-
-  const maxPollCount = 60;
-  let pollCount = 0;
-
-  let playlistPoll = setInterval(() => {
-    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
-
-    if (document.querySelector(config.playlistReadyAnchor)) {
-      clearInterval(playlistPoll);
-      start();
-    }
-
-    pollCount++;
-  }, 1000);
-};
-
 const configurePage = () => {
   if (window.ytpdc) return;
   window.ytpdc = { playlistObserver: false, interPlaylistNavigation: false };
@@ -58,11 +67,8 @@ const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return;
   window.ytpdc.playlistObserver = true;
 
-  const playlistObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
-        pollPlaylistReady();
-    });
+  const playlistObserver = new MutationObserver((_) => {
+    pollPlaylistReady();
   });
 
   const targetNode = document.querySelector(config.videoElementsContainer);
@@ -146,9 +152,8 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
   return container;
 };
 
-const createPlaylistSummary = ({ videos, playlistDuration }) => {
+const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   const summaryContainer = document.createElement("div");
-  summaryContainer.id = "ytpdc-playlist-summary";
 
   // Styles for new design
   summaryContainer.style.display = "flex";
@@ -183,7 +188,7 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
   // Videos counted
   const videosCounted = createSummaryItem(
     "Videos counted:",
-    `${videos.length}`,
+    `${timestamps.length}`,
     "#fdba74"
   );
   summaryContainer.appendChild(videosCounted);
@@ -192,13 +197,15 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
     "Videos not counted:",
-    `${totalVideosInPlaylist ? totalVideosInPlaylist - videos.length : "N/A"}`,
+    `${
+      totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
+    }`,
     "#fca5a5"
   );
   summaryContainer.appendChild(videosNotCounted);
 
   // Tooltip
-  if (videos.length >= 100) {
+  if (timestamps.length >= 100) {
     const tooltip = document.createElement("div");
     tooltip.style.marginTop = "16px";
     tooltip.style.display = "flex";
@@ -221,24 +228,29 @@ const createPlaylistSummary = ({ videos, playlistDuration }) => {
   return summaryContainer;
 };
 
-const addSummaryToPage = (summaryContainer) => {
+const addSummaryToPage = (summary) => {
+  const newDesign = isNewDesign();
+
   let metadataSection = document.querySelector(
-    isNewDesign()
+    newDesign
       ? config.metadataContainer.main
       : config.metadataContainer.fallback
   );
   if (!metadataSection) return null;
 
-  const playlistSummary = document.querySelector("#ytpdc-playlist-summary");
+  const previousSummary = document.querySelector(
+    newDesign ? "#ytpdc-playlist-summary-new" : "#ytpdc-playlist-summary-old"
+  );
 
-  if (playlistSummary) {
-    playlistSummary.parentNode.removeChild(playlistSummary);
+  if (previousSummary) {
+    previousSummary.parentNode.removeChild(previousSummary);
   }
 
-  metadataSection.parentNode.insertBefore(
-    summaryContainer,
-    metadataSection.nextSibling
-  );
+  summary.id = newDesign
+    ? "ytpdc-playlist-summary-new"
+    : "ytpdc-playlist-summary-old";
+
+  metadataSection.parentNode.insertBefore(summary, metadataSection.nextSibling);
 };
 
 const countTotalVideosInPlaylist = () => {
@@ -260,5 +272,11 @@ const isDarkMode = () => {
 };
 
 const isNewDesign = () => {
-  return document.querySelector(config.metadataContainer.main) !== null;
+  const newDesignAnchor = document.querySelector(config.designAnchor.new);
+  const oldDesignAnchor = document.querySelector(config.designAnchor.old);
+
+  const isNewDesign =
+    newDesignAnchor && oldDesignAnchor.getAttribute("hidden") !== null;
+
+  return isNewDesign;
 };

@@ -6,7 +6,10 @@ const start = () => {
   const timestamps = getTimestamps(videos);
   const totalDurationInSeconds = timestamps.reduce((a, b) => a + b);
   const playlistDuration = formatTimestamp(totalDurationInSeconds);
-  const playlistSummary = createPlaylistSummary({ videos, playlistDuration });
+  const playlistSummary = createPlaylistSummary({
+    timestamps,
+    playlistDuration,
+  });
   addSummaryToPage(playlistSummary);
 };
 
