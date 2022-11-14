@@ -261,7 +261,7 @@ const countTotalVideosInPlaylist = () => {
   if (!totalVideosStat) return null;
 
   const totalVideoCount = parseInt(
-    totalVideosStat.firstChild.innerText.replace(/,/g, "")
+    totalVideosStat.innerText.replace(/\D/g, "")
   );
 
   return totalVideoCount;
