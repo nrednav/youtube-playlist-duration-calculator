@@ -99,7 +99,10 @@ const unformatTimestamp = (formattedTimestamp) => {
   let minutes = 1;
 
   while (components.length > 0) {
-    seconds += minutes * parseInt(components.pop(), 10);
+    let parsedInt = parseInt(components.pop(), 10);
+    if (isNaN(parsedInt)) continue;
+
+    seconds += minutes * parsedInt;
     minutes *= 60;
   }
 
