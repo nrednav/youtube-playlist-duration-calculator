@@ -94,15 +94,18 @@ const getVideos = () => {
 };
 
 const unformatTimestamp = (formattedTimestamp) => {
-  let components = formattedTimestamp.split(":");
+  let timeComponents = formattedTimestamp
+    .split(":")
+    .map((timeComponent) => parseInt(timeComponent, 10));
+
   let seconds = 0;
   let minutes = 1;
 
-  while (components.length > 0) {
-    let parsedInt = parseInt(components.pop(), 10);
-    if (isNaN(parsedInt)) continue;
+  while (timeComponents.length > 0) {
+    let timeComponent = timeComponents.pop();
+    if (isNaN(timeComponent)) continue;
 
-    seconds += minutes * parsedInt;
+    seconds += minutes * timeComponent;
     minutes *= 60;
   }
 
