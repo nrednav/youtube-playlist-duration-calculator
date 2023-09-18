@@ -28,7 +28,8 @@ const pollPlaylistReady = () => {
   let playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-    if (document.querySelector(config.timestampContainer)) {
+    if (document.querySelector(config.timestampContainer)
+      && !getTimestamps(getVideos()).includes(null)) {
       clearInterval(playlistPoll);
       start();
     }
