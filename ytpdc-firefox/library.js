@@ -211,7 +211,8 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
     "Videos not counted:",
-    `${totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
+    `${
+      totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
     }`,
     "#fca5a5"
   );
