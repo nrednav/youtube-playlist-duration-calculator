@@ -1,0 +1,19 @@
+{
+  "name": "youtube-playlist-duration-calculator",
+  "private": true,
+  "version": "2.0.3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "watch": "vite build --watch --mode development"
+  },
+  "devDependencies": {
+    "eslint": "^8.49.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.28.1",
+    "vite": "^4.1.4",
+    "vite-plugin-web-extension": "^3.0.1",
+    "webextension-polyfill": "^0.10.0"
+  }
+}
