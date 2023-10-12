@@ -42,3 +42,27 @@ For Firefox:
 5. Follow the instructions available in Mozilla's web-ext workshop at the link provided above to sign the extension yourself with `web-ext sign`
 6. Once you have signed it, you should find a .xpi file located within a folder named 'web-ext-artifacts' inside the ytpdc-firefox folder
 7. Navigate to `about:addons` via the address bar in Firefox, click the cog-wheel on the top right, choose `Install Add-on from file` and select the `.xpi` file from the previous step
+
+## Development
+
+- Clone this repository
+- Install dependencies
+
+  ```
+  npm install
+  ```
+
+- Build the extension
+
+  ```
+  npm run build:chrome
+  npm run build:firefox
+  ```
+
+  This will output the extension into the `dist` folder
+
+- Run the extension in development mode
+
+  ```
+  npm run dev
+  ```
