@@ -17,11 +17,13 @@ export default defineConfig({
       watchFilePaths: ["package.json", "src/manifest.json"],
       browser: process.env.TARGET_BROWSER || "chrome",
       webExtConfig: {
-        startUrl: ["https://www.youtube.com/playlist?list=PLaAVDbMg_XArcet5lwcRo12Fh9JrGKydh"],
-      }
+        startUrl: [
+          "https://www.youtube.com/playlist?list=PLaAVDbMg_XArcet5lwcRo12Fh9JrGKydh",
+        ],
+      },
     }),
   ],
   build: {
     sourcemap: true,
-  }
+  },
 });
