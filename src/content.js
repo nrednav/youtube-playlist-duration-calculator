@@ -7,8 +7,8 @@ import {
   formatTimestamp,
   createPlaylistSummary,
   addSummaryToPage,
-  pollPlaylistReady,
-} from './library';
+  pollPlaylistReady
+} from "./library";
 
 const start = () => {
   configurePage();
@@ -20,16 +20,16 @@ const start = () => {
   const playlistDuration = formatTimestamp(totalDurationInSeconds);
   const playlistSummary = createPlaylistSummary({
     timestamps,
-    playlistDuration,
+    playlistDuration
   });
   addSummaryToPage(playlistSummary);
 };
 
 // Entry-point
-if (document.readyState !== 'loading') {
+if (document.readyState !== "loading") {
   pollPlaylistReady(start);
 } else {
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener("DOMContentLoaded", () => {
     pollPlaylistReady(start);
   });
 }

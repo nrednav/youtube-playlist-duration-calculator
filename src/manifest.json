@@ -19,11 +19,13 @@
     "default_icon": "public/icon16.png",
     "default_title": "YTPD Calc"
   },
-  "content_scripts": [{
-    "matches": ["https://www.youtube.com/*"],
-    "run_at": "document_end",
-    "js": ["src/library.js", "src/content.js"]
-  }],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "run_at": "document_end",
+      "js": ["src/library.js", "src/content.js"]
+    }
+  ],
   "{{chrome}}.host_permissions": ["https://www.youtube.com/*"],
   "{{firefox}}.permissions": ["https://www.youtube.com/*"]
 }
