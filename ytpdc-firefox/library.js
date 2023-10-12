@@ -28,7 +28,10 @@ const pollPlaylistReady = () => {
   let playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-    if (document.querySelector(config.timestampContainer)) {
+    if (
+      document.querySelector(config.timestampContainer) &&
+      countUnavailableTimestamps() === countUnavailableVideos()
+    ) {
       clearInterval(playlistPoll);
       start();
     }
@@ -89,7 +92,12 @@ const setupEventListeners = () => {
 };
 
 const getVideos = () => {
-  const videos = document.getElementsByTagName(config.videoElement);
+  const videoElementsContainer = document.querySelector(
+    config.videoElementsContainer
+  );
+  const videos = videoElementsContainer.getElementsByTagName(
+    config.videoElement
+  );
   return [...videos];
 };
 
@@ -203,8 +211,7 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
     "Videos not counted:",
-    `${
-      totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
+    `${totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
     }`,
     "#fca5a5"
   );
@@ -271,6 +278,34 @@ const countTotalVideosInPlaylist = () => {
   );
 
   return totalVideoCount;
+};
+
+const countUnavailableVideos = () => {
+  const unavailableVideoTitles = [
+    "[Private video]",
+    "[Deleted video]",
+    "[Unavailable]",
+    "[Video unavailable]",
+    "[Restricted video]",
+    "[Age restricted]",
+  ];
+
+  const videoTitles = document.querySelectorAll("a#video-title");
+
+  let unavailableVideosCount = 0;
+
+  videoTitles.forEach((videoTitle) => {
+    if (unavailableVideoTitles.includes(videoTitle.title)) {
+      unavailableVideosCount++;
+    }
+  });
+
+  return unavailableVideosCount;
+};
+
+const countUnavailableTimestamps = () => {
+  const timestamps = getTimestamps(getVideos());
+  return timestamps.filter((timestamp) => timestamp === null).length;
 };
 
 const isDarkMode = () => {
