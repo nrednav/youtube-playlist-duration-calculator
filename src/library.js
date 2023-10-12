@@ -1,24 +1,22 @@
-// Config
 const config = {
   videoElement: "ytd-playlist-video-renderer",
   videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
   timestampContainer: "ytd-thumbnail-overlay-time-status-renderer",
   metadataContainer: {
     main: ".immersive-header-content .metadata-action-bar",
-    fallback: "ytd-playlist-sidebar-renderer #items",
+    fallback: "ytd-playlist-sidebar-renderer #items"
   },
   statsContainer: {
     main: ".metadata-stats yt-formatted-string",
-    fallback: "#stats yt-formatted-string",
+    fallback: "#stats yt-formatted-string"
   },
   // Design anchor = Element that helps distinguish between old & new layout
   designAnchor: {
     old: "ytd-playlist-sidebar-renderer",
-    new: "ytd-playlist-header-renderer",
-  },
+    new: "ytd-playlist-header-renderer"
+  }
 };
 
-// Library
 const pollPlaylistReady = () => {
   displayLoader();
 
@@ -33,7 +31,7 @@ const pollPlaylistReady = () => {
       countUnavailableTimestamps() === countUnavailableVideos()
     ) {
       clearInterval(playlistPoll);
-      start();
+      processPlaylist();
     }
 
     pollCount++;
@@ -59,6 +57,49 @@ const displayLoader = () => {
     playlistSummary.innerHTML = "";
     playlistSummary.appendChild(loading);
   }
+};
+
+const countUnavailableTimestamps = () => {
+  const timestamps = getTimestamps(getVideos());
+  return timestamps.filter((timestamp) => timestamp === null).length;
+};
+
+const countUnavailableVideos = () => {
+  const unavailableVideoTitles = [
+    "[Private video]",
+    "[Deleted video]",
+    "[Unavailable]",
+    "[Video unavailable]",
+    "[Restricted video]",
+    "[Age restricted]"
+  ];
+
+  const videoTitles = document.querySelectorAll("a#video-title");
+
+  let unavailableVideosCount = 0;
+
+  videoTitles.forEach((videoTitle) => {
+    if (unavailableVideoTitles.includes(videoTitle.title)) {
+      unavailableVideosCount++;
+    }
+  });
+
+  return unavailableVideosCount;
+};
+
+const processPlaylist = () => {
+  configurePage();
+  setupPlaylistObserver();
+  setupEventListeners();
+  const videos = getVideos();
+  const timestamps = getTimestamps(videos);
+  const totalDurationInSeconds = timestamps.reduce((a, b) => a + b);
+  const playlistDuration = formatTimestamp(totalDurationInSeconds);
+  const playlistSummary = createPlaylistSummary({
+    timestamps,
+    playlistDuration
+  });
+  addSummaryToPage(playlistSummary);
 };
 
 const configurePage = () => {
@@ -101,34 +142,6 @@ const getVideos = () => {
   return [...videos];
 };
 
-const unformatTimestamp = (formattedTimestamp) => {
-  let timeComponents = formattedTimestamp
-    .split(":")
-    .map((timeComponent) => parseInt(timeComponent, 10));
-
-  let seconds = 0;
-  let minutes = 1;
-
-  while (timeComponents.length > 0) {
-    let timeComponent = timeComponents.pop();
-    if (isNaN(timeComponent)) continue;
-
-    seconds += minutes * timeComponent;
-    minutes *= 60;
-  }
-
-  return seconds;
-};
-
-const formatTimestamp = (timestamp) => {
-  let totalSeconds = timestamp;
-  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
-  totalSeconds %= 3600;
-  const minutes = `${Math.floor(totalSeconds / 60)}`.padStart(2, "0");
-  const seconds = `${totalSeconds % 60}`.padStart(2, "0");
-  return `${hours}:${minutes}:${seconds}`;
-};
-
 const getTimestamps = (videos) => {
   return videos.map((video) => {
     if (!video) return null;
@@ -144,26 +157,13 @@ const getTimestamps = (videos) => {
   });
 };
 
-const createSummaryItem = (label, value, valueColor = "#facc15") => {
-  const container = document.createElement("div");
-  container.style.margin = "8px 0px";
-  container.style.display = "flex";
-  container.style.flexDirection = "row";
-  container.style.justifyContent = "between";
-
-  const labelContainer = document.createElement("p");
-  labelContainer.textContent = label;
-
-  const valueContainer = document.createElement("p");
-  valueContainer.style.color = valueColor;
-  valueContainer.style.fontWeight = 700;
-  valueContainer.style.paddingLeft = "8px";
-  valueContainer.textContent = value;
-
-  container.appendChild(labelContainer);
-  container.appendChild(valueContainer);
-
-  return container;
+const formatTimestamp = (timestamp) => {
+  let totalSeconds = timestamp;
+  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
+  totalSeconds %= 3600;
+  const minutes = `${Math.floor(totalSeconds / 60)}`.padStart(2, "0");
+  const seconds = `${totalSeconds % 60}`.padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
 };
 
 const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
@@ -211,7 +211,8 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
     "Videos not counted:",
-    `${totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
+    `${
+      totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
     }`,
     "#fca5a5"
   );
@@ -239,6 +240,47 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   }
 
   return summaryContainer;
+};
+
+const unformatTimestamp = (formattedTimestamp) => {
+  let timeComponents = formattedTimestamp
+    .split(":")
+    .map((timeComponent) => parseInt(timeComponent, 10));
+
+  let seconds = 0;
+  let minutes = 1;
+
+  while (timeComponents.length > 0) {
+    let timeComponent = timeComponents.pop();
+    if (isNaN(timeComponent)) continue;
+
+    seconds += minutes * timeComponent;
+    minutes *= 60;
+  }
+
+  return seconds;
+};
+
+const createSummaryItem = (label, value, valueColor = "#facc15") => {
+  const container = document.createElement("div");
+  container.style.margin = "8px 0px";
+  container.style.display = "flex";
+  container.style.flexDirection = "row";
+  container.style.justifyContent = "between";
+
+  const labelContainer = document.createElement("p");
+  labelContainer.textContent = label;
+
+  const valueContainer = document.createElement("p");
+  valueContainer.style.color = valueColor;
+  valueContainer.style.fontWeight = 700;
+  valueContainer.style.paddingLeft = "8px";
+  valueContainer.textContent = value;
+
+  container.appendChild(labelContainer);
+  container.appendChild(valueContainer);
+
+  return container;
 };
 
 const addSummaryToPage = (summary) => {
@@ -280,34 +322,6 @@ const countTotalVideosInPlaylist = () => {
   return totalVideoCount;
 };
 
-const countUnavailableVideos = () => {
-  const unavailableVideoTitles = [
-    "[Private video]",
-    "[Deleted video]",
-    "[Unavailable]",
-    "[Video unavailable]",
-    "[Restricted video]",
-    "[Age restricted]",
-  ];
-
-  const videoTitles = document.querySelectorAll("a#video-title");
-
-  let unavailableVideosCount = 0;
-
-  videoTitles.forEach((videoTitle) => {
-    if (unavailableVideoTitles.includes(videoTitle.title)) {
-      unavailableVideosCount++;
-    }
-  });
-
-  return unavailableVideosCount;
-};
-
-const countUnavailableTimestamps = () => {
-  const timestamps = getTimestamps(getVideos());
-  return timestamps.filter((timestamp) => timestamp === null).length;
-};
-
 const isDarkMode = () => {
   return document.documentElement.getAttribute("dark") !== null;
 };
@@ -321,3 +335,5 @@ const isNewDesign = () => {
 
   return isNewDesign;
 };
+
+export { pollPlaylistReady };

@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+
+# Ambient TS files
+*.d.ts
+
+# Ignore artifacts
+build
+dist
+dist-ssr
+*.local
+coverage
+
+# Config files
+.webextrc
+.webextrc.*
