@@ -1,4 +1,3 @@
-// Config
 const config = {
   videoElement: "ytd-playlist-video-renderer",
   videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
@@ -18,7 +17,6 @@ const config = {
   }
 };
 
-// Library
 const pollPlaylistReady = () => {
   displayLoader();
 
