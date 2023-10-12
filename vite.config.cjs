@@ -6,7 +6,7 @@ function generateManifest() {
   const pkg = readJsonFile("package.json");
   return {
     version: pkg.version,
-    ...manifest,
+    ...manifest
   };
 }
 
@@ -18,12 +18,12 @@ export default defineConfig({
       browser: process.env.TARGET_BROWSER || "chrome",
       webExtConfig: {
         startUrl: [
-          "https://www.youtube.com/playlist?list=PLaAVDbMg_XArcet5lwcRo12Fh9JrGKydh",
-        ],
-      },
-    }),
+          "https://www.youtube.com/playlist?list=PLAhTBeRe8IhMmRve_rSfAgL_dtEXkKh8Z"
+        ]
+      }
+    })
   ],
   build: {
-    sourcemap: true,
-  },
+    sourcemap: "inline"
+  }
 });

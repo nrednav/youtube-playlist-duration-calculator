@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:chrome": "TARGET_BROWSER=chrome vite build",
+    "build:firefox": "TARGET_BROWSER=firefox vite build",
     "watch": "vite build --watch --mode development",
     "lint": "eslint .",
     "format": "prettier --ignore-unknown --write",

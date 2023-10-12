@@ -13,11 +13,11 @@
     "default_icon": {
       "16": "icon16.png"
     },
-    "default_title": "YTPD Calc"
+    "default_title": "YTPD Calculator"
   },
   "{{firefox}}.browser_action": {
-    "default_icon": "public/icon16.png",
-    "default_title": "YTPD Calc"
+    "default_icon": "icon16.png",
+    "default_title": "YTPD Calculator"
   },
   "content_scripts": [
     {
