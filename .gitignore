@@ -29,3 +29,9 @@ dist-ssr
 # Config files
 .webextrc
 .webextrc.*
+
+# Env files
+.env
+.env.*
+!.env.firefox
+!.env.chrome
