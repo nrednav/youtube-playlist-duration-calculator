@@ -19,88 +19,25 @@ const config = {
 };
 
 // Library
-const configurePage = () => {
-  if (window.ytpdc) return;
-  window.ytpdc = { playlistObserver: false, interPlaylistNavigation: false };
-};
+const pollPlaylistReady = (start) => {
+  displayLoader();
 
-const getVideos = () => {
-  const videos = document.getElementsByTagName(config.videoElement);
-  return [...videos];
-};
+  const maxPollCount = 60;
+  let pollCount = 0;
 
-const unformatTimestamp = (formattedTimestamp) => {
-  const timeComponents = formattedTimestamp
-    .split(":")
-    .map((timeComponent) => parseInt(timeComponent, 10));
+  let playlistPoll = setInterval(() => {
+    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-  let seconds = 0;
-  let minutes = 1;
+    if (
+      document.querySelector(config.timestampContainer) &&
+      countUnavailableTimestamps() === countUnavailableVideos()
+    ) {
+      clearInterval(playlistPoll);
+      start();
+    }
 
-  while (timeComponents.length > 0) {
-    const timeComponent = timeComponents.pop();
-    if (Number.isNaN(timeComponent)) continue;
-
-    seconds += minutes * timeComponent;
-    minutes *= 60;
-  }
-
-  return seconds;
-};
-
-const formatTimestamp = (timestamp) => {
-  let totalSeconds = timestamp;
-  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
-  totalSeconds %= 3600;
-  const minutes = `${Math.floor(totalSeconds / 60)}`.padStart(2, "0");
-  const seconds = `${totalSeconds % 60}`.padStart(2, "0");
-  return `${hours}:${minutes}:${seconds}`;
-};
-
-const getTimestamps = (videos) =>
-  videos.map((video) => {
-    if (!video) return null;
-
-    const timestampContainer = video.querySelector(config.timestampContainer);
-    if (!timestampContainer) return null;
-
-    const formattedTimestamp = timestampContainer.innerText;
-    if (!formattedTimestamp) return null;
-
-    const timestamp = unformatTimestamp(formattedTimestamp);
-    return timestamp;
-  });
-
-const createSummaryItem = (label, value, valueColor = "#facc15") => {
-  const container = document.createElement("div");
-  container.style.margin = "8px 0px";
-  container.style.display = "flex";
-  container.style.flexDirection = "row";
-  container.style.justifyContent = "between";
-
-  const labelContainer = document.createElement("p");
-  labelContainer.textContent = label;
-
-  const valueContainer = document.createElement("p");
-  valueContainer.style.color = valueColor;
-  valueContainer.style.fontWeight = 700;
-  valueContainer.style.paddingLeft = "8px";
-  valueContainer.textContent = value;
-
-  container.appendChild(labelContainer);
-  container.appendChild(valueContainer);
-
-  return container;
-};
-
-const isNewDesign = () => {
-  const newDesignAnchor = document.querySelector(config.designAnchor.new);
-  const oldDesignAnchor = document.querySelector(config.designAnchor.old);
-
-  const newDesign =
-    newDesignAnchor && oldDesignAnchor.getAttribute("hidden") !== null;
-
-  return newDesign;
+    pollCount++;
+  }, 1000);
 };
 
 const displayLoader = () => {
@@ -124,47 +61,110 @@ const displayLoader = () => {
   }
 };
 
-const addSummaryToPage = (summary) => {
-  const newDesign = isNewDesign();
+const configurePage = () => {
+  if (window.ytpdc) return;
+  window.ytpdc = { playlistObserver: false, interPlaylistNavigation: false };
+};
 
-  const metadataSection = document.querySelector(
-    newDesign
-      ? config.metadataContainer.main
-      : config.metadataContainer.fallback
+const setupPlaylistObserver = () => {
+  if (window.ytpdc.playlistObserver) return;
+  window.ytpdc.playlistObserver = true;
+
+  const playlistObserver = new MutationObserver((_) => {
+    pollPlaylistReady();
+  });
+
+  const targetNode = document.querySelector(config.videoElementsContainer);
+  if (targetNode) {
+    playlistObserver.observe(targetNode, { childList: true });
+  }
+};
+
+const setupEventListeners = () => {
+  if (!window.ytpdc.interPlaylistNavigation) {
+    window.ytpdc.interPlaylistNavigation = true;
+    document.addEventListener(
+      "yt-navigate-finish",
+      () => pollPlaylistReady(),
+      false
+    );
+  }
+};
+
+const getVideos = () => {
+  const videoElementsContainer = document.querySelector(
+    config.videoElementsContainer
   );
-  if (!metadataSection) return null;
-
-  const previousSummary = document.querySelector(
-    newDesign ? "#ytpdc-playlist-summary-new" : "#ytpdc-playlist-summary-old"
+  const videos = videoElementsContainer.getElementsByTagName(
+    config.videoElement
   );
+  return [...videos];
+};
 
-  if (previousSummary) {
-    previousSummary.parentNode.removeChild(previousSummary);
+const unformatTimestamp = (formattedTimestamp) => {
+  let timeComponents = formattedTimestamp
+    .split(":")
+    .map((timeComponent) => parseInt(timeComponent, 10));
+
+  let seconds = 0;
+  let minutes = 1;
+
+  while (timeComponents.length > 0) {
+    let timeComponent = timeComponents.pop();
+    if (isNaN(timeComponent)) continue;
+
+    seconds += minutes * timeComponent;
+    minutes *= 60;
   }
 
-  summary.id = newDesign
-    ? "ytpdc-playlist-summary-new"
-    : "ytpdc-playlist-summary-old";
-
-  metadataSection.parentNode.insertBefore(summary, metadataSection.nextSibling);
+  return seconds;
 };
 
-const countTotalVideosInPlaylist = () => {
-  const totalVideosStat = document.querySelector(
-    isNewDesign() ? config.statsContainer.main : config.statsContainer.fallback
-  );
-
-  if (!totalVideosStat) return null;
-
-  const totalVideoCount = parseInt(
-    totalVideosStat.innerText.replace(/\D/g, ""),
-    10
-  );
-
-  return totalVideoCount;
+const formatTimestamp = (timestamp) => {
+  let totalSeconds = timestamp;
+  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
+  totalSeconds %= 3600;
+  const minutes = `${Math.floor(totalSeconds / 60)}`.padStart(2, "0");
+  const seconds = `${totalSeconds % 60}`.padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
 };
 
-const isDarkMode = () => document.documentElement.getAttribute("dark") !== null;
+const getTimestamps = (videos) => {
+  return videos.map((video) => {
+    if (!video) return null;
+
+    const timestampContainer = video.querySelector(config.timestampContainer);
+    if (!timestampContainer) return null;
+
+    const formattedTimestamp = timestampContainer.innerText;
+    if (!formattedTimestamp) return null;
+
+    const timestamp = unformatTimestamp(formattedTimestamp);
+    return timestamp;
+  });
+};
+
+const createSummaryItem = (label, value, valueColor = "#facc15") => {
+  const container = document.createElement("div");
+  container.style.margin = "8px 0px";
+  container.style.display = "flex";
+  container.style.flexDirection = "row";
+  container.style.justifyContent = "between";
+
+  const labelContainer = document.createElement("p");
+  labelContainer.textContent = label;
+
+  const valueContainer = document.createElement("p");
+  valueContainer.style.color = valueColor;
+  valueContainer.style.fontWeight = 700;
+  valueContainer.style.paddingLeft = "8px";
+  valueContainer.textContent = value;
+
+  container.appendChild(labelContainer);
+  container.appendChild(valueContainer);
+
+  return container;
+};
 
 const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   const summaryContainer = document.createElement("div");
@@ -228,8 +228,7 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
 
     const icon = document.createElement("div");
     icon.style.color = "#000";
-    icon.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0 2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/></svg>';
+    icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0 2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/></svg>`;
     tooltip.appendChild(icon);
 
     const tooltipText = document.createElement("p");
@@ -243,60 +242,95 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   return summaryContainer;
 };
 
-const pollPlaylistReady = (start) => {
-  displayLoader();
+const addSummaryToPage = (summary) => {
+  const newDesign = isNewDesign();
 
-  const maxPollCount = 60;
-  let pollCount = 0;
+  let metadataSection = document.querySelector(
+    newDesign
+      ? config.metadataContainer.main
+      : config.metadataContainer.fallback
+  );
+  if (!metadataSection) return null;
 
-  const playlistPoll = setInterval(() => {
-    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
+  const previousSummary = document.querySelector(
+    newDesign ? "#ytpdc-playlist-summary-new" : "#ytpdc-playlist-summary-old"
+  );
 
-    if (
-      document.querySelector(config.timestampContainer) &&
-      !getTimestamps(getVideos()).includes(null)
-    ) {
-      clearInterval(playlistPoll);
-      start();
-    }
+  if (previousSummary) {
+    previousSummary.parentNode.removeChild(previousSummary);
+  }
 
-    pollCount++;
-  }, 1000);
+  summary.id = newDesign
+    ? "ytpdc-playlist-summary-new"
+    : "ytpdc-playlist-summary-old";
+
+  metadataSection.parentNode.insertBefore(summary, metadataSection.nextSibling);
 };
 
-const setupPlaylistObserver = (start) => {
-  if (window.ytpdc.playlistObserver) return;
-  window.ytpdc.playlistObserver = true;
+const countTotalVideosInPlaylist = () => {
+  const totalVideosStat = document.querySelector(
+    isNewDesign() ? config.statsContainer.main : config.statsContainer.fallback
+  );
 
-  const playlistObserver = new MutationObserver(() => {
-    pollPlaylistReady(start);
+  if (!totalVideosStat) return null;
+
+  const totalVideoCount = parseInt(
+    totalVideosStat.innerText.replace(/\D/g, "")
+  );
+
+  return totalVideoCount;
+};
+
+const countUnavailableVideos = () => {
+  const unavailableVideoTitles = [
+    "[Private video]",
+    "[Deleted video]",
+    "[Unavailable]",
+    "[Video unavailable]",
+    "[Restricted video]",
+    "[Age restricted]"
+  ];
+
+  const videoTitles = document.querySelectorAll("a#video-title");
+
+  let unavailableVideosCount = 0;
+
+  videoTitles.forEach((videoTitle) => {
+    if (unavailableVideoTitles.includes(videoTitle.title)) {
+      unavailableVideosCount++;
+    }
   });
 
-  const targetNode = document.querySelector(config.videoElementsContainer);
-  if (targetNode) {
-    playlistObserver.observe(targetNode, { childList: true });
-  }
+  return unavailableVideosCount;
 };
 
-const setupEventListeners = (start) => {
-  if (!window.ytpdc.interPlaylistNavigation) {
-    window.ytpdc.interPlaylistNavigation = true;
-    document.addEventListener(
-      "yt-navigate-finish",
-      () => pollPlaylistReady(start),
-      false
-    );
-  }
+const countUnavailableTimestamps = () => {
+  const timestamps = getTimestamps(getVideos());
+  return timestamps.filter((timestamp) => timestamp === null).length;
 };
 
-export {
-  configurePage,
-  setupPlaylistObserver,
-  setupEventListeners,
-  getVideos,
-  getTimestamps,
-  formatTimestamp,
-  createPlaylistSummary,
+const isDarkMode = () => {
+  return document.documentElement.getAttribute("dark") !== null;
+};
+
+const isNewDesign = () => {
+  const newDesignAnchor = document.querySelector(config.designAnchor.new);
+  const oldDesignAnchor = document.querySelector(config.designAnchor.old);
+
+  const isNewDesign =
+    newDesignAnchor && oldDesignAnchor.getAttribute("hidden") !== null;
+
+  return isNewDesign;
+};
+
+export default {
   addSummaryToPage,
-  pollPlaylistReady
+  configurePage,
+  createPlaylistSummary,
+  formatTimestamp,
+  getTimestamps,
+  getVideos,
+  pollPlaylistReady,
+  setupEventListeners,
+  setupPlaylistObserver
 };

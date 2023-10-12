@@ -1,19 +1,19 @@
 import {
-  configurePage,
-  setupPlaylistObserver,
-  setupEventListeners,
-  getVideos,
-  getTimestamps,
-  formatTimestamp,
-  createPlaylistSummary,
   addSummaryToPage,
-  pollPlaylistReady
+  configurePage,
+  createPlaylistSummary,
+  formatTimestamp,
+  getTimestamps,
+  getVideos,
+  pollPlaylistReady,
+  setupEventListeners,
+  setupPlaylistObserver
 } from "./library";
 
 const start = () => {
   configurePage();
-  setupPlaylistObserver(start);
-  setupEventListeners(start);
+  setupPlaylistObserver();
+  setupEventListeners();
   const videos = getVideos();
   const timestamps = getTimestamps(videos);
   const totalDurationInSeconds = timestamps.reduce((a, b) => a + b);
