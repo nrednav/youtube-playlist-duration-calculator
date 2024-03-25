@@ -60,7 +60,7 @@ const displayLoader = () => {
 };
 
 const countUnavailableTimestamps = () => {
-  const timestamps = getTimestamps(getVideos());
+  const timestamps = getTimestampsFromVideos(getVideos());
   return timestamps.filter((timestamp) => timestamp === null).length;
 };
 
@@ -92,7 +92,7 @@ const processPlaylist = () => {
   setupPlaylistObserver();
   setupEventListeners();
   const videos = getVideos();
-  const timestamps = getTimestamps(videos);
+  const timestamps = getTimestampsFromVideos(videos);
   const totalDurationInSeconds = timestamps.reduce((a, b) => a + b);
   const playlistDuration = formatTimestamp(totalDurationInSeconds);
   const playlistSummary = createPlaylistSummary({
@@ -142,18 +142,23 @@ const getVideos = () => {
   return [...videos];
 };
 
-const getTimestamps = (videos) => {
+/**
+ * Extracts a list of numerical timestamps from a list of video elements
+ * @param {Array<Element>} videos
+ * @returns {Array<number>} timestamps
+ */
+const getTimestampsFromVideos = (videos) => {
   return videos.map((video) => {
     if (!video) return null;
 
     const timestampContainer = video.querySelector(config.timestampContainer);
     if (!timestampContainer) return null;
 
-    const formattedTimestamp = timestampContainer.innerText;
-    if (!formattedTimestamp) return null;
+    const timestamp = timestampContainer.innerText;
+    if (!timestamp) return null;
 
-    const timestamp = unformatTimestamp(formattedTimestamp);
-    return timestamp;
+    const timestampInSeconds = convertTimestampToSeconds(timestamp);
+    return timestampInSeconds;
   });
 };
 
@@ -242,8 +247,14 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
   return summaryContainer;
 };
 
-const unformatTimestamp = (formattedTimestamp) => {
-  let timeComponents = formattedTimestamp
+/**
+ * Converts a textual timestamp formatted as hh:mm:ss to its numerical value
+ * represented in seconds
+ * @param {string} timestamp
+ * @returns {number}
+ */
+const convertTimestampToSeconds = (timestamp) => {
+  let timeComponents = timestamp
     .split(":")
     .map((timeComponent) => parseInt(timeComponent, 10));
 
