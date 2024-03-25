@@ -148,18 +148,20 @@ const getVideos = () => {
  * @returns {Array<number>} timestamps
  */
 const getTimestampsFromVideos = (videos) => {
-  return videos.map((video) => {
-    if (!video) return null;
+  return videos
+    .map((video) => {
+      if (!video) return null;
 
-    const timestampContainer = video.querySelector(config.timestampContainer);
-    if (!timestampContainer) return null;
+      const timestampContainer = video.querySelector(config.timestampContainer);
+      if (!timestampContainer) return null;
 
-    const timestamp = timestampContainer.innerText;
-    if (!timestamp) return null;
+      const timestamp = timestampContainer.innerText;
+      if (!timestamp) return null;
 
-    const timestampInSeconds = convertTimestampToSeconds(timestamp);
-    return timestampInSeconds;
-  });
+      const timestampInSeconds = convertTimestampToSeconds(timestamp);
+      return timestampInSeconds;
+    })
+    .filter(Boolean);
 };
 
 const formatTimestamp = (timestamp) => {
