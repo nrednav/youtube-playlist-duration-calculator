@@ -5,7 +5,7 @@ function generateManifest() {
   const manifest = readJsonFile("src/manifest.json");
   const pkg = readJsonFile("package.json");
   return {
-    version: pkg.version,
+    version: pkg.version.split("-")[0],
     ...manifest
   };
 }
