@@ -146,7 +146,7 @@ const getVideos = () => {
 };
 
 /**
- * Extracts a list of timestamps from a list of video elements
+ * Extracts a list of timestamps from a list of video container elements
  * @param {Array<Element>} videos
  * @returns {Array<number|null>} timestamps
  */
