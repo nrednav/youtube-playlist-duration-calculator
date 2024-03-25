@@ -49,14 +49,14 @@ For Firefox:
 - Install dependencies
 
   ```
-  npm install
+  pnpm install
   ```
 
 - Build the extension
 
   ```
-  npm run build:chrome
-  npm run build:firefox
+  pnpm run build:chrome
+  pnpm run build:firefox
   ```
 
   This will output the extension into the `dist` folder
@@ -64,5 +64,5 @@ For Firefox:
 - Run the extension in development mode
 
   ```
-  npm run dev
+  pnpm run dev
   ```
