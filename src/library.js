@@ -143,25 +143,23 @@ const getVideos = () => {
 };
 
 /**
- * Extracts a list of numerical timestamps from a list of video elements
+ * Extracts a list of timestamps from a list of video elements
  * @param {Array<Element>} videos
- * @returns {Array<number>} timestamps
+ * @returns {Array<number|null>} timestamps
  */
 const getTimestampsFromVideos = (videos) => {
-  return videos
-    .map((video) => {
-      if (!video) return null;
+  return videos.map((video) => {
+    if (!video) return null;
 
-      const timestampContainer = video.querySelector(config.timestampContainer);
-      if (!timestampContainer) return null;
+    const timestampContainer = video.querySelector(config.timestampContainer);
+    if (!timestampContainer) return null;
 
-      const timestamp = timestampContainer.innerText;
-      if (!timestamp) return null;
+    const timestamp = timestampContainer.innerText;
+    if (!timestamp) return null;
 
-      const timestampInSeconds = convertTimestampToSeconds(timestamp);
-      return timestampInSeconds;
-    })
-    .filter(Boolean);
+    const timestampInSeconds = convertTimestampToSeconds(timestamp);
+    return timestampInSeconds;
+  });
 };
 
 const formatTimestamp = (timestamp) => {
