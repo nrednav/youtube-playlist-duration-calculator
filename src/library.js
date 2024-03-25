@@ -93,7 +93,10 @@ const processPlaylist = () => {
   setupEventListeners();
   const videos = getVideos();
   const timestamps = getTimestampsFromVideos(videos);
-  const totalDurationInSeconds = timestamps.reduce((a, b) => a + b);
+  const totalDurationInSeconds =
+    Array.isArray(timestamps) && timestamps.length > 0
+      ? timestamps.reduce((a, b) => a + b)
+      : 0;
   const playlistDuration = formatTimestamp(totalDurationInSeconds);
   const playlistSummary = createPlaylistSummary({
     timestamps,
