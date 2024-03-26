@@ -1,6 +1,7 @@
-# Youtube Playlist Duration Calculator
+# YouTube Playlist Duration Calculator
 
-A Firefox & Chrome web extension that calculates & displays the total duration of a youtube playlist.
+A web extension for Chrome & Firefox that calculates & displays the total
+duration of a YouTube playlist.
 
 <img src="screenshots/banner.png">
 
@@ -15,54 +16,130 @@ A Firefox & Chrome web extension that calculates & displays the total duration o
   <img src="screenshots/example1_2.png" width="400">
 </p>
 
-## Installation
+## Get the extension
+
+The extension is available for download at:
 
 - Chrome: [Web Store](https://chrome.google.com/webstore/detail/youtube-playlist-duration/pijbakhgmhhadeakaocjfockpndcpobk)
 - Firefox: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/youtube-playlist-duration-calc/)
 
-Alternatively, you can install the extension manually using the following instructions:-
+## Getting Started
 
-For Chrome:
+This section will explain how to get the project setup locally for development.
 
-1. Download this project as a zip file.
-2. Navigate to `chrome://extensions` in Google Chrome or a chromium-based fork such as Brave Browser.
-3. Check the box for **Developer Mode**
-4. Look for a button that says **Load unpacked extension** and click it
-5. Select the project zip file you downloaded in Step 1.
-6. You should now see the extension installed amongst your other extensions.
-7. To verify that it works, navigate to a youtube playlist overview page, for example: https://www.youtube.com/playlist?list=PLAhTBeRe8IhMmRve_rSfAgL_dtEXkKh8Z
-8. You should see the playlist's total duration appear under the playlist title.
+### Dependencies
 
-For Firefox:
+To work with this project, you will need the following dependencies:
 
-1. Download this project as a zip file.
-2. Extract out the ytpdc-firefox folder
-3. Install Mozilla's web-ext tool: [Link to workshop](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/)
-4. Navigate to the ytpdc-firefox directory in a command-line tool of your choice, and run `web-ext run` to test the add-on in a temporary browser
-5. Follow the instructions available in Mozilla's web-ext workshop at the link provided above to sign the extension yourself with `web-ext sign`
-6. Once you have signed it, you should find a .xpi file located within a folder named 'web-ext-artifacts' inside the ytpdc-firefox folder
-7. Navigate to `about:addons` via the address bar in Firefox, click the cog-wheel on the top right, choose `Install Add-on from file` and select the `.xpi` file from the previous step
+- Node.js v20+
+  - https://nodejs.org/en/download
+  - https://github.com/Schniz/fnm
+  - https://github.com/nvm-sh/nvm
+- pnpm
+  - https://pnpm.io/
 
-## Development
+### Get the Source
 
-- Clone this repository
-- Install dependencies
+This project is hosted at:
+https://github.com/nrednav/youtube-playlist-duration-calculator
 
-  ```
-  pnpm install
-  ```
+You can clone the project locally via:
 
-- Build the extension
+HTTPS:
 
-  ```
-  pnpm run build:chrome
-  pnpm run build:firefox
-  ```
+```
+git clone https://github.com/nrednav/youtube-playlist-duration-calculator.git
+```
 
-  This will output the extension into the `dist` folder
+SSH:
 
-- Run the extension in development mode
+```
+git clone git@github.com:nrednav/youtube-playlist-duration-calculator.git
+```
 
-  ```
-  pnpm run dev
-  ```
+### Installation
+
+To install the project's dependencies:
+
+```
+cd youtube-playlist-duration-calculator/
+pnpm install
+```
+
+### Building
+
+Build the extension for a specific browser using:
+
+```
+pnpm run build:chrome
+pnpm run build:firefox
+```
+
+This will output the extension files into a sub-directory named `dist` within
+the `youtube-playlist-duration-calculator` directory.
+
+### Run
+
+#### Automatic
+
+Run the project in development mode with:
+
+```
+pnpm run dev
+```
+
+This will do the following:
+
+- Determine the browser via the environment variable `VITE_TARGET_BROWSER`
+  - It will default to Chrome if the variable is undefined
+- Build the extension for the selected browser
+- Open the selected browser
+- Automatically & temporarily load the extension in the opened browser
+- Open a test YouTube
+  [playlist](https://www.youtube.com/playlist?list=PLAhTBeRe8IhMmRve_rSfAgL_dtEXkKh8Z)
+  overview page
+
+#### Manual
+
+To install & run the extension manually, follow these steps:
+
+Firefox:
+
+- Build the extension with `pnpm run build:firefox`
+- Install the `web-ext` tool from Mozilla
+  - Link: https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/
+- Test the extension by running `web-ext run` from within `dist/` directory
+  - Visit any YouTube playlist overview page and verify the extension
+    calculates & displays the playlist duration
+- Sign the extension with `web-ext sign`
+  - Follow the instructions on the same page linked above
+  - You will need to run this command within the `dist` directory too
+  - At the end, you should have a `.xpi` file generated within a sub-directory
+    named `web-ext-artifacts`
+- In your Firefox browser
+  - Navigate to `about:addons` via the address bar
+  - Click the cogwheel button located at the top-right of the page
+  - From the dropdown, select `Install Add-on From File`
+  - Locate & select the `.xpi` file generated in a previous step
+  - The extension should now be installed
+
+Chrome:
+
+- Build the extension with `pnpm run build:chrome`
+- In your Chrome browser
+  - Navigate to `chrome://extensions` via the address bar
+  - Select the checkbox next to `Developer Mode`
+  - Click the button named `Load Unpacked Extension`
+  - Locate & select the `dist` sub-directory within the
+    `youtube-playlist-duration-calculator` directory
+  - The extension should now be installed
+
+To verify the extension works, visit any YouTube playlist overview page & verify
+that you see the duration calculated & displayed within the playlist information
+panel located on the left-hand side of the page.
+
+## Issues
+
+If you wish to request a feature or report a bug, please open an issue by
+clicking
+[here](https://github.com/nrednav/youtube-playlist-duration-calculator/issues/new).
