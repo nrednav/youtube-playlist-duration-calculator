@@ -3,7 +3,7 @@
   "description": "An extension to calculate & display the total duration of a youtube playlist.",
   "author": "nrednav",
   "private": true,
-  "version": "2.1.0-beta.2",
+  "version": "2.1.0-beta.3",
   "type": "module",
   "engines": {
     "node": ">=20",
@@ -26,7 +26,7 @@
     "lint-staged": "^14.0.1",
     "prettier": "^3.0.3",
     "vite": "^4.5.2",
-    "vite-plugin-web-extension": "^3.0.1",
+    "vite-plugin-web-extension": "^4.1.3",
     "webextension-polyfill": "^0.10.0"
   },
   "lint-staged": {
@@ -34,5 +34,10 @@
       "npx eslint --ext .js",
       "npx prettier --ignore-unknown --write"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss@<8.4.31": ">=8.4.31"
+    }
   }
 }
