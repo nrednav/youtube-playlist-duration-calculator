@@ -97,7 +97,7 @@ const processPlaylist = () => {
     Array.isArray(timestamps) && timestamps.length > 0
       ? timestamps.reduce((a, b) => a + b)
       : 0;
-  const playlistDuration = formatTimestamp(totalDurationInSeconds);
+  const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
   const playlistSummary = createPlaylistSummary({
     timestamps,
     playlistDuration
@@ -165,13 +165,18 @@ const getTimestampsFromVideos = (videos) => {
   });
 };
 
-const formatTimestamp = (timestamp) => {
-  let totalSeconds = timestamp;
-  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
-  totalSeconds %= 3600;
-  const minutes = `${Math.floor(totalSeconds / 60)}`.padStart(2, "0");
-  const seconds = `${totalSeconds % 60}`.padStart(2, "0");
-  return `${hours}:${minutes}:${seconds}`;
+/**
+ * Converts a numerical amount of seconds to a textual timestamp formatted as
+ * hh:mm:ss
+ * @param {number} seconds
+ * @returns {string}
+ */
+const convertSecondsToTimestamp = (seconds) => {
+  const hours = `${Math.floor(seconds / 3600)}`.padStart(2, "0");
+  seconds %= 3600;
+  const minutes = `${Math.floor(seconds / 60)}`.padStart(2, "0");
+  const remainingSeconds = `${seconds % 60}`.padStart(2, "0");
+  return `${hours}:${minutes}:${remainingSeconds}`;
 };
 
 const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
