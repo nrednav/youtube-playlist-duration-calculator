@@ -34,5 +34,10 @@
       "npx eslint --ext .js",
       "npx prettier --ignore-unknown --write"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss@<8.4.31": ">=8.4.31"
+    }
   }
 }
