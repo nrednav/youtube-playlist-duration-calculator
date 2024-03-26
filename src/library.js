@@ -59,9 +59,14 @@ const displayLoader = () => {
   }
 };
 
+/**
+ * Counts the number of invalid timestamps in a list of video container elements
+ * @returns {number}
+ */
 const countUnavailableTimestamps = () => {
-  const timestamps = getTimestampsFromVideos(getVideos());
-  return timestamps.filter((timestamp) => timestamp === null).length;
+  return getVideos()
+    .map(getTimestampFromVideo)
+    .filter((timestamp) => timestamp === null).length;
 };
 
 const countUnavailableVideos = () => {
@@ -92,7 +97,7 @@ const processPlaylist = () => {
   setupPlaylistObserver();
   setupEventListeners();
   const videos = getVideos();
-  const timestamps = getTimestampsFromVideos(videos);
+  const timestamps = videos.map(getTimestampFromVideo);
   const totalDurationInSeconds =
     Array.isArray(timestamps) && timestamps.length > 0
       ? timestamps.reduce((a, b) => a + b)
@@ -146,23 +151,21 @@ const getVideos = () => {
 };
 
 /**
- * Extracts a list of timestamps from a list of video container elements
- * @param {Array<Element>} videos
- * @returns {Array<number|null>} timestamps
+ * Extracts a timestamp from a video container element
+ * @param {Element} video
+ * @returns {string}
  */
-const getTimestampsFromVideos = (videos) => {
-  return videos.map((video) => {
-    if (!video) return null;
+const getTimestampFromVideo = (video) => {
+  if (!video) return null;
 
-    const timestampContainer = video.querySelector(config.timestampContainer);
-    if (!timestampContainer) return null;
+  const timestampContainer = video.querySelector(config.timestampContainer);
+  if (!timestampContainer) return null;
 
-    const timestamp = timestampContainer.innerText;
-    if (!timestamp) return null;
+  const timestamp = timestampContainer.innerText;
+  if (!timestamp) return null;
 
-    const timestampInSeconds = convertTimestampToSeconds(timestamp);
-    return timestampInSeconds;
-  });
+  const timestampInSeconds = convertTimestampToSeconds(timestamp);
+  return timestampInSeconds;
 };
 
 /**
@@ -230,6 +233,12 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
     "#fca5a5"
   );
   summaryContainer.appendChild(videosNotCounted);
+
+  // Sorting
+  if (totalVideosInPlaylist <= 100) {
+    const sortDropdown = createSortDropdown();
+    summaryContainer.appendChild(sortDropdown);
+  }
 
   // Tooltip
   if (timestamps.length >= 100) {
@@ -353,6 +362,133 @@ const isNewDesign = () => {
     newDesignAnchor && oldDesignAnchor.getAttribute("hidden") !== null;
 
   return isNewDesign;
+};
+
+/**
+ * Sorts a list of videos by their duration
+ * @param {Array<Element>} videos
+ * @param {"asc" | "desc"} sortOrder
+ * @returns {Array<Element>}
+ */
+const sortVideosByDuration = (videos, sortOrder) => {
+  return Array.from(videos)
+    .slice(0, 100)
+    .sort((videoA, videoB) => {
+      const timestampA = getTimestampFromVideo(videoA);
+      const timestampB = getTimestampFromVideo(videoB);
+
+      if (sortOrder === "asc") {
+        return timestampA - timestampB;
+      }
+
+      if (sortOrder === "desc") {
+        return timestampB - timestampA;
+      }
+    });
+};
+
+const createSortDropdown = () => {
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.flexDirection = "row";
+  container.style.margin = "8px 0";
+  container.style.alignItems = "center";
+
+  const labelContainer = document.createElement("p");
+  labelContainer.textContent = "Sort by:";
+  labelContainer.style.paddingRight = "8px";
+
+  container.appendChild(labelContainer);
+
+  const sortDropdown = document.createElement("select");
+
+  // Styling
+  sortDropdown.style.appearance = "none";
+  sortDropdown.style.color = "#ddd";
+  sortDropdown.style.backgroundColor = "transparent";
+  sortDropdown.style.borderColor = "transparent";
+  sortDropdown.style.outlineColor = "transparent";
+  sortDropdown.style.outlineStyle = "none";
+  sortDropdown.style.cursor = "pointer";
+  sortDropdown.style.fontSize = "1.5rem";
+  sortDropdown.style.fontWeight = 700;
+
+  const sortOptions = [
+    () => {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "None";
+      return option;
+    },
+    () => {
+      const option = document.createElement("option");
+      option.value = "asc";
+      option.textContent = "Duration (Shortest)";
+      return option;
+    },
+    () => {
+      const option = document.createElement("option");
+      option.value = "desc";
+      option.textContent = "Duration (Longest)";
+      return option;
+    }
+  ];
+
+  sortOptions.forEach((sortOption) => {
+    sortDropdown.appendChild(sortOption());
+  });
+
+  sortDropdown.addEventListener("change", (event) => {
+    if (event.target.value === "") return;
+
+    const videoElementsContainer = document.querySelector(
+      config.videoElementsContainer
+    );
+
+    const videos = videoElementsContainer.getElementsByTagName(
+      config.videoElement
+    );
+
+    const sortedVideos = sortVideosByDuration(videos, event.target.value);
+
+    const videoElementsContainerClone = videoElementsContainer.cloneNode();
+
+    sortedVideos.forEach((video) =>
+      videoElementsContainerClone.appendChild(video)
+    );
+
+    videoElementsContainer.parentNode.replaceChild(
+      videoElementsContainerClone,
+      videoElementsContainer
+    );
+  });
+
+  const caretDownIcon = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg"
+  );
+  caretDownIcon.style.width = "1em";
+  caretDownIcon.style.height = "1em";
+  caretDownIcon.setAttribute("viewBox", "0 0 256 256");
+  caretDownIcon.innerHTML = `<path fill="currentColor" d="m216.49 104.49l-80
+  80a12 12 0 0 1-17 0l-80-80a12 12 0 0 1 17-17L128 159l71.51-71.52a12 12 0 0 1
+  17 17Z"/>`;
+
+  const group = document.createElement("div");
+  group.style.display = "flex";
+  group.style.flexDirection = "row";
+  group.style.alignItems = "center";
+  group.style.columnGap = "4px";
+  group.style.padding = "4px";
+  group.style.borderRadius = "4px";
+  group.style.backgroundColor = "rgba(0,0,0, 0.2)";
+
+  group.appendChild(sortDropdown);
+  group.appendChild(caretDownIcon);
+
+  container.appendChild(group);
+
+  return container;
 };
 
 export { pollPlaylistReady };
