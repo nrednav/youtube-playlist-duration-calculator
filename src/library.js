@@ -46,16 +46,12 @@ const displayLoader = () => {
   );
 
   if (playlistSummary) {
-    const loading = document.createElement("div");
-    loading.style.minHeight = "128px";
-    loading.style.width = "100%";
-    loading.style.display = "flex";
-    loading.style.justifyContent = "center";
-    loading.style.alignItems = "center";
-    loading.textContent = "Calculating...";
+    const loader = document.createElement("div");
+    loader.id = "ytpdc-loader";
+    loader.textContent = "Calculating...";
 
     playlistSummary.innerHTML = "";
-    playlistSummary.appendChild(loading);
+    playlistSummary.appendChild(loader);
   }
 };
 

@@ -1,3 +1,11 @@
+#ytpdc-loader {
+  min-height: 128px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #ytpdc-sort-control.container {
   display: flex;
   flex-direction: row;
