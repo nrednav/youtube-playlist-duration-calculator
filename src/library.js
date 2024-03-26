@@ -94,7 +94,7 @@ const countUnavailableVideos = () => {
 
 const processPlaylist = () => {
   configurePage();
-  setupPlaylistObserver();
+  const playlistObserver = setupPlaylistObserver();
   setupEventListeners();
   const videos = getVideos();
   const timestamps = videos.map(getTimestampFromVideo);
@@ -105,39 +105,68 @@ const processPlaylist = () => {
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
   const playlistSummary = createPlaylistSummary({
     timestamps,
-    playlistDuration
+    playlistDuration,
+    playlistObserver
   });
   addSummaryToPage(playlistSummary);
 };
 
 const configurePage = () => {
   if (window.ytpdc) return;
-  window.ytpdc = { playlistObserver: false, interPlaylistNavigation: false };
+  window.ytpdc = { playlistObserver: false, setupEventListeners: false };
 };
 
+/**
+  * Setup a mutation observer on the playlist to detect when video(s) are added
+  * or removed and trigger a re-processing of the playlist
+  * @returns {{
+      disconnect: () => void,
+      reconnect: () => void
+    }}
+  */
 const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return;
-  window.ytpdc.playlistObserver = true;
 
   const playlistObserver = new MutationObserver((_) => {
     pollPlaylistReady();
   });
 
+  window.ytpdc.playlistObserver = playlistObserver;
+
   const targetNode = document.querySelector(config.videoElementsContainer);
   if (targetNode) {
     playlistObserver.observe(targetNode, { childList: true });
   }
+
+  return {
+    disconnect: () => playlistObserver.disconnect(),
+    reconnect: () => playlistObserver.observe(targetNode, { childList: true })
+  };
 };
 
 const setupEventListeners = () => {
-  if (!window.ytpdc.interPlaylistNavigation) {
-    window.ytpdc.interPlaylistNavigation = true;
-    document.addEventListener(
-      "yt-navigate-finish",
-      () => pollPlaylistReady(),
-      false
-    );
-  }
+  if (window.ytpdc.setupEventListeners) return;
+  window.ytpdc.setupEventListeners = true;
+
+  const onYoutubeNavigationFinished = () => {
+    if (window.ytpdc.playlistObserver) {
+      window.ytpdc.playlistObserver?.disconnect();
+      window.ytpdc.playlistObserver = null;
+    }
+
+    if (
+      window.location.pathname === "/playlist" &&
+      window.location.search.startsWith("?list=")
+    ) {
+      pollPlaylistReady();
+    }
+  };
+
+  document.addEventListener(
+    "yt-navigate-finish",
+    onYoutubeNavigationFinished,
+    false
+  );
 };
 
 const getVideos = () => {
@@ -182,7 +211,11 @@ const convertSecondsToTimestamp = (seconds) => {
   return `${hours}:${minutes}:${remainingSeconds}`;
 };
 
-const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
+const createPlaylistSummary = ({
+  timestamps,
+  playlistDuration,
+  playlistObserver
+}) => {
   const summaryContainer = document.createElement("div");
 
   // Styles for new design
@@ -236,12 +269,12 @@ const createPlaylistSummary = ({ timestamps, playlistDuration }) => {
 
   // Sorting
   if (totalVideosInPlaylist <= 100) {
-    const sortDropdown = createSortDropdown();
+    const sortDropdown = createSortDropdown(playlistObserver);
     summaryContainer.appendChild(sortDropdown);
   }
 
   // Tooltip
-  if (timestamps.length >= 100) {
+  if (totalVideosInPlaylist >= 100) {
     const tooltip = document.createElement("div");
     tooltip.style.marginTop = "16px";
     tooltip.style.display = "flex";
@@ -387,31 +420,19 @@ const sortVideosByDuration = (videos, sortOrder) => {
     });
 };
 
-const createSortDropdown = () => {
+const createSortDropdown = (playlistObserver) => {
   const container = document.createElement("div");
-  container.style.display = "flex";
-  container.style.flexDirection = "row";
-  container.style.margin = "8px 0";
-  container.style.alignItems = "center";
+  container.id = "ytpdc-sort-control";
+  container.classList.add("container");
 
-  const labelContainer = document.createElement("p");
-  labelContainer.textContent = "Sort by:";
-  labelContainer.style.paddingRight = "8px";
+  const label = document.createElement("p");
+  label.classList.add("label");
+  label.textContent = "Sort by:";
 
-  container.appendChild(labelContainer);
+  const group = document.createElement("div");
+  group.classList.add("group");
 
   const sortDropdown = document.createElement("select");
-
-  // Styling
-  sortDropdown.style.appearance = "none";
-  sortDropdown.style.color = "#ddd";
-  sortDropdown.style.backgroundColor = "transparent";
-  sortDropdown.style.borderColor = "transparent";
-  sortDropdown.style.outlineColor = "transparent";
-  sortDropdown.style.outlineStyle = "none";
-  sortDropdown.style.cursor = "pointer";
-  sortDropdown.style.fontSize = "1.5rem";
-  sortDropdown.style.fontWeight = 700;
 
   const sortOptions = [
     () => {
@@ -441,6 +462,8 @@ const createSortDropdown = () => {
   sortDropdown.addEventListener("change", (event) => {
     if (event.target.value === "") return;
 
+    playlistObserver?.disconnect();
+
     const videoElementsContainer = document.querySelector(
       config.videoElementsContainer
     );
@@ -451,16 +474,9 @@ const createSortDropdown = () => {
 
     const sortedVideos = sortVideosByDuration(videos, event.target.value);
 
-    const videoElementsContainerClone = videoElementsContainer.cloneNode();
+    videoElementsContainer.replaceChildren(...sortedVideos);
 
-    sortedVideos.forEach((video) =>
-      videoElementsContainerClone.appendChild(video)
-    );
-
-    videoElementsContainer.parentNode.replaceChild(
-      videoElementsContainerClone,
-      videoElementsContainer
-    );
+    playlistObserver?.reconnect();
   });
 
   const caretDownIcon = document.createElementNS(
@@ -474,18 +490,9 @@ const createSortDropdown = () => {
   80a12 12 0 0 1-17 0l-80-80a12 12 0 0 1 17-17L128 159l71.51-71.52a12 12 0 0 1
   17 17Z"/>`;
 
-  const group = document.createElement("div");
-  group.style.display = "flex";
-  group.style.flexDirection = "row";
-  group.style.alignItems = "center";
-  group.style.columnGap = "4px";
-  group.style.padding = "4px";
-  group.style.borderRadius = "4px";
-  group.style.backgroundColor = "rgba(0,0,0, 0.2)";
-
+  container.appendChild(label);
   group.appendChild(sortDropdown);
   group.appendChild(caretDownIcon);
-
   container.appendChild(group);
 
   return container;

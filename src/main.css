@@ -1,0 +1,32 @@
+#ytpdc-sort-control.container {
+  display: flex;
+  flex-direction: row;
+  margin: 8px 0;
+  align-items: center;
+}
+
+#ytpdc-sort-control .label {
+  padding-right: 8px;
+}
+
+#ytpdc-sort-control .group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 4px;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: rgba(0,0,0, 0.2);
+}
+
+#ytpdc-sort-control select {
+  appearance: none;
+  color: #ddd;
+  background-color: transparent;
+  border-color: transparent;
+  outline-color: transparent;
+  outline-style: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 700;
+}

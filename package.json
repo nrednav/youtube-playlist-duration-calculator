@@ -11,8 +11,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build:chrome": "vite build --mode chrome",
-    "build:firefox": "vite build --mode firefox",
+    "build:chrome": "pnpm run clean && vite build --mode chrome",
+    "build:firefox": "pnpm run clean && vite build --mode firefox",
+    "clean": "pnpm exec del dist/",
     "watch": "vite build --watch --mode development",
     "lint": "eslint .",
     "format": "prettier --ignore-unknown --write",
@@ -39,5 +40,8 @@
     "overrides": {
       "postcss@<8.4.31": ">=8.4.31"
     }
+  },
+  "dependencies": {
+    "del-cli": "^5.1.0"
   }
 }
