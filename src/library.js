@@ -1,3 +1,5 @@
+import { PlaylistSorter, SORT_TYPES } from "./sorter";
+
 const config = {
   videoElement: "ytd-playlist-video-renderer",
   videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
@@ -429,18 +431,17 @@ const createSortDropdown = (playlistObserver) => {
       option.textContent = "None";
       return option;
     },
-    () => {
-      const option = document.createElement("option");
-      option.value = "asc";
-      option.textContent = "Duration (Shortest)";
-      return option;
-    },
-    () => {
-      const option = document.createElement("option");
-      option.value = "desc";
-      option.textContent = "Duration (Longest)";
-      return option;
-    }
+    ...Object.keys(SORT_TYPES).flatMap((sortType) => {
+      const { label } = SORT_TYPES[sortType];
+      return Object.keys(label).map((sortOrder) => {
+        return () => {
+          const option = document.createElement("option");
+          option.value = `${sortType}:${sortOrder}`;
+          option.textContent = label[sortOrder];
+          return option;
+        };
+      });
+    })
   ];
 
   sortOptions.forEach((sortOption) => {
@@ -460,7 +461,10 @@ const createSortDropdown = (playlistObserver) => {
       config.videoElement
     );
 
-    const sortedVideos = sortVideosByDuration(videos, event.target.value);
+    const [sortType, sortOrder] = event.target.value.split(":");
+    const SortStrategy = SORT_TYPES[sortType].strategy;
+    const playlistSorter = new PlaylistSorter(new SortStrategy(), sortOrder);
+    const sortedVideos = playlistSorter.sort(videos);
 
     videoElementsContainer.replaceChildren(...sortedVideos);
 
@@ -486,4 +490,4 @@ const createSortDropdown = (playlistObserver) => {
   return container;
 };
 
-export { pollPlaylistReady };
+export { getTimestampFromVideo, pollPlaylistReady };
