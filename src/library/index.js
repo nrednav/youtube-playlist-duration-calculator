@@ -1,4 +1,4 @@
-import { PlaylistSorter, SORT_TYPES } from "./sorter";
+import { PlaylistSorter, SORT_TYPES } from "./sorting";
 
 const config = {
   videoElement: "ytd-playlist-video-renderer",

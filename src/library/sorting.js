@@ -1,4 +1,4 @@
-import { getTimestampFromVideo } from "./library";
+import { getTimestampFromVideo } from "./index";
 
 class PlaylistSorter {
   constructor(strategy, sortOrder) {
