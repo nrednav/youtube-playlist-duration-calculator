@@ -1,0 +1,82 @@
+#ytpdc-loader {
+  min-height: 128px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#ytpdc-playlist-summary-new.container,
+#ytpdc-playlist-summary-old.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  min-height: 128px;
+  margin: 16px 0px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.2);
+  font-size: 1.5rem;
+}
+
+.ytpdc-playlist-summary-item {
+  margin: 8px 0px;
+  display: flex;
+  flex-direction: row;
+}
+
+.ytpdc-playlist-summary-item-value {
+  font-weight: 700;
+  padding-left: 8px;
+}
+
+#ytpdc-playlist-summary-tooltip {
+  display: flex;
+  margin-top: 16px;
+  flex-direction: row;
+  align-items: center;
+}
+
+#ytpdc-playlist-summary-tooltip svg {
+  width: 1em;
+  height: 1em;
+  color: #000;
+}
+
+#ytpdc-playlist-summary-tooltip p {
+  padding-left: 8px;
+}
+
+#ytpdc-sort-control.container {
+  display: flex;
+  flex-direction: row;
+  margin: 8px 0;
+  align-items: center;
+}
+
+#ytpdc-sort-control .label {
+  padding-right: 8px;
+}
+
+#ytpdc-sort-control .group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 4px;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: rgba(0,0,0, 0.2);
+}
+
+#ytpdc-sort-control select {
+  appearance: none;
+  color: #ddd;
+  background-color: transparent;
+  border-color: transparent;
+  outline-color: transparent;
+  outline-style: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 700;
+}

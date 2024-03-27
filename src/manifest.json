@@ -23,7 +23,7 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "run_at": "document_end",
-      "js": ["src/library.js", "src/content.js"]
+      "js": ["src/main.js"]
     }
   ],
   "{{chrome}}.host_permissions": ["https://www.youtube.com/*"],

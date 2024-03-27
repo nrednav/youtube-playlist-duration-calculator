@@ -1,4 +1,5 @@
-import { pollPlaylistReady } from "./library";
+import { pollPlaylistReady } from "./library/index";
+import "./main.css";
 
 // Entry-point
 if (document.readyState !== "loading") {
