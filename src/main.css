@@ -6,6 +6,48 @@
   align-items: center;
 }
 
+#ytpdc-playlist-summary-new.container,
+#ytpdc-playlist-summary-old.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  min-height: 128px;
+  margin: 16px 0px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.2);
+  font-size: 1.5rem;
+}
+
+.ytpdc-playlist-summary-item {
+  margin: 8px 0px;
+  display: flex;
+  flex-direction: row;
+}
+
+.ytpdc-playlist-summary-item-value {
+  font-weight: 700;
+  padding-left: 8px;
+}
+
+#ytpdc-playlist-summary-tooltip {
+  display: flex;
+  margin-top: 16px;
+  flex-direction: row;
+  align-items: center;
+}
+
+#ytpdc-playlist-summary-tooltip svg {
+  width: 1em;
+  height: 1em;
+  color: #000;
+}
+
+#ytpdc-playlist-summary-tooltip p {
+  padding-left: 8px;
+}
+
 #ytpdc-sort-control.container {
   display: flex;
   flex-direction: row;

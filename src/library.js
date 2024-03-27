@@ -10,6 +10,10 @@ const config = {
     main: ".metadata-stats yt-formatted-string",
     fallback: "#stats yt-formatted-string"
   },
+  playlistSummaryContainer: {
+    main: "#ytpdc-playlist-summary-new",
+    fallback: "#ytpdc-playlist-summary-old"
+  },
   // Design anchor = Element that helps distinguish between old & new layout
   designAnchor: {
     old: "ytd-playlist-sidebar-renderer",
@@ -41,8 +45,8 @@ const pollPlaylistReady = () => {
 const displayLoader = () => {
   const playlistSummary = document.querySelector(
     isNewDesign()
-      ? "#ytpdc-playlist-summary-new"
-      : "#ytpdc-playlist-summary-old"
+      ? config.playlistSummaryContainer.main
+      : config.playlistSummaryContainer.fallback
   );
 
   if (playlistSummary) {
@@ -212,27 +216,21 @@ const createPlaylistSummary = ({
   playlistDuration,
   playlistObserver
 }) => {
-  const summaryContainer = document.createElement("div");
-
-  // Styles for new design
-  summaryContainer.style.display = "flex";
-  summaryContainer.style.flexDirection = "column";
-  summaryContainer.style.justifyContent = "center";
-  summaryContainer.style.alignItems = "start";
-  summaryContainer.style.minHeight = "128px";
-  summaryContainer.style.margin = "16px 0px";
-  summaryContainer.style.padding = "16px";
-  summaryContainer.style.borderRadius = "16px";
-  summaryContainer.style.background = "rgba(255,255,255,0.2)";
-  summaryContainer.style.fontSize = "1.5rem";
+  const container = document.createElement("div");
+  container.id = (
+    isNewDesign()
+      ? config.playlistSummaryContainer.main
+      : config.playlistSummaryContainer.fallback
+  ).replace("#", "");
+  container.classList.add("container");
 
   // Fallback styles for old design
   if (!isNewDesign()) {
     if (isDarkMode()) {
-      summaryContainer.style.color = "white";
+      container.style.color = "white";
     } else {
-      summaryContainer.style.background = "rgba(0,0,0,0.8)";
-      summaryContainer.style.color = "white";
+      container.style.background = "rgba(0,0,0,0.8)";
+      container.style.color = "white";
     }
   }
 
@@ -242,7 +240,7 @@ const createPlaylistSummary = ({
     `${playlistDuration}`,
     "#86efac"
   );
-  summaryContainer.appendChild(totalDuration);
+  container.appendChild(totalDuration);
 
   // Videos counted
   const videosCounted = createSummaryItem(
@@ -250,7 +248,7 @@ const createPlaylistSummary = ({
     `${timestamps.length}`,
     "#fdba74"
   );
-  summaryContainer.appendChild(videosCounted);
+  container.appendChild(videosCounted);
 
   // Videos not counted
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
@@ -261,36 +259,36 @@ const createPlaylistSummary = ({
     }`,
     "#fca5a5"
   );
-  summaryContainer.appendChild(videosNotCounted);
+  container.appendChild(videosNotCounted);
 
   // Sorting
   if (totalVideosInPlaylist <= 100) {
     const sortDropdown = createSortDropdown(playlistObserver);
-    summaryContainer.appendChild(sortDropdown);
+    container.appendChild(sortDropdown);
   }
 
   // Tooltip
   if (totalVideosInPlaylist >= 100) {
     const tooltip = document.createElement("div");
-    tooltip.style.marginTop = "16px";
-    tooltip.style.display = "flex";
-    tooltip.style.flexDirection = "row";
-    tooltip.style.alignItems = "center";
+    tooltip.id = "ytpdc-playlist-summary-tooltip";
 
-    const icon = document.createElement("div");
-    icon.style.color = "#000";
-    icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0 2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/></svg>`;
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.innerHTML = `<path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1
+    5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0
+    2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0
+    0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/>`;
     tooltip.appendChild(icon);
 
     const tooltipText = document.createElement("p");
-    tooltipText.style.paddingLeft = "8px";
     tooltipText.textContent = "Scroll down to count more videos";
     tooltip.appendChild(tooltipText);
 
-    summaryContainer.appendChild(tooltip);
+    container.appendChild(tooltip);
   }
 
-  return summaryContainer;
+  return container;
 };
 
 /**
@@ -320,18 +318,14 @@ const convertTimestampToSeconds = (timestamp) => {
 
 const createSummaryItem = (label, value, valueColor = "#facc15") => {
   const container = document.createElement("div");
-  container.style.margin = "8px 0px";
-  container.style.display = "flex";
-  container.style.flexDirection = "row";
-  container.style.justifyContent = "between";
+  container.classList.add("ytpdc-playlist-summary-item");
 
   const labelContainer = document.createElement("p");
   labelContainer.textContent = label;
 
   const valueContainer = document.createElement("p");
+  valueContainer.classList.add("ytpdc-playlist-summary-item-value");
   valueContainer.style.color = valueColor;
-  valueContainer.style.fontWeight = 700;
-  valueContainer.style.paddingLeft = "8px";
   valueContainer.textContent = value;
 
   container.appendChild(labelContainer);
@@ -351,16 +345,14 @@ const addSummaryToPage = (summary) => {
   if (!metadataSection) return null;
 
   const previousSummary = document.querySelector(
-    newDesign ? "#ytpdc-playlist-summary-new" : "#ytpdc-playlist-summary-old"
+    newDesign
+      ? config.playlistSummaryContainer.main
+      : config.playlistSummaryContainer.fallback
   );
 
   if (previousSummary) {
     previousSummary.parentNode.removeChild(previousSummary);
   }
-
-  summary.id = newDesign
-    ? "ytpdc-playlist-summary-new"
-    : "ytpdc-playlist-summary-old";
 
   metadataSection.parentNode.insertBefore(summary, metadataSection.nextSibling);
 };
