@@ -240,7 +240,6 @@ const createPlaylistSummary = ({
     }
   }
 
-  // Total Duration
   const totalDuration = createSummaryItem(
     "Total duration:",
     `${playlistDuration}`,
@@ -248,7 +247,6 @@ const createPlaylistSummary = ({
   );
   container.appendChild(totalDuration);
 
-  // Videos counted
   const videosCounted = createSummaryItem(
     "Videos counted:",
     `${timestamps.length}`,
@@ -256,7 +254,6 @@ const createPlaylistSummary = ({
   );
   container.appendChild(videosCounted);
 
-  // Videos not counted
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
     "Videos not counted:",
@@ -267,13 +264,11 @@ const createPlaylistSummary = ({
   );
   container.appendChild(videosNotCounted);
 
-  // Sorting
   if (totalVideosInPlaylist <= 100) {
     const sortDropdown = createSortDropdown(playlistObserver);
     container.appendChild(sortDropdown);
   }
 
-  // Tooltip
   if (totalVideosInPlaylist >= 100) {
     const tooltip = document.createElement("div");
     tooltip.id = "ytpdc-playlist-summary-tooltip";

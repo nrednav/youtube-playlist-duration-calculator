@@ -8,12 +8,12 @@ duration of a YouTube playlist.
 ## Previews
 
 <p align="center">
-  <img src="screenshots/default.png" width="800">
+  <img src="screenshots/default.jpeg" width="800">
 </p>
 
 <p align="center">
   <img src="screenshots/example1.png" width="400">
-  <img src="screenshots/example1_2.png" width="400">
+  <img src="screenshots/example2.png" width="400">
 </p>
 
 ## Get the extension
@@ -22,6 +22,21 @@ The extension is available for download at:
 
 - Chrome: [Web Store](https://chrome.google.com/webstore/detail/youtube-playlist-duration/pijbakhgmhhadeakaocjfockpndcpobk)
 - Firefox: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/youtube-playlist-duration-calc/)
+
+## Features
+
+- Calculate & display the total duration of a YouTube playlist
+- Sort playlists containing upto 100 videos, by the following criteria:
+  - Duration
+  - Channel Name
+  - View Count
+  - Upload Date
+  - Index
+
+> **Note:** The sorting feature is only enabled for playlists containing 100 videos
+> or less. This is because for larger playlists (>100 videos), YouTube only
+> loads videos in batches of 100 at a time as you scroll down the page and this
+> currently produces inconsistent & inaccurate sorting results.
 
 ## Getting Started
 
