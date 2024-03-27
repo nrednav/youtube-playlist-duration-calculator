@@ -1,4 +1,4 @@
-import { PlaylistSorter, SORT_TYPES } from "./sorting";
+import { PlaylistSorter, SORT_OPTIONS, SORT_TYPES } from "./sorting";
 
 const config = {
   videoElement: "ytd-playlist-video-renderer",
@@ -401,27 +401,7 @@ const createSortDropdown = (playlistObserver) => {
 
   const dropdown = document.createElement("select");
 
-  const sortOptions = [
-    () => {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "None";
-      return option;
-    },
-    ...Object.keys(SORT_TYPES).flatMap((sortType) => {
-      const { label } = SORT_TYPES[sortType];
-      return Object.keys(label).map((sortOrder) => {
-        return () => {
-          const option = document.createElement("option");
-          option.value = `${sortType}:${sortOrder}`;
-          option.textContent = label[sortOrder];
-          return option;
-        };
-      });
-    })
-  ];
-
-  sortOptions.forEach((sortOption) => {
+  SORT_OPTIONS.forEach((sortOption) => {
     dropdown.appendChild(sortOption());
   });
 

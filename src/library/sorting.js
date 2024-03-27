@@ -68,7 +68,37 @@ class SortByChannelNameStrategy {
   }
 }
 
+class SortByIndexStrategy {
+  sort(videos, sortOrder) {
+    return Array.from(videos)
+      .slice(0, 100)
+      .sort((videoA, videoB) => {
+        const indexA = videoA.querySelector(
+          "yt-formatted-string#index"
+        ).innerText;
+        const indexB = videoB.querySelector(
+          "yt-formatted-string#index"
+        ).innerText;
+
+        if (sortOrder === "asc") {
+          return Number(indexA) - Number(indexB);
+        }
+
+        if (sortOrder === "desc") {
+          return Number(indexB) - Number(indexA);
+        }
+      });
+  }
+}
+
 const SORT_TYPES = {
+  index: {
+    label: {
+      asc: "Index (Ascending)",
+      desc: "Index (Descending)"
+    },
+    strategy: SortByIndexStrategy
+  },
   duration: {
     label: {
       asc: "Duration (Shortest)",
@@ -85,4 +115,16 @@ const SORT_TYPES = {
   }
 };
 
-export { SORT_TYPES, PlaylistSorter };
+const SORT_OPTIONS = Object.keys(SORT_TYPES).flatMap((sortType) => {
+  const { label } = SORT_TYPES[sortType];
+  return Object.keys(label).map((sortOrder) => {
+    return () => {
+      const option = document.createElement("option");
+      option.value = `${sortType}:${sortOrder}`;
+      option.textContent = label[sortOrder];
+      return option;
+    };
+  });
+});
+
+export { SORT_TYPES, SORT_OPTIONS, PlaylistSorter };
