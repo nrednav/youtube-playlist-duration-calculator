@@ -97,6 +97,67 @@ class SortByIndexStrategy {
   }
 }
 
+class SortByViewsStrategy {
+  /**
+   * Sorts a list of videos by their view count
+   * @param {Array<Element>} videos
+   * @param {"asc" | "desc"} sortOrder
+   * @returns {Array<Element>}
+   */
+  sort(videos, sortOrder) {
+    return Array.from(videos)
+      .slice(0, 100)
+      .sort((videoA, videoB) => {
+        const videoInfoA = videoA.querySelector(
+          "yt-formatted-string#video-info"
+        );
+        const videoInfoB = videoB.querySelector(
+          "yt-formatted-string#video-info"
+        );
+
+        const viewCountA = this.extractViewCount(videoInfoA);
+        const viewCountB = this.extractViewCount(videoInfoB);
+        console.log(viewCountA, viewCountB);
+
+        if (sortOrder === "asc") {
+          return viewCountA - viewCountB;
+        }
+
+        if (sortOrder === "desc") {
+          return viewCountB - viewCountA;
+        }
+      });
+  }
+
+  /**
+   * Extracts the view count as a number from a video info element
+   * @param {Element} videoInfo
+   * @returns {number}
+   */
+  extractViewCount(videoInfo) {
+    const viewCountElement = videoInfo.firstElementChild;
+    const viewCountRegex = /(\d+(\.\d+)?[km]?)/g;
+    const [viewCountString] = viewCountElement.textContent
+      .toLowerCase()
+      .match(viewCountRegex);
+    console.log(viewCountString);
+    const suffix = viewCountString.slice(-1);
+    const viewCountBase = parseFloat(viewCountString);
+
+    if (isNaN(viewCountBase)) {
+      return 0;
+    }
+
+    if (suffix === "k") {
+      return Math.round(viewCountBase * 1000);
+    } else if (suffix === "m") {
+      return Math.round(viewCountBase * 1_000_000);
+    } else {
+      return Math.round(viewCountBase);
+    }
+  }
+}
+
 /**
  * Generates an object containing information about each supported sort type
  * @returns {Object}
@@ -125,6 +186,14 @@ const generateSortTypes = () => ({
       desc: "Channel Name (Z-A)"
     },
     strategy: SortByChannelNameStrategy
+  },
+  views: {
+    enabled: videoHasElement("yt-formatted-string#video-info"),
+    label: {
+      asc: "Views (Least)",
+      desc: "Views (Most)"
+    },
+    strategy: SortByViewsStrategy
   }
 });
 
