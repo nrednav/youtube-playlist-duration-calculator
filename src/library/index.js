@@ -1,4 +1,8 @@
-import { PlaylistSorter, SORT_OPTIONS, SORT_TYPES } from "./sorting";
+import {
+  PlaylistSorter,
+  generateSortOptions,
+  generateSortTypes
+} from "./sorting";
 
 const config = {
   videoElement: "ytd-playlist-video-renderer",
@@ -400,9 +404,11 @@ const createSortDropdown = (playlistObserver) => {
   group.classList.add("group");
 
   const dropdown = document.createElement("select");
+  const sortTypes = generateSortTypes();
+  const sortOptions = generateSortOptions(sortTypes);
 
-  SORT_OPTIONS.forEach((sortOption) => {
-    dropdown.appendChild(sortOption());
+  sortOptions.forEach((sortOption) => {
+    dropdown.appendChild(sortOption);
   });
 
   dropdown.addEventListener("change", (event) => {
@@ -419,7 +425,7 @@ const createSortDropdown = (playlistObserver) => {
     );
 
     const [sortType, sortOrder] = event.target.value.split(":");
-    const SortStrategy = SORT_TYPES[sortType].strategy;
+    const SortStrategy = sortTypes[sortType].strategy;
     const playlistSorter = new PlaylistSorter(new SortStrategy(), sortOrder);
     const sortedVideos = playlistSorter.sort(videos);
 
@@ -447,4 +453,4 @@ const createSortDropdown = (playlistObserver) => {
   return container;
 };
 
-export { getTimestampFromVideo, pollPlaylistReady };
+export { config, getTimestampFromVideo, pollPlaylistReady };

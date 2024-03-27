@@ -1,4 +1,4 @@
-import { getTimestampFromVideo } from "./index";
+import { config, getTimestampFromVideo } from "./index";
 
 class PlaylistSorter {
   constructor(strategy, sortOrder) {
@@ -69,6 +69,12 @@ class SortByChannelNameStrategy {
 }
 
 class SortByIndexStrategy {
+  /**
+   * Sorts a list of videos by their index
+   * @param {Array<Element>} videos
+   * @param {"asc" | "desc"} sortOrder
+   * @returns {Array<Element>}
+   */
   sort(videos, sortOrder) {
     return Array.from(videos)
       .slice(0, 100)
@@ -91,8 +97,13 @@ class SortByIndexStrategy {
   }
 }
 
-const SORT_TYPES = {
+/**
+ * Generates an object containing information about each supported sort type
+ * @returns {Object}
+ */
+const generateSortTypes = () => ({
   index: {
+    enabled: videoHasElement("yt-formatted-string#index"),
     label: {
       asc: "Index (Ascending)",
       desc: "Index (Descending)"
@@ -100,6 +111,7 @@ const SORT_TYPES = {
     strategy: SortByIndexStrategy
   },
   duration: {
+    enabled: videoHasElement(config.timestampContainer),
     label: {
       asc: "Duration (Shortest)",
       desc: "Duration (Longest)"
@@ -107,24 +119,40 @@ const SORT_TYPES = {
     strategy: SortByDurationStrategy
   },
   channelName: {
+    enabled: videoHasElement(".ytd-channel-name"),
     label: {
       asc: "Channel Name (A-Z)",
       desc: "Channel Name (Z-A)"
     },
     strategy: SortByChannelNameStrategy
   }
+});
+
+/**
+ * Checks whether an element identified by identifier can be found within the
+ * first video element rendered in the playlist
+ * @param {string} identifier
+ * @returns {boolean}
+ */
+const videoHasElement = (identifier) => {
+  const videoElement = document.querySelector(config.videoElement);
+  return videoElement && videoElement.querySelector(identifier);
 };
 
-const SORT_OPTIONS = Object.keys(SORT_TYPES).flatMap((sortType) => {
-  const { label } = SORT_TYPES[sortType];
-  return Object.keys(label).map((sortOrder) => {
-    return () => {
+/**
+ * Generates a list of <option> elements for each type of sort
+ */
+const generateSortOptions = (sortTypes) => {
+  return Object.keys(sortTypes).flatMap((sortType) => {
+    const { enabled, label } = sortTypes[sortType];
+    if (!enabled) return [];
+    return Object.keys(label).map((sortOrder) => {
       const option = document.createElement("option");
       option.value = `${sortType}:${sortOrder}`;
       option.textContent = label[sortOrder];
       return option;
-    };
+    });
   });
-});
+};
 
-export { SORT_TYPES, SORT_OPTIONS, PlaylistSorter };
+export { generateSortTypes, generateSortOptions, PlaylistSorter };
