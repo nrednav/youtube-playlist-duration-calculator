@@ -17,6 +17,12 @@ class PlaylistSorter {
 }
 
 class SortByDurationStrategy {
+  /**
+   * Sorts a list of videos by their duration
+   * @param {Array<Element>} videos
+   * @param {"asc" | "desc"} sortOrder
+   * @returns {Array<Element>}
+   */
   sort(videos, sortOrder) {
     return Array.from(videos)
       .slice(0, 100)
@@ -36,6 +42,12 @@ class SortByDurationStrategy {
 }
 
 class SortByChannelNameStrategy {
+  /**
+   * Sorts a list of videos by their channel name
+   * @param {Array<Element>} videos
+   * @param {"asc" | "desc"} sortOrder
+   * @returns {Array<Element>}
+   */
   sort(videos, sortOrder) {
     return Array.from(videos)
       .slice(0, 100)

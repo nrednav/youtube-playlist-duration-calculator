@@ -366,11 +366,11 @@ const countTotalVideosInPlaylist = () => {
 
   if (!totalVideosStat) return null;
 
-  const totalVideoCount = parseInt(
+  const totalVideosCount = parseInt(
     totalVideosStat.innerText.replace(/\D/g, "")
   );
 
-  return totalVideoCount;
+  return totalVideosCount;
 };
 
 const isDarkMode = () => {
@@ -387,29 +387,6 @@ const isNewDesign = () => {
   return isNewDesign;
 };
 
-/**
- * Sorts a list of videos by their duration
- * @param {Array<Element>} videos
- * @param {"asc" | "desc"} sortOrder
- * @returns {Array<Element>}
- */
-const sortVideosByDuration = (videos, sortOrder) => {
-  return Array.from(videos)
-    .slice(0, 100)
-    .sort((videoA, videoB) => {
-      const timestampA = getTimestampFromVideo(videoA);
-      const timestampB = getTimestampFromVideo(videoB);
-
-      if (sortOrder === "asc") {
-        return timestampA - timestampB;
-      }
-
-      if (sortOrder === "desc") {
-        return timestampB - timestampA;
-      }
-    });
-};
-
 const createSortDropdown = (playlistObserver) => {
   const container = document.createElement("div");
   container.id = "ytpdc-sort-control";
@@ -422,7 +399,7 @@ const createSortDropdown = (playlistObserver) => {
   const group = document.createElement("div");
   group.classList.add("group");
 
-  const sortDropdown = document.createElement("select");
+  const dropdown = document.createElement("select");
 
   const sortOptions = [
     () => {
@@ -445,10 +422,10 @@ const createSortDropdown = (playlistObserver) => {
   ];
 
   sortOptions.forEach((sortOption) => {
-    sortDropdown.appendChild(sortOption());
+    dropdown.appendChild(sortOption());
   });
 
-  sortDropdown.addEventListener("change", (event) => {
+  dropdown.addEventListener("change", (event) => {
     if (event.target.value === "") return;
 
     playlistObserver?.disconnect();
@@ -483,7 +460,7 @@ const createSortDropdown = (playlistObserver) => {
   17 17Z"/>`;
 
   container.appendChild(label);
-  group.appendChild(sortDropdown);
+  group.appendChild(dropdown);
   group.appendChild(caretDownIcon);
   container.appendChild(group);
 
