@@ -134,7 +134,7 @@ const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return;
 
   const playlistObserver = new MutationObserver(() => {
-    pollPlaylistReady();
+    main();
   });
 
   window.ytpdc.playlistObserver = playlistObserver;
@@ -160,12 +160,7 @@ const setupEventListeners = () => {
       window.ytpdc.playlistObserver = null;
     }
 
-    if (
-      window.location.pathname === "/playlist" &&
-      window.location.search.startsWith("?list=")
-    ) {
-      pollPlaylistReady();
-    }
+    main();
   };
 
   document.addEventListener(
@@ -448,4 +443,13 @@ const createSortDropdown = (playlistObserver) => {
   return container;
 };
 
-export { config, getTimestampFromVideo, pollPlaylistReady };
+const main = () => {
+  if (
+    window.location.pathname === "/playlist" &&
+    window.location.search.startsWith("?list=")
+  ) {
+    pollPlaylistReady();
+  }
+};
+
+export { main, config, getTimestampFromVideo };
