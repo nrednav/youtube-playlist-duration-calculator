@@ -14,7 +14,7 @@
     "build:chrome": "pnpm run clean && vite build --mode chrome",
     "build:firefox": "pnpm run clean && vite build --mode firefox",
     "clean": "pnpm exec del dist/",
-    "watch": "vite build --watch --mode development",
+    "watch": "pnpm run clean && vite build --watch --mode development",
     "lint": "eslint .",
     "format": "prettier --ignore-unknown --write",
     "prepare": "husky install"

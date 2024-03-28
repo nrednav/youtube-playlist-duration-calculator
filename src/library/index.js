@@ -65,6 +65,28 @@ const displayLoader = () => {
   }
 };
 
+const displayMessages = (messages) => {
+  const playlistSummary = document.querySelector(
+    isNewDesign()
+      ? config.playlistSummaryContainer.main
+      : config.playlistSummaryContainer.fallback
+  );
+
+  if (playlistSummary) {
+    const container = document.createElement("div");
+    container.id = "messages-container";
+
+    messages.forEach((message) => {
+      const item = document.createElement("p");
+      item.textContent = message;
+      container.appendChild(item);
+    });
+
+    playlistSummary.innerHTML = "";
+    playlistSummary.appendChild(container);
+  }
+};
+
 /**
  * Counts the number of invalid timestamps in a list of video container elements
  * @returns {number}
@@ -133,8 +155,27 @@ const configurePage = () => {
 const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return;
 
-  const playlistObserver = new MutationObserver(() => {
-    main();
+  const playlistObserver = new MutationObserver((mutationList, observer) => {
+    if (mutationList.length === 1 && mutationList[0].type === "childList") {
+      const mutation = mutationList[0];
+
+      if (
+        mutation.addedNodes.length === 0 &&
+        mutation.removedNodes.length === 1 &&
+        mutation.removedNodes[0]?.tagName.toLowerCase() === config.videoElement
+      ) {
+        displayMessages([
+          "Detected a video removal.",
+          "Please reload this page to recalculate the playlist duration."
+        ]);
+        observer.disconnect();
+        return;
+      } else {
+        main();
+      }
+    } else {
+      main();
+    }
   });
 
   window.ytpdc.playlistObserver = playlistObserver;

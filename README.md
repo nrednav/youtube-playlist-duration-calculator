@@ -153,8 +153,10 @@ To verify the extension works, visit any YouTube playlist overview page & verify
 that you see the duration calculated & displayed within the playlist information
 panel located on the left-hand side of the page.
 
-## Issues
+## Issues & Requests
 
-If you wish to request a feature or report a bug, please open an issue by
+If you wish to request a new feature or report a bug, please open an issue by
 clicking
 [here](https://github.com/nrednav/youtube-playlist-duration-calculator/issues/new).
+
+For a list of known issues, please see [KNOWN-ISSUES.md](/docs/KNOWN-ISSUES.md).

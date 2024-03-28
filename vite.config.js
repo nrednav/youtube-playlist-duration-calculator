@@ -26,7 +26,9 @@ export default defineConfig(({ mode }) => {
       })
     ],
     build: {
-      sourcemap: "inline"
+      sourcemap: "inline",
+      outDir: "dist",
+      emptyOutDir: true
     }
   };
 });
