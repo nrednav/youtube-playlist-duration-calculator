@@ -133,7 +133,7 @@ const configurePage = () => {
 const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return;
 
-  const playlistObserver = new MutationObserver((_) => {
+  const playlistObserver = new MutationObserver(() => {
     pollPlaylistReady();
   });
 
