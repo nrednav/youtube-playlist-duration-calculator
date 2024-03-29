@@ -65,6 +65,28 @@ const displayLoader = () => {
   }
 };
 
+const displayMessages = (messages) => {
+  const playlistSummary = document.querySelector(
+    isNewDesign()
+      ? config.playlistSummaryContainer.main
+      : config.playlistSummaryContainer.fallback
+  );
+
+  if (playlistSummary) {
+    const container = document.createElement("div");
+    container.id = "messages-container";
+
+    messages.forEach((message) => {
+      const item = document.createElement("p");
+      item.textContent = message;
+      container.appendChild(item);
+    });
+
+    playlistSummary.innerHTML = "";
+    playlistSummary.appendChild(container);
+  }
+};
+
 /**
  * Counts the number of invalid timestamps in a list of video container elements
  * @returns {number}
@@ -119,34 +141,105 @@ const processPlaylist = () => {
 
 const configurePage = () => {
   if (window.ytpdc) return;
-  window.ytpdc = { playlistObserver: false, setupEventListeners: false };
+  window.ytpdc = {
+    playlistObserver: false,
+    setupEventListeners: false,
+    sortDropdown: {
+      used: false,
+      element: null
+    },
+    lastVideoInteractedWith: null
+  };
 };
 
 /**
-  * Setup a mutation observer on the playlist to detect when video(s) are added
-  * or removed and trigger a re-processing of the playlist
+ * Checks whether enough conditions hold true to request a page reload
+ * when the playlist is mutated
+ * @param {MutationRecord} mutation
+ * @returns {boolean}
+ */
+const shouldRequestPageReload = (mutation) => {
+  return (
+    mutation.addedNodes.length === 0 &&
+    mutation.removedNodes.length === 1 &&
+    mutation.removedNodes[0]?.tagName.toLowerCase() === config.videoElement &&
+    window.ytpdc.sortDropdown.used &&
+    !window.ytpdc.lastVideoInteractedWith
+  );
+};
+
+/**
+ * This function decides when the playlist duration should be recalculated & how
+ * @param {MutationRecord[]} mutationList
+ * @param {MutationObserver} observer
+ * @returns {MutationCallback}
+ */
+const onPlaylistMutated = (mutationList, observer) => {
+  const playlistElement = document.querySelector(config.videoElementsContainer);
+
+  if (mutationList.length === 1 && mutationList[0].type === "childList") {
+    const mutation = mutationList[0];
+
+    if (shouldRequestPageReload(mutation)) {
+      // Problem encountered, request a page reload
+      displayMessages([
+        "Encountered a problem.",
+        "Please reload this page to recalculate the playlist duration."
+      ]);
+      observer.disconnect();
+      return;
+    }
+
+    // No problem encountered, continue processing mutation
+
+    const removedVideo = mutation.removedNodes[0];
+
+    // If the playlist was sorted, YouTube removes the wrong video from the
+    // playlist UI (correct video is removed by the server though)
+    // So the following code re-adds that removed video to the playlist
+    if (
+      removedVideo.querySelector("#video-title").textContent !==
+      window.ytpdc.lastVideoInteractedWith.querySelector("#video-title")
+    ) {
+      if (mutation.previousSibling) {
+        mutation.previousSibling.after(removedVideo);
+      } else if (mutation.nextSibling) {
+        mutation.nextSibling.before(removedVideo);
+      }
+    }
+
+    observer.disconnect();
+    window.ytpdc.lastVideoInteractedWith.remove();
+    observer.observe(playlistElement, { childList: true });
+    main();
+  } else {
+    main();
+  }
+};
+
+/**
+  * Sets up a mutation observer on the playlist to detect when video(s) are
+  * added or removed.
+  * Upon detection it triggers a re-processing of the playlist.
   * @returns {{
       disconnect: () => void,
       reconnect: () => void
     }}
   */
 const setupPlaylistObserver = () => {
-  if (window.ytpdc.playlistObserver) return;
+  if (window.ytpdc.playlistObserver) return window.ytpdc.playlistObserver;
 
-  const playlistObserver = new MutationObserver((_) => {
-    pollPlaylistReady();
-  });
+  const playlistElement = document.querySelector(config.videoElementsContainer);
+  if (!playlistElement) return null;
 
+  const playlistObserver = new MutationObserver(onPlaylistMutated);
+  playlistObserver.observe(playlistElement, { childList: true });
   window.ytpdc.playlistObserver = playlistObserver;
-
-  const targetNode = document.querySelector(config.videoElementsContainer);
-  if (targetNode) {
-    playlistObserver.observe(targetNode, { childList: true });
-  }
 
   return {
     disconnect: () => playlistObserver.disconnect(),
-    reconnect: () => playlistObserver.observe(targetNode, { childList: true })
+    reconnect: () =>
+      playlistObserver.observe(playlistElement, { childList: true })
   };
 };
 
@@ -160,12 +253,7 @@ const setupEventListeners = () => {
       window.ytpdc.playlistObserver = null;
     }
 
-    if (
-      window.location.pathname === "/playlist" &&
-      window.location.search.startsWith("?list=")
-    ) {
-      pollPlaylistReady();
-    }
+    main();
   };
 
   document.addEventListener(
@@ -173,6 +261,16 @@ const setupEventListeners = () => {
     onYoutubeNavigationFinished,
     false
   );
+
+  const onPlaylistInteractedWith = (event) => {
+    window.ytpdc.lastVideoInteractedWith = event.target.closest(
+      config.videoElement
+    );
+  };
+
+  document
+    .querySelector(config.videoElementsContainer)
+    ?.addEventListener("click", onPlaylistInteractedWith);
 };
 
 const getVideos = () => {
@@ -265,8 +363,13 @@ const createPlaylistSummary = ({
   container.appendChild(videosNotCounted);
 
   if (totalVideosInPlaylist <= 100) {
-    const sortDropdown = createSortDropdown(playlistObserver);
-    container.appendChild(sortDropdown);
+    if (window.ytpdc.sortDropdown.element) {
+      container.appendChild(window.ytpdc.sortDropdown.element);
+    } else {
+      const sortDropdown = createSortDropdown(playlistObserver);
+      window.ytpdc.sortDropdown.element = sortDropdown;
+      container.appendChild(sortDropdown);
+    }
   }
 
   if (totalVideosInPlaylist >= 100) {
@@ -407,7 +510,7 @@ const createSortDropdown = (playlistObserver) => {
   });
 
   dropdown.addEventListener("change", (event) => {
-    if (event.target.value === "") return;
+    window.ytpdc.sortDropdown.used = true;
 
     playlistObserver?.disconnect();
 
@@ -448,4 +551,13 @@ const createSortDropdown = (playlistObserver) => {
   return container;
 };
 
-export { config, getTimestampFromVideo, pollPlaylistReady };
+const main = () => {
+  if (
+    window.location.pathname === "/playlist" &&
+    window.location.search.startsWith("?list=")
+  ) {
+    pollPlaylistReady();
+  }
+};
+
+export { main, config, getTimestampFromVideo };

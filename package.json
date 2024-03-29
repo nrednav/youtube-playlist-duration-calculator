@@ -3,7 +3,7 @@
   "description": "An extension to calculate & display the total duration of a youtube playlist.",
   "author": "nrednav",
   "private": true,
-  "version": "2.1.0-beta.4",
+  "version": "2.1.0-beta.5",
   "type": "module",
   "engines": {
     "node": ">=20",
@@ -14,7 +14,7 @@
     "build:chrome": "pnpm run clean && vite build --mode chrome",
     "build:firefox": "pnpm run clean && vite build --mode firefox",
     "clean": "pnpm exec del dist/",
-    "watch": "vite build --watch --mode development",
+    "watch": "pnpm run clean && vite build --watch --mode development",
     "lint": "eslint .",
     "format": "prettier --ignore-unknown --write",
     "prepare": "husky install"

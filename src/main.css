@@ -6,6 +6,13 @@
   align-items: center;
 }
 
+#ytpdc-playlist-summary-new #messages-container,
+#ytpdc-playlist-summary-old #messages-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 4px;
+}
+
 #ytpdc-playlist-summary-new.container,
 #ytpdc-playlist-summary-old.container {
   display: flex;

@@ -117,7 +117,6 @@ class SortByViewsStrategy {
 
         const viewCountA = this.extractViewCount(videoInfoA);
         const viewCountB = this.extractViewCount(videoInfoB);
-        console.log(viewCountA, viewCountB);
 
         if (sortOrder === "asc") {
           return viewCountA - viewCountB;
@@ -140,7 +139,6 @@ class SortByViewsStrategy {
     const [viewCountString] = viewCountElement.textContent
       .toLowerCase()
       .match(viewCountRegex);
-    console.log(viewCountString);
     const suffix = viewCountString.slice(-1);
     const viewCountBase = parseFloat(viewCountString);
 
