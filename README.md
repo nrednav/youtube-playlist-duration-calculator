@@ -159,4 +159,4 @@ If you wish to request a new feature or report a bug, please open an issue by
 clicking
 [here](https://github.com/nrednav/youtube-playlist-duration-calculator/issues/new).
 
-For a list of known issues, please see [KNOWN-ISSUES.md](/docs/KNOWN-ISSUES.md).
+For a list of known issues, please see [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md).
