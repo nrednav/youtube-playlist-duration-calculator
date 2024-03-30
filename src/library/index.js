@@ -5,7 +5,6 @@ import {
 } from "./sorting";
 
 const config = {
-  videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
   statsContainer: {
     main: ".metadata-stats yt-formatted-string",
     fallback: "#stats yt-formatted-string"
@@ -27,7 +26,8 @@ const elementSelectors = {
     old: "ytd-playlist-sidebar-renderer #items",
     new: ".immersive-header-content .metadata-action-bar"
   },
-  video: "ytd-playlist-video-renderer"
+  video: "ytd-playlist-video-renderer",
+  playlist: "ytd-playlist-video-list-renderer #contents"
 };
 
 const pollPlaylistReady = () => {
@@ -175,7 +175,7 @@ const setupPage = () => {
   };
 
   document
-    .querySelector(config.videoElementsContainer)
+    .querySelector(elementSelectors.playlist)
     ?.addEventListener("click", onPlaylistInteractedWith);
 
   window.ytpdc.pageSetupDone = true;
@@ -205,7 +205,7 @@ const shouldRequestPageReload = (mutation) => {
  * @returns {MutationCallback}
  */
 const onPlaylistMutated = (mutationList, observer) => {
-  const playlistElement = document.querySelector(config.videoElementsContainer);
+  const playlistElement = document.querySelector(elementSelectors.playlist);
 
   if (mutationList.length === 1 && mutationList[0].type === "childList") {
     const mutation = mutationList[0];
@@ -259,7 +259,7 @@ const onPlaylistMutated = (mutationList, observer) => {
 const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return window.ytpdc.playlistObserver;
 
-  const playlistElement = document.querySelector(config.videoElementsContainer);
+  const playlistElement = document.querySelector(elementSelectors.playlist);
   if (!playlistElement) return null;
 
   const playlistObserver = new MutationObserver(onPlaylistMutated);
@@ -274,12 +274,8 @@ const setupPlaylistObserver = () => {
 };
 
 const getVideos = () => {
-  const videoElementsContainer = document.querySelector(
-    config.videoElementsContainer
-  );
-  const videos = videoElementsContainer.getElementsByTagName(
-    elementSelectors.video
-  );
+  const playlistElement = document.querySelector(elementSelectors.playlist);
+  const videos = playlistElement.getElementsByTagName(elementSelectors.video);
   return [...videos];
 };
 
@@ -521,20 +517,15 @@ const createSortDropdown = (playlistObserver) => {
 
     playlistObserver?.disconnect();
 
-    const videoElementsContainer = document.querySelector(
-      config.videoElementsContainer
-    );
-
-    const videos = videoElementsContainer.getElementsByTagName(
-      elementSelectors.video
-    );
+    const playlistElement = document.querySelector(elementSelectors.playlist);
+    const videos = playlistElement.getElementsByTagName(elementSelectors.video);
 
     const [sortType, sortOrder] = event.target.value.split(":");
     const SortStrategy = sortTypes[sortType].strategy;
     const playlistSorter = new PlaylistSorter(new SortStrategy(), sortOrder);
     const sortedVideos = playlistSorter.sort(videos);
 
-    videoElementsContainer.replaceChildren(...sortedVideos);
+    playlistElement.replaceChildren(...sortedVideos);
 
     playlistObserver?.reconnect();
   });
