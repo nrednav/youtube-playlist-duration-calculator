@@ -18,16 +18,16 @@ const config = {
   playlistSummaryContainer: {
     main: "#ytpdc-playlist-summary-new",
     fallback: "#ytpdc-playlist-summary-old"
-  },
-  // Design anchor = Element that helps distinguish between old & new layout
-  designAnchor: {
-    old: "ytd-playlist-sidebar-renderer",
-    new: "ytd-playlist-header-renderer"
   }
 };
 
 const elementSelectors = {
-  timestamp: "ytd-thumbnail-overlay-time-status-renderer"
+  timestamp: "ytd-thumbnail-overlay-time-status-renderer",
+  // Design anchor = Element that helps distinguish between old & new layouts
+  designAnchor: {
+    old: "ytd-playlist-sidebar-renderer",
+    new: "ytd-playlist-header-renderer"
+  }
 };
 
 const pollPlaylistReady = () => {
@@ -483,13 +483,12 @@ const isDarkMode = () => {
 };
 
 const isNewDesign = () => {
-  const newDesignAnchor = document.querySelector(config.designAnchor.new);
-  const oldDesignAnchor = document.querySelector(config.designAnchor.old);
+  const designAnchors = {
+    new: document.querySelector(elementSelectors.designAnchor.new),
+    old: document.querySelector(elementSelectors.designAnchor.old)
+  };
 
-  const isNewDesign =
-    newDesignAnchor && oldDesignAnchor.getAttribute("hidden") !== null;
-
-  return isNewDesign;
+  return designAnchors.new && designAnchors.old.getAttribute("hidden") !== null;
 };
 
 const createSortDropdown = (playlistObserver) => {
