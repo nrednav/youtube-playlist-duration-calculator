@@ -1,4 +1,4 @@
-import { config, elementSelectors, getTimestampFromVideo } from "./index";
+import { elementSelectors, getTimestampFromVideo } from "./index";
 
 class PlaylistSorter {
   constructor(strategy, sortOrder) {
@@ -267,7 +267,7 @@ const generateSortTypes = () => ({
  * @returns {boolean}
  */
 const videoHasElement = (identifier) => {
-  const videoElement = document.querySelector(config.videoElement);
+  const videoElement = document.querySelector(elementSelectors.video);
   return videoElement && videoElement.querySelector(identifier);
 };
 

@@ -31,7 +31,8 @@ const elementSelectors = {
   playlistMetadata: {
     old: "ytd-playlist-sidebar-renderer #items",
     new: ".immersive-header-content .metadata-action-bar"
-  }
+  },
+  video: "ytd-playlist-video-renderer"
 };
 
 const pollPlaylistReady = () => {
@@ -174,7 +175,7 @@ const setupPage = () => {
 
   const onPlaylistInteractedWith = (event) => {
     window.ytpdc.lastVideoInteractedWith = event.target.closest(
-      config.videoElement
+      elementSelectors.video
     );
   };
 
@@ -195,7 +196,8 @@ const shouldRequestPageReload = (mutation) => {
   return (
     mutation.addedNodes.length === 0 &&
     mutation.removedNodes.length === 1 &&
-    mutation.removedNodes[0]?.tagName.toLowerCase() === config.videoElement &&
+    mutation.removedNodes[0]?.tagName.toLowerCase() ===
+      elementSelectors.video &&
     window.ytpdc.sortDropdown.used &&
     !window.ytpdc.lastVideoInteractedWith
   );
@@ -281,7 +283,7 @@ const getVideos = () => {
     config.videoElementsContainer
   );
   const videos = videoElementsContainer.getElementsByTagName(
-    config.videoElement
+    elementSelectors.video
   );
   return [...videos];
 };
@@ -529,7 +531,7 @@ const createSortDropdown = (playlistObserver) => {
     );
 
     const videos = videoElementsContainer.getElementsByTagName(
-      config.videoElement
+      elementSelectors.video
     );
 
     const [sortType, sortOrder] = event.target.value.split(":");
@@ -570,4 +572,4 @@ const main = () => {
   }
 };
 
-export { elementSelectors, main, config, getTimestampFromVideo };
+export { elementSelectors, main, getTimestampFromVideo };
