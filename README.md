@@ -159,3 +159,11 @@ panel located on the left-hand side of the page.
 If you wish to request a new feature or report a bug, please open an issue by
 clicking
 [here](https://github.com/nrednav/youtube-playlist-duration-calculator/issues/new).
+
+## Translations
+
+The extension currently only has translations for English & Chinese
+(Simplified).
+
+Additional translations are most welcome! Please see
+[docs/translations.md](./docs/translations.md) for more details.

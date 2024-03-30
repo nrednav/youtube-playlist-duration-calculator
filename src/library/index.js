@@ -59,7 +59,7 @@ const displayLoader = () => {
 
   const loaderElement = document.createElement("div");
   loaderElement.id = "ytpdc-loader";
-  loaderElement.textContent = "Calculating...";
+  loaderElement.textContent = chrome.i18n.getMessage("loaderMessage");
 
   playlistSummaryElement.innerHTML = "";
   playlistSummaryElement.appendChild(loaderElement);
@@ -141,12 +141,12 @@ const convertTimestampToSeconds = (timestamp) => {
 
 const countUnavailableVideos = () => {
   const unavailableVideoTitles = [
-    "[Private video]",
-    "[Deleted video]",
-    "[Unavailable]",
-    "[Video unavailable]",
-    "[Restricted video]",
-    "[Age restricted]"
+    chrome.i18n.getMessage("videoTitle_private"),
+    chrome.i18n.getMessage("videoTitle_deleted"),
+    chrome.i18n.getMessage("videoTitle_unavailable_v1"),
+    chrome.i18n.getMessage("videoTitle_unavailable_v2"),
+    chrome.i18n.getMessage("videoTitle_restricted"),
+    chrome.i18n.getMessage("videoTitle_ageRestricted")
   ];
 
   const videoTitles = document.querySelectorAll(
@@ -263,8 +263,8 @@ const onPlaylistMutated = (mutationList, observer) => {
     if (shouldRequestPageReload(mutation)) {
       // Problem encountered, request a page reload
       displayMessages([
-        "Encountered a problem.",
-        "Please reload this page to recalculate the playlist duration."
+        chrome.i18n.getMessage("problemEncountered_paragraphOne"),
+        chrome.i18n.getMessage("problemEncountered_paragraphTwo")
       ]);
       observer.disconnect();
       return;
@@ -401,14 +401,14 @@ const createPlaylistSummaryElement = ({
   }
 
   const totalDuration = createSummaryItem(
-    "Total duration:",
+    chrome.i18n.getMessage("playlistSummary_totalDuration"),
     `${playlistDuration}`,
     "#86efac"
   );
   containerElement.appendChild(totalDuration);
 
   const videosCounted = createSummaryItem(
-    "Videos counted:",
+    chrome.i18n.getMessage("playlistSummary_videosCounted"),
     `${timestamps.length}`,
     "#fdba74"
   );
@@ -416,7 +416,7 @@ const createPlaylistSummaryElement = ({
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
-    "Videos not counted:",
+    chrome.i18n.getMessage("playlistSummary_videosNotCounted"),
     `${
       totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
     }`,
@@ -451,7 +451,7 @@ const createPlaylistSummaryElement = ({
     tooltipElement.appendChild(iconElement);
 
     const textElement = document.createElement("p");
-    textElement.textContent = "Scroll down to count more videos";
+    textElement.textContent = chrome.i18n.getMessage("playlistSummary_tooltip");
     tooltipElement.appendChild(textElement);
 
     containerElement.appendChild(tooltipElement);
@@ -501,7 +501,7 @@ const createSortDropdown = (playlistObserver) => {
 
   const label = document.createElement("p");
   label.classList.add("label");
-  label.textContent = "Sort by:";
+  label.textContent = chrome.i18n.getMessage("sortDropdown_label");
 
   const group = document.createElement("div");
   group.classList.add("group");

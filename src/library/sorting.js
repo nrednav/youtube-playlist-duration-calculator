@@ -219,32 +219,32 @@ const generateSortTypes = () => ({
   index: {
     enabled: videoHasElement("yt-formatted-string#index"),
     label: {
-      asc: "Index (Ascending)",
-      desc: "Index (Descending)"
+      asc: chrome.i18n.getMessage("sortType_index_label_asc"),
+      desc: chrome.i18n.getMessage("sortType_index_label_desc")
     },
     strategy: SortByIndexStrategy
   },
   duration: {
     enabled: videoHasElement(elementSelectors.timestamp),
     label: {
-      asc: "Duration (Shortest)",
-      desc: "Duration (Longest)"
+      asc: chrome.i18n.getMessage("sortType_duration_label_asc"),
+      desc: chrome.i18n.getMessage("sortType_duration_label_desc")
     },
     strategy: SortByDurationStrategy
   },
   channelName: {
     enabled: videoHasElement(".ytd-channel-name"),
     label: {
-      asc: "Channel Name (A-Z)",
-      desc: "Channel Name (Z-A)"
+      asc: chrome.i18n.getMessage("sortType_channelName_label_asc"),
+      desc: chrome.i18n.getMessage("sortType_channelName_label_desc")
     },
     strategy: SortByChannelNameStrategy
   },
   views: {
     enabled: videoHasElement("yt-formatted-string#video-info"),
     label: {
-      asc: "Views (Least)",
-      desc: "Views (Most)"
+      asc: chrome.i18n.getMessage("sortType_views_label_asc"),
+      desc: chrome.i18n.getMessage("sortType_views_label_desc")
     },
     strategy: SortByViewsStrategy
   },
@@ -253,8 +253,8 @@ const generateSortTypes = () => ({
       videoHasElement("yt-formatted-string#video-info") &&
       !pageHasNativeSortFeature(),
     label: {
-      asc: "Upload Date (Newest)",
-      desc: "Upload Date (Oldest)"
+      asc: chrome.i18n.getMessage("sortType_uploadDate_label_asc"),
+      desc: chrome.i18n.getMessage("sortType_uploadDate_label_desc")
     },
     strategy: SortByUploadDateStrategy
   }
