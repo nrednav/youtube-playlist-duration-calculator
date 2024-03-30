@@ -6,7 +6,7 @@ export class SortByChannelNameStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos).sort((videoA, videoB) => {
+    return [...videos].sort((videoA, videoB) => {
       const channelNameA = videoA.querySelector(".ytd-channel-name").innerText;
       const channelNameB = videoB.querySelector(".ytd-channel-name").innerText;
 

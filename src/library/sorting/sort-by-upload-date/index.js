@@ -7,7 +7,7 @@ export class SortByUploadDateStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos).sort((videoA, videoB) => {
+    return [...videos].sort((videoA, videoB) => {
       const videoInfoA = videoA.querySelector("yt-formatted-string#video-info");
       const videoInfoB = videoB.querySelector("yt-formatted-string#video-info");
 

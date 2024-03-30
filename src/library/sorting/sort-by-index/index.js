@@ -6,7 +6,7 @@ export class SortByIndexStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos).sort((videoA, videoB) => {
+    return [...videos].sort((videoA, videoB) => {
       const indexA = videoA.querySelector(
         "yt-formatted-string#index"
       ).innerText;

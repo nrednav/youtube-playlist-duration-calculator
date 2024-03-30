@@ -8,7 +8,7 @@ export class SortByDurationStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos).sort((videoA, videoB) => {
+    return [...videos].sort((videoA, videoB) => {
       const timestampA = getTimestampFromVideo(videoA);
       const timestampB = getTimestampFromVideo(videoB);
 
