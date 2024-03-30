@@ -26,17 +26,18 @@ The extension is available for download at:
 ## Features
 
 - Calculate & display the total duration of a YouTube playlist
-- Sort playlists containing upto 100 videos, by the following criteria:
+- Sort playlists with 100 videos or less, by the following criteria:
   - Duration
   - Channel Name
   - View Count
-  - Upload Date
   - Index
+  - Upload Date (only for public playlists)
 
-> **Note:** The sorting feature is only enabled for playlists containing 100 videos
-> or less. This is because for larger playlists (>100 videos), YouTube only
-> loads videos in batches of 100 at a time as you scroll down the page and this
-> currently produces inconsistent & inaccurate sorting results.
+> **Note:** The sorting feature is only enabled for playlists containing 100
+> videos or less. This is because for larger playlists (>100 videos), YouTube
+> only loads the next 100 videos after you scroll to the bottom of the page.
+> This can often produce inconsistent & inaccurate sorting results, so it has
+> been disabled for now.
 
 ## Getting Started
 

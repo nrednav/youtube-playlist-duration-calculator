@@ -249,7 +249,9 @@ const generateSortTypes = () => ({
     strategy: SortByViewsStrategy
   },
   uploadDate: {
-    enabled: videoHasElement("yt-formatted-string#video-info"),
+    enabled:
+      videoHasElement("yt-formatted-string#video-info") &&
+      !pageHasNativeSortFeature(),
     label: {
       asc: "Upload Date (Newest)",
       desc: "Upload Date (Oldest)"
@@ -267,6 +269,13 @@ const generateSortTypes = () => ({
 const videoHasElement = (identifier) => {
   const videoElement = document.querySelector(config.videoElement);
   return videoElement && videoElement.querySelector(identifier);
+};
+
+const pageHasNativeSortFeature = () => {
+  const nativeSortElement = document.querySelector(
+    "#filter-menu yt-sort-filter-sub-menu-renderer"
+  );
+  return nativeSortElement !== null;
 };
 
 /**
