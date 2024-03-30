@@ -14,10 +14,6 @@ const config = {
   statsContainer: {
     main: ".metadata-stats yt-formatted-string",
     fallback: "#stats yt-formatted-string"
-  },
-  playlistSummaryContainer: {
-    main: "#ytpdc-playlist-summary-new",
-    fallback: "#ytpdc-playlist-summary-old"
   }
 };
 
@@ -27,6 +23,14 @@ const elementSelectors = {
   designAnchor: {
     old: "ytd-playlist-sidebar-renderer",
     new: "ytd-playlist-header-renderer"
+  },
+  playlistSummary: {
+    old: "#ytpdc-playlist-summary-old",
+    new: "#ytpdc-playlist-summary-new"
+  },
+  playlistMetadata: {
+    old: "ytd-playlist-sidebar-renderer #items",
+    new: ".immersive-header-content .metadata-action-bar"
   }
 };
 
@@ -51,43 +55,43 @@ const pollPlaylistReady = () => {
   }, 1000);
 };
 
-const displayLoader = () => {
-  const playlistSummary = document.querySelector(
-    isNewDesign()
-      ? config.playlistSummaryContainer.main
-      : config.playlistSummaryContainer.fallback
-  );
-
-  if (playlistSummary) {
-    const loader = document.createElement("div");
-    loader.id = "ytpdc-loader";
-    loader.textContent = "Calculating...";
-
-    playlistSummary.innerHTML = "";
-    playlistSummary.appendChild(loader);
-  }
+const getPlaylistSummaryElement = () => {
+  const selector =
+    elementSelectors.playlistSummary[isNewDesign() ? "new" : "old"];
+  return document.querySelector(selector);
 };
 
+const displayLoader = () => {
+  const playlistSummaryElement = getPlaylistSummaryElement();
+  if (!playlistSummaryElement) return;
+
+  const loaderElement = document.createElement("div");
+  loaderElement.id = "ytpdc-loader";
+  loaderElement.textContent = "Calculating...";
+
+  playlistSummaryElement.innerHTML = "";
+  playlistSummaryElement.appendChild(loaderElement);
+};
+
+/**
+ * Display a list of messages within the playlist summary element
+ * @param {string[]} messages
+ */
 const displayMessages = (messages) => {
-  const playlistSummary = document.querySelector(
-    isNewDesign()
-      ? config.playlistSummaryContainer.main
-      : config.playlistSummaryContainer.fallback
-  );
+  const playlistSummaryElement = getPlaylistSummaryElement();
+  if (!playlistSummaryElement) return;
 
-  if (playlistSummary) {
-    const container = document.createElement("div");
-    container.id = "messages-container";
+  const containerElement = document.createElement("div");
+  containerElement.id = "messages-container";
 
-    messages.forEach((message) => {
-      const item = document.createElement("p");
-      item.textContent = message;
-      container.appendChild(item);
-    });
+  messages.forEach((message) => {
+    const messageElement = document.createElement("p");
+    messageElement.textContent = message;
+    containerElement.appendChild(messageElement);
+  });
 
-    playlistSummary.innerHTML = "";
-    playlistSummary.appendChild(container);
-  }
+  playlistSummaryElement.innerHTML = "";
+  playlistSummaryElement.appendChild(containerElement);
 };
 
 /**
@@ -124,9 +128,8 @@ const countUnavailableVideos = () => {
 };
 
 const processPlaylist = () => {
-  configurePage();
+  setupPage();
   const playlistObserver = setupPlaylistObserver();
-  setupEventListeners();
   const videos = getVideos();
   const timestamps = videos.map(getTimestampFromVideo);
   const totalDurationInSeconds =
@@ -134,25 +137,52 @@ const processPlaylist = () => {
       ? timestamps.reduce((a, b) => a + b)
       : 0;
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
-  const playlistSummary = createPlaylistSummary({
+  addPlaylistSummaryToPage({
     timestamps,
     playlistDuration,
     playlistObserver
   });
-  addSummaryToPage(playlistSummary);
 };
 
-const configurePage = () => {
-  if (window.ytpdc) return;
+const setupPage = () => {
+  if (window.ytpdc && window.ytpdc.pageSetupDone) return;
+
   window.ytpdc = {
-    playlistObserver: false,
-    setupEventListeners: false,
+    pageSetupDone: false,
+    playlistObserver: null,
     sortDropdown: {
       used: false,
       element: null
     },
     lastVideoInteractedWith: null
   };
+
+  const onYoutubeNavigationFinished = () => {
+    if (window.ytpdc.playlistObserver) {
+      window.ytpdc.playlistObserver?.disconnect();
+      window.ytpdc.playlistObserver = null;
+    }
+
+    main();
+  };
+
+  document.addEventListener(
+    "yt-navigate-finish",
+    onYoutubeNavigationFinished,
+    false
+  );
+
+  const onPlaylistInteractedWith = (event) => {
+    window.ytpdc.lastVideoInteractedWith = event.target.closest(
+      config.videoElement
+    );
+  };
+
+  document
+    .querySelector(config.videoElementsContainer)
+    ?.addEventListener("click", onPlaylistInteractedWith);
+
+  window.ytpdc.pageSetupDone = true;
 };
 
 /**
@@ -223,7 +253,7 @@ const onPlaylistMutated = (mutationList, observer) => {
 /**
   * Sets up a mutation observer on the playlist to detect when video(s) are
   * added or removed.
-  * Upon detection it triggers a re-processing of the playlist.
+  * Upon detection it conditionally triggers a re-processing of the playlist
   * @returns {{
       disconnect: () => void,
       reconnect: () => void
@@ -244,36 +274,6 @@ const setupPlaylistObserver = () => {
     reconnect: () =>
       playlistObserver.observe(playlistElement, { childList: true })
   };
-};
-
-const setupEventListeners = () => {
-  if (window.ytpdc.setupEventListeners) return;
-  window.ytpdc.setupEventListeners = true;
-
-  const onYoutubeNavigationFinished = () => {
-    if (window.ytpdc.playlistObserver) {
-      window.ytpdc.playlistObserver?.disconnect();
-      window.ytpdc.playlistObserver = null;
-    }
-
-    main();
-  };
-
-  document.addEventListener(
-    "yt-navigate-finish",
-    onYoutubeNavigationFinished,
-    false
-  );
-
-  const onPlaylistInteractedWith = (event) => {
-    window.ytpdc.lastVideoInteractedWith = event.target.closest(
-      config.videoElement
-    );
-  };
-
-  document
-    .querySelector(config.videoElementsContainer)
-    ?.addEventListener("click", onPlaylistInteractedWith);
 };
 
 const getVideos = () => {
@@ -318,26 +318,26 @@ const convertSecondsToTimestamp = (seconds) => {
   return `${hours}:${minutes}:${remainingSeconds}`;
 };
 
-const createPlaylistSummary = ({
+const createPlaylistSummaryElement = ({
   timestamps,
   playlistDuration,
   playlistObserver
 }) => {
-  const container = document.createElement("div");
-  container.id = (
-    isNewDesign()
-      ? config.playlistSummaryContainer.main
-      : config.playlistSummaryContainer.fallback
-  ).replace("#", "");
-  container.classList.add("container");
+  const newDesign = isNewDesign();
+
+  const containerElement = document.createElement("div");
+  containerElement.id = elementSelectors.playlistSummary[
+    newDesign ? "new" : "old"
+  ].replace("#", "");
+  containerElement.classList.add("container");
 
   // Fallback styles for old design
-  if (!isNewDesign()) {
+  if (!newDesign) {
     if (isDarkMode()) {
-      container.style.color = "white";
+      containerElement.style.color = "white";
     } else {
-      container.style.background = "rgba(0,0,0,0.8)";
-      container.style.color = "white";
+      containerElement.style.background = "rgba(0,0,0,0.8)";
+      containerElement.style.color = "white";
     }
   }
 
@@ -346,14 +346,14 @@ const createPlaylistSummary = ({
     `${playlistDuration}`,
     "#86efac"
   );
-  container.appendChild(totalDuration);
+  containerElement.appendChild(totalDuration);
 
   const videosCounted = createSummaryItem(
     "Videos counted:",
     `${timestamps.length}`,
     "#fdba74"
   );
-  container.appendChild(videosCounted);
+  containerElement.appendChild(videosCounted);
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
@@ -363,39 +363,42 @@ const createPlaylistSummary = ({
     }`,
     "#fca5a5"
   );
-  container.appendChild(videosNotCounted);
+  containerElement.appendChild(videosNotCounted);
 
   if (totalVideosInPlaylist <= 100) {
     if (window.ytpdc.sortDropdown.element) {
-      container.appendChild(window.ytpdc.sortDropdown.element);
+      containerElement.appendChild(window.ytpdc.sortDropdown.element);
     } else {
       const sortDropdown = createSortDropdown(playlistObserver);
       window.ytpdc.sortDropdown.element = sortDropdown;
-      container.appendChild(sortDropdown);
+      containerElement.appendChild(sortDropdown);
     }
   }
 
   if (totalVideosInPlaylist >= 100) {
-    const tooltip = document.createElement("div");
-    tooltip.id = "ytpdc-playlist-summary-tooltip";
+    const tooltipElement = document.createElement("div");
+    tooltipElement.id = "ytpdc-playlist-summary-tooltip";
 
-    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    icon.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    icon.setAttribute("viewBox", "0 0 24 24");
-    icon.innerHTML = `<path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1
+    const iconElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    iconElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    iconElement.setAttribute("viewBox", "0 0 24 24");
+    iconElement.innerHTML = `<path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1
     5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0
     2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0
     0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/>`;
-    tooltip.appendChild(icon);
+    tooltipElement.appendChild(iconElement);
 
-    const tooltipText = document.createElement("p");
-    tooltipText.textContent = "Scroll down to count more videos";
-    tooltip.appendChild(tooltipText);
+    const textElement = document.createElement("p");
+    textElement.textContent = "Scroll down to count more videos";
+    tooltipElement.appendChild(textElement);
 
-    container.appendChild(tooltip);
+    containerElement.appendChild(tooltipElement);
   }
 
-  return container;
+  return containerElement;
 };
 
 /**
@@ -441,27 +444,32 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
   return container;
 };
 
-const addSummaryToPage = (summary) => {
-  const newDesign = isNewDesign();
+const addPlaylistSummaryToPage = ({
+  timestamps,
+  playlistDuration,
+  playlistObserver
+}) => {
+  const playlistSummaryElement = createPlaylistSummaryElement({
+    timestamps,
+    playlistDuration,
+    playlistObserver
+  });
 
-  let metadataSection = document.querySelector(
-    newDesign
-      ? config.metadataContainer.main
-      : config.metadataContainer.fallback
-  );
-  if (!metadataSection) return null;
+  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
 
-  const previousSummary = document.querySelector(
-    newDesign
-      ? config.playlistSummaryContainer.main
-      : config.playlistSummaryContainer.fallback
-  );
+  if (existingPlaylistSummaryElement) {
+    existingPlaylistSummaryElement.replaceWith(playlistSummaryElement);
+  } else {
+    const metadataElement = document.querySelector(
+      elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"]
+    );
+    if (!metadataElement) return null;
 
-  if (previousSummary) {
-    previousSummary.parentNode.removeChild(previousSummary);
+    metadataElement.parentElement.insertBefore(
+      playlistSummaryElement,
+      metadataElement.nextElementSibling
+    );
   }
-
-  metadataSection.parentNode.insertBefore(summary, metadataSection.nextSibling);
 };
 
 const countTotalVideosInPlaylist = () => {
