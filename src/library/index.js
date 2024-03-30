@@ -7,7 +7,6 @@ import {
 const config = {
   videoElement: "ytd-playlist-video-renderer",
   videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
-  timestampContainer: "ytd-thumbnail-overlay-time-status-renderer",
   metadataContainer: {
     main: ".immersive-header-content .metadata-action-bar",
     fallback: "ytd-playlist-sidebar-renderer #items"
@@ -27,6 +26,10 @@ const config = {
   }
 };
 
+const elementSelectors = {
+  timestamp: "ytd-thumbnail-overlay-time-status-renderer"
+};
+
 const pollPlaylistReady = () => {
   displayLoader();
 
@@ -37,7 +40,7 @@ const pollPlaylistReady = () => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
     if (
-      document.querySelector(config.timestampContainer) &&
+      document.querySelector(elementSelectors.timestamp) &&
       countUnavailableTimestamps() === countUnavailableVideos()
     ) {
       clearInterval(playlistPoll);
@@ -291,14 +294,14 @@ const getVideos = () => {
 const getTimestampFromVideo = (video) => {
   if (!video) return null;
 
-  const timestampContainer = video.querySelector(config.timestampContainer);
-  if (!timestampContainer) return null;
+  const timestampElement = video.querySelector(elementSelectors.timestamp);
+  if (!timestampElement) return null;
 
-  const timestamp = timestampContainer.innerText;
+  const timestamp = timestampElement.innerText;
   if (!timestamp) return null;
 
-  const timestampInSeconds = convertTimestampToSeconds(timestamp);
-  return timestampInSeconds;
+  const timestampAsSeconds = convertTimestampToSeconds(timestamp);
+  return timestampAsSeconds;
 };
 
 /**
@@ -560,4 +563,4 @@ const main = () => {
   }
 };
 
-export { main, config, getTimestampFromVideo };
+export { elementSelectors, main, config, getTimestampFromVideo };
