@@ -162,8 +162,7 @@ clicking
 
 ## Translations
 
-The extension currently only has translations for English & Chinese
-(Simplified).
+At present, the extension only has translations for the `en` & `zh_CN` locales.
 
 Additional translations are most welcome! Please see
 [docs/translations.md](./docs/translations.md) for more details.
