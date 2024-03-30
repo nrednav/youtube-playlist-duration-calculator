@@ -4,13 +4,6 @@ import {
   generateSortTypes
 } from "./sorting";
 
-const config = {
-  statsContainer: {
-    main: ".metadata-stats yt-formatted-string",
-    fallback: "#stats yt-formatted-string"
-  }
-};
-
 const elementSelectors = {
   timestamp: "ytd-thumbnail-overlay-time-status-renderer",
   // Design anchor = Element that helps distinguish between old & new layouts
@@ -466,17 +459,15 @@ const addPlaylistSummaryToPage = ({
 };
 
 const countTotalVideosInPlaylist = () => {
-  const totalVideosStat = document.querySelector(
-    isNewDesign() ? config.statsContainer.main : config.statsContainer.fallback
+  const statsElement = document.querySelector(
+    isNewDesign()
+      ? ".metadata-stats yt-formatted-string"
+      : "#stats yt-formatted-string"
   );
 
-  if (!totalVideosStat) return null;
+  if (!statsElement) return null;
 
-  const totalVideosCount = parseInt(
-    totalVideosStat.innerText.replace(/\D/g, "")
-  );
-
-  return totalVideosCount;
+  return parseInt(statsElement.innerText.replace(/\D/g, ""));
 };
 
 const isDarkMode = () => {
