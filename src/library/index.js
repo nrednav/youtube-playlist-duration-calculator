@@ -5,12 +5,7 @@ import {
 } from "./sorting";
 
 const config = {
-  videoElement: "ytd-playlist-video-renderer",
   videoElementsContainer: "ytd-playlist-video-list-renderer #contents",
-  metadataContainer: {
-    main: ".immersive-header-content .metadata-action-bar",
-    fallback: "ytd-playlist-sidebar-renderer #items"
-  },
   statsContainer: {
     main: ".metadata-stats yt-formatted-string",
     fallback: "#stats yt-formatted-string"
