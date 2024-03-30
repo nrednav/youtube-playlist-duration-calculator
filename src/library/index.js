@@ -277,7 +277,7 @@ const getVideos = () => {
 /**
  * Extracts a timestamp from a video container element
  * @param {Element} video
- * @returns {string}
+ * @returns {number}
  */
 const getTimestampFromVideo = (video) => {
   if (!video) return null;
