@@ -13,7 +13,7 @@ translations for the extension.
 
 - Download the project repository as a ZIP file
 - Extract it to a folder
-- Within the extracted folder, navigate to the `_locales` folder
+- Within the extracted folder, navigate into the `public/_locales` folder
 - Make a copy of the `en` folder
 - Rename the copy to `<locale-code>`
   - `<locale-code>` should be replaced with the locale code for the translations
