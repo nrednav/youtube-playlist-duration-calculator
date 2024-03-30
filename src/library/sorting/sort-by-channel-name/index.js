@@ -6,21 +6,17 @@ export class SortByChannelNameStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos)
-      .slice(0, 100)
-      .sort((videoA, videoB) => {
-        const channelNameA =
-          videoA.querySelector(".ytd-channel-name").innerText;
-        const channelNameB =
-          videoB.querySelector(".ytd-channel-name").innerText;
+    return Array.from(videos).sort((videoA, videoB) => {
+      const channelNameA = videoA.querySelector(".ytd-channel-name").innerText;
+      const channelNameB = videoB.querySelector(".ytd-channel-name").innerText;
 
-        if (sortOrder === "asc") {
-          return channelNameA.localeCompare(channelNameB);
-        }
+      if (sortOrder === "asc") {
+        return channelNameA.localeCompare(channelNameB);
+      }
 
-        if (sortOrder === "desc") {
-          return channelNameB.localeCompare(channelNameA);
-        }
-      });
+      if (sortOrder === "desc") {
+        return channelNameB.localeCompare(channelNameA);
+      }
+    });
   }
 }

@@ -8,19 +8,17 @@ export class SortByDurationStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos)
-      .slice(0, 100)
-      .sort((videoA, videoB) => {
-        const timestampA = getTimestampFromVideo(videoA);
-        const timestampB = getTimestampFromVideo(videoB);
+    return Array.from(videos).sort((videoA, videoB) => {
+      const timestampA = getTimestampFromVideo(videoA);
+      const timestampB = getTimestampFromVideo(videoB);
 
-        if (sortOrder === "asc") {
-          return timestampA - timestampB;
-        }
+      if (sortOrder === "asc") {
+        return timestampA - timestampB;
+      }
 
-        if (sortOrder === "desc") {
-          return timestampB - timestampA;
-        }
-      });
+      if (sortOrder === "desc") {
+        return timestampB - timestampA;
+      }
+    });
   }
 }

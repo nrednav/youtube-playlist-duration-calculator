@@ -6,23 +6,21 @@ export class SortByIndexStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos)
-      .slice(0, 100)
-      .sort((videoA, videoB) => {
-        const indexA = videoA.querySelector(
-          "yt-formatted-string#index"
-        ).innerText;
-        const indexB = videoB.querySelector(
-          "yt-formatted-string#index"
-        ).innerText;
+    return Array.from(videos).sort((videoA, videoB) => {
+      const indexA = videoA.querySelector(
+        "yt-formatted-string#index"
+      ).innerText;
+      const indexB = videoB.querySelector(
+        "yt-formatted-string#index"
+      ).innerText;
 
-        if (sortOrder === "asc") {
-          return Number(indexA) - Number(indexB);
-        }
+      if (sortOrder === "asc") {
+        return Number(indexA) - Number(indexB);
+      }
 
-        if (sortOrder === "desc") {
-          return Number(indexB) - Number(indexA);
-        }
-      });
+      if (sortOrder === "desc") {
+        return Number(indexB) - Number(indexA);
+      }
+    });
   }
 }

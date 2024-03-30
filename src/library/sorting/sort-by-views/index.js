@@ -11,27 +11,21 @@ export class SortByViewsStrategy {
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
-    return Array.from(videos)
-      .slice(0, 100)
-      .sort((videoA, videoB) => {
-        const videoInfoA = videoA.querySelector(
-          "yt-formatted-string#video-info"
-        );
-        const videoInfoB = videoB.querySelector(
-          "yt-formatted-string#video-info"
-        );
+    return Array.from(videos).sort((videoA, videoB) => {
+      const videoInfoA = videoA.querySelector("yt-formatted-string#video-info");
+      const videoInfoB = videoB.querySelector("yt-formatted-string#video-info");
 
-        const viewCountA = this.extractViews(videoInfoA);
-        const viewCountB = this.extractViews(videoInfoB);
+      const viewCountA = this.extractViews(videoInfoA);
+      const viewCountB = this.extractViews(videoInfoB);
 
-        if (sortOrder === "asc") {
-          return viewCountA - viewCountB;
-        }
+      if (sortOrder === "asc") {
+        return viewCountA - viewCountB;
+      }
 
-        if (sortOrder === "desc") {
-          return viewCountB - viewCountA;
-        }
-      });
+      if (sortOrder === "desc") {
+        return viewCountB - viewCountA;
+      }
+    });
   }
 
   /**

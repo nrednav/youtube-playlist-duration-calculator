@@ -525,7 +525,7 @@ const createSortDropdown = (playlistObserver) => {
     const [sortType, sortOrder] = event.target.value.split(":");
     const SortStrategy = sortTypes[sortType].strategy;
     const playlistSorter = new PlaylistSorter(new SortStrategy(), sortOrder);
-    const sortedVideos = playlistSorter.sort(videos);
+    const sortedVideos = playlistSorter.sort([...videos].slice(0, 100));
 
     playlistElement.replaceChildren(...sortedVideos);
 
