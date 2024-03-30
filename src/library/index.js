@@ -23,6 +23,15 @@ const elementSelectors = {
   playlist: "ytd-playlist-video-list-renderer #contents"
 };
 
+const main = () => {
+  if (
+    window.location.pathname === "/playlist" &&
+    window.location.search.startsWith("?list=")
+  ) {
+    checkPlaylistReady();
+  }
+};
+
 const checkPlaylistReady = () => {
   displayLoader();
 
@@ -44,12 +53,6 @@ const checkPlaylistReady = () => {
   }, 1000);
 };
 
-const getPlaylistSummaryElement = () => {
-  const selector =
-    elementSelectors.playlistSummary[isNewDesign() ? "new" : "old"];
-  return document.querySelector(selector);
-};
-
 const displayLoader = () => {
   const playlistSummaryElement = getPlaylistSummaryElement();
   if (!playlistSummaryElement) return;
@@ -62,25 +65,19 @@ const displayLoader = () => {
   playlistSummaryElement.appendChild(loaderElement);
 };
 
-/**
- * Display a list of messages within the playlist summary element
- * @param {string[]} messages
- */
-const displayMessages = (messages) => {
-  const playlistSummaryElement = getPlaylistSummaryElement();
-  if (!playlistSummaryElement) return;
+const getPlaylistSummaryElement = () => {
+  const selector =
+    elementSelectors.playlistSummary[isNewDesign() ? "new" : "old"];
+  return document.querySelector(selector);
+};
 
-  const containerElement = document.createElement("div");
-  containerElement.id = "messages-container";
+const isNewDesign = () => {
+  const designAnchors = {
+    new: document.querySelector(elementSelectors.designAnchor.new),
+    old: document.querySelector(elementSelectors.designAnchor.old)
+  };
 
-  messages.forEach((message) => {
-    const messageElement = document.createElement("p");
-    messageElement.textContent = message;
-    containerElement.appendChild(messageElement);
-  });
-
-  playlistSummaryElement.innerHTML = "";
-  playlistSummaryElement.appendChild(containerElement);
+  return designAnchors.new && designAnchors.old.getAttribute("hidden") !== null;
 };
 
 /**
@@ -91,6 +88,55 @@ const countUnavailableTimestamps = () => {
   return getVideos()
     .map(getTimestampFromVideo)
     .filter((timestamp) => timestamp === null).length;
+};
+
+const getVideos = () => {
+  const playlistElement = document.querySelector(elementSelectors.playlist);
+  const videos = playlistElement.getElementsByTagName(elementSelectors.video);
+  return [...videos];
+};
+
+/**
+ * Extracts a timestamp from a video container element
+ * @param {Element} video
+ * @returns {number}
+ */
+const getTimestampFromVideo = (video) => {
+  if (!video) return null;
+
+  const timestampElement = video.querySelector(elementSelectors.timestamp);
+  if (!timestampElement) return null;
+
+  const timestamp = timestampElement.innerText;
+  if (!timestamp) return null;
+
+  const timestampAsSeconds = convertTimestampToSeconds(timestamp);
+  return timestampAsSeconds;
+};
+
+/**
+ * Converts a textual timestamp formatted as hh:mm:ss to its numerical value
+ * represented in seconds
+ * @param {string} timestamp
+ * @returns {number}
+ */
+const convertTimestampToSeconds = (timestamp) => {
+  let timeComponents = timestamp
+    .split(":")
+    .map((timeComponent) => parseInt(timeComponent, 10));
+
+  let seconds = 0;
+  let minutes = 1;
+
+  while (timeComponents.length > 0) {
+    let timeComponent = timeComponents.pop();
+    if (isNaN(timeComponent)) continue;
+
+    seconds += minutes * timeComponent;
+    minutes *= 60;
+  }
+
+  return seconds;
 };
 
 const countUnavailableVideos = () => {
@@ -177,20 +223,29 @@ const setupPage = () => {
 };
 
 /**
- * Checks whether enough conditions hold true to request a page reload
- * when the playlist is mutated
- * @param {MutationRecord} mutation
- * @returns {boolean}
- */
-const shouldRequestPageReload = (mutation) => {
-  return (
-    mutation.addedNodes.length === 0 &&
-    mutation.removedNodes.length === 1 &&
-    mutation.removedNodes[0]?.tagName.toLowerCase() ===
-      elementSelectors.video &&
-    window.ytpdc.sortDropdown.used &&
-    !window.ytpdc.lastVideoInteractedWith
-  );
+  * Sets up a mutation observer on the playlist to detect when video(s) are
+  * added or removed.
+  * Upon detection it conditionally triggers a re-processing of the playlist
+  * @returns {{
+      disconnect: () => void,
+      reconnect: () => void
+    }}
+  */
+const setupPlaylistObserver = () => {
+  if (window.ytpdc.playlistObserver) return window.ytpdc.playlistObserver;
+
+  const playlistElement = document.querySelector(elementSelectors.playlist);
+  if (!playlistElement) return null;
+
+  const playlistObserver = new MutationObserver(onPlaylistMutated);
+  playlistObserver.observe(playlistElement, { childList: true });
+  window.ytpdc.playlistObserver = playlistObserver;
+
+  return {
+    disconnect: () => playlistObserver.disconnect(),
+    reconnect: () =>
+      playlistObserver.observe(playlistElement, { childList: true })
+  };
 };
 
 /**
@@ -243,53 +298,41 @@ const onPlaylistMutated = (mutationList, observer) => {
 };
 
 /**
-  * Sets up a mutation observer on the playlist to detect when video(s) are
-  * added or removed.
-  * Upon detection it conditionally triggers a re-processing of the playlist
-  * @returns {{
-      disconnect: () => void,
-      reconnect: () => void
-    }}
-  */
-const setupPlaylistObserver = () => {
-  if (window.ytpdc.playlistObserver) return window.ytpdc.playlistObserver;
-
-  const playlistElement = document.querySelector(elementSelectors.playlist);
-  if (!playlistElement) return null;
-
-  const playlistObserver = new MutationObserver(onPlaylistMutated);
-  playlistObserver.observe(playlistElement, { childList: true });
-  window.ytpdc.playlistObserver = playlistObserver;
-
-  return {
-    disconnect: () => playlistObserver.disconnect(),
-    reconnect: () =>
-      playlistObserver.observe(playlistElement, { childList: true })
-  };
-};
-
-const getVideos = () => {
-  const playlistElement = document.querySelector(elementSelectors.playlist);
-  const videos = playlistElement.getElementsByTagName(elementSelectors.video);
-  return [...videos];
+ * Checks whether enough conditions hold true to request a page reload
+ * when the playlist is mutated
+ * @param {MutationRecord} mutation
+ * @returns {boolean}
+ */
+const shouldRequestPageReload = (mutation) => {
+  return (
+    mutation.addedNodes.length === 0 &&
+    mutation.removedNodes.length === 1 &&
+    mutation.removedNodes[0]?.tagName.toLowerCase() ===
+      elementSelectors.video &&
+    window.ytpdc.sortDropdown.used &&
+    !window.ytpdc.lastVideoInteractedWith
+  );
 };
 
 /**
- * Extracts a timestamp from a video container element
- * @param {Element} video
- * @returns {number}
+ * Display a list of messages within the playlist summary element
+ * @param {string[]} messages
  */
-const getTimestampFromVideo = (video) => {
-  if (!video) return null;
+const displayMessages = (messages) => {
+  const playlistSummaryElement = getPlaylistSummaryElement();
+  if (!playlistSummaryElement) return;
 
-  const timestampElement = video.querySelector(elementSelectors.timestamp);
-  if (!timestampElement) return null;
+  const containerElement = document.createElement("div");
+  containerElement.id = "messages-container";
 
-  const timestamp = timestampElement.innerText;
-  if (!timestamp) return null;
+  messages.forEach((message) => {
+    const messageElement = document.createElement("p");
+    messageElement.textContent = message;
+    containerElement.appendChild(messageElement);
+  });
 
-  const timestampAsSeconds = convertTimestampToSeconds(timestamp);
-  return timestampAsSeconds;
+  playlistSummaryElement.innerHTML = "";
+  playlistSummaryElement.appendChild(containerElement);
 };
 
 /**
@@ -304,6 +347,34 @@ const convertSecondsToTimestamp = (seconds) => {
   const minutes = `${Math.floor(seconds / 60)}`.padStart(2, "0");
   const remainingSeconds = `${seconds % 60}`.padStart(2, "0");
   return `${hours}:${minutes}:${remainingSeconds}`;
+};
+
+const addPlaylistSummaryToPage = ({
+  timestamps,
+  playlistDuration,
+  playlistObserver
+}) => {
+  const playlistSummaryElement = createPlaylistSummaryElement({
+    timestamps,
+    playlistDuration,
+    playlistObserver
+  });
+
+  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
+
+  if (existingPlaylistSummaryElement) {
+    existingPlaylistSummaryElement.replaceWith(playlistSummaryElement);
+  } else {
+    const metadataElement = document.querySelector(
+      elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"]
+    );
+    if (!metadataElement) return null;
+
+    metadataElement.parentElement.insertBefore(
+      playlistSummaryElement,
+      metadataElement.nextElementSibling
+    );
+  }
 };
 
 const createPlaylistSummaryElement = ({
@@ -389,29 +460,8 @@ const createPlaylistSummaryElement = ({
   return containerElement;
 };
 
-/**
- * Converts a textual timestamp formatted as hh:mm:ss to its numerical value
- * represented in seconds
- * @param {string} timestamp
- * @returns {number}
- */
-const convertTimestampToSeconds = (timestamp) => {
-  let timeComponents = timestamp
-    .split(":")
-    .map((timeComponent) => parseInt(timeComponent, 10));
-
-  let seconds = 0;
-  let minutes = 1;
-
-  while (timeComponents.length > 0) {
-    let timeComponent = timeComponents.pop();
-    if (isNaN(timeComponent)) continue;
-
-    seconds += minutes * timeComponent;
-    minutes *= 60;
-  }
-
-  return seconds;
+const isDarkMode = () => {
+  return document.documentElement.getAttribute("dark") !== null;
 };
 
 const createSummaryItem = (label, value, valueColor = "#facc15") => {
@@ -432,34 +482,6 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
   return container;
 };
 
-const addPlaylistSummaryToPage = ({
-  timestamps,
-  playlistDuration,
-  playlistObserver
-}) => {
-  const playlistSummaryElement = createPlaylistSummaryElement({
-    timestamps,
-    playlistDuration,
-    playlistObserver
-  });
-
-  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
-
-  if (existingPlaylistSummaryElement) {
-    existingPlaylistSummaryElement.replaceWith(playlistSummaryElement);
-  } else {
-    const metadataElement = document.querySelector(
-      elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"]
-    );
-    if (!metadataElement) return null;
-
-    metadataElement.parentElement.insertBefore(
-      playlistSummaryElement,
-      metadataElement.nextElementSibling
-    );
-  }
-};
-
 const countTotalVideosInPlaylist = () => {
   const statsElement = document.querySelector(
     isNewDesign()
@@ -470,19 +492,6 @@ const countTotalVideosInPlaylist = () => {
   if (!statsElement) return null;
 
   return parseInt(statsElement.innerText.replace(/\D/g, ""));
-};
-
-const isDarkMode = () => {
-  return document.documentElement.getAttribute("dark") !== null;
-};
-
-const isNewDesign = () => {
-  const designAnchors = {
-    new: document.querySelector(elementSelectors.designAnchor.new),
-    old: document.querySelector(elementSelectors.designAnchor.old)
-  };
-
-  return designAnchors.new && designAnchors.old.getAttribute("hidden") !== null;
 };
 
 const createSortDropdown = (playlistObserver) => {
@@ -540,15 +549,6 @@ const createSortDropdown = (playlistObserver) => {
   container.appendChild(group);
 
   return container;
-};
-
-const main = () => {
-  if (
-    window.location.pathname === "/playlist" &&
-    window.location.search.startsWith("?list=")
-  ) {
-    checkPlaylistReady();
-  }
 };
 
 export { elementSelectors, main, getTimestampFromVideo };
