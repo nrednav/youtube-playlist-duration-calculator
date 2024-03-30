@@ -298,8 +298,8 @@ const onPlaylistMutated = (mutationList, observer) => {
 };
 
 /**
- * Checks whether enough conditions hold true to request a page reload
- * when the playlist is mutated
+ * Checks whether enough conditions hold true when the playlist is mutated
+ * to request a page reload
  * @param {MutationRecord} mutation
  * @returns {boolean}
  */
