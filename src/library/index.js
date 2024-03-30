@@ -103,7 +103,9 @@ const countUnavailableVideos = () => {
     "[Age restricted]"
   ];
 
-  const videoTitles = document.querySelectorAll("a#video-title");
+  const videoTitles = document.querySelectorAll(
+    `${elementSelectors.playlist} #video-title`
+  );
 
   let unavailableVideosCount = 0;
 
