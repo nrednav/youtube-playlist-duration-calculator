@@ -29,9 +29,10 @@ The extension is available for download at:
 - Sort playlists with 100 videos or less, by the following criteria:
   - Duration
   - Channel Name
-  - View Count
   - Index
-  - Upload Date (only for public playlists)
+  - Views (only for some locales)
+  - Upload Date (only for public playlists & some locales)
+- Internationalization (i18n) support
 
 > **Note:** The sorting feature is only enabled for playlists containing 100
 > videos or less. This is because for larger playlists (>100 videos), YouTube
