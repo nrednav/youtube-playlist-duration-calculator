@@ -23,7 +23,7 @@ const elementSelectors = {
   playlist: "ytd-playlist-video-list-renderer #contents"
 };
 
-const pollPlaylistReady = () => {
+const checkPlaylistReady = () => {
   displayLoader();
 
   const maxPollCount = 60;
@@ -547,7 +547,7 @@ const main = () => {
     window.location.pathname === "/playlist" &&
     window.location.search.startsWith("?list=")
   ) {
-    pollPlaylistReady();
+    checkPlaylistReady();
   }
 };
 
