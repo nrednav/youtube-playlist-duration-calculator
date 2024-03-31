@@ -507,10 +507,8 @@ const createSortDropdown = (playlistObserver) => {
   group.classList.add("group");
 
   const dropdown = document.createElement("select");
-  const sortTypes = generateSortTypes();
-  const sortOptions = generateSortOptions(sortTypes);
 
-  sortOptions.forEach((sortOption) => {
+  PlaylistSorter.getSortOptions().forEach((sortOption) => {
     dropdown.appendChild(sortOption);
   });
 
@@ -522,9 +520,7 @@ const createSortDropdown = (playlistObserver) => {
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const videos = playlistElement.getElementsByTagName(elementSelectors.video);
 
-    const [sortType, sortOrder] = event.target.value.split(":");
-    const SortStrategy = sortTypes[sortType].strategy;
-    const playlistSorter = new PlaylistSorter(new SortStrategy(), sortOrder);
+    const playlistSorter = new PlaylistSorter(event.target.value);
     const sortedVideos = playlistSorter.sort([...videos].slice(0, 100));
 
     playlistElement.replaceChildren(...sortedVideos);
