@@ -1,5 +1,8 @@
+import { EnUploadDateParser } from "./parsers/en";
+import { ZhCnUploadDateParser } from "./parsers/zh_CN";
+
 export class SortByUploadDateStrategy {
-  static supportedLocales = ["en", "en-AU", "en-GB", "en-US"];
+  static supportedLocales = ["en", "en-AU", "en-GB", "en-US", "zh-CN"];
   /**
    * Sorts a list of videos by their upload date
    * @param {Array<Element>} videos
@@ -11,8 +14,8 @@ export class SortByUploadDateStrategy {
       const videoInfoA = videoA.querySelector("yt-formatted-string#video-info");
       const videoInfoB = videoB.querySelector("yt-formatted-string#video-info");
 
-      const secondsA = this.extractUploadDateAsSeconds(videoInfoA);
-      const secondsB = this.extractUploadDateAsSeconds(videoInfoB);
+      const secondsA = this.parseUploadDate(videoInfoA);
+      const secondsB = this.parseUploadDate(videoInfoB);
 
       if (sortOrder === "asc") {
         return secondsA - secondsB;
@@ -25,25 +28,48 @@ export class SortByUploadDateStrategy {
   }
 
   /**
-   * Extracts the upload date as seconds from a video info element
+   * Extracts the upload date from the video info element & parses it as seconds
    * @param {Element} videoInfo
    * @returns {number}
    */
-  extractUploadDateAsSeconds(videoInfo) {
-    const secondsByUnit = {
-      day: 1 * 86400,
-      week: 7 * 86400,
-      month: 30 * 86400,
-      year: 365 * 86400
-    };
+  parseUploadDate(videoInfo) {
+    const context = new UploadDateParserContext();
+    context.setParser(chrome.i18n.getUILanguage());
+    return context.parse(videoInfo);
+  }
+}
 
-    const uploadDateElement = videoInfo.children[2];
-    const uploadDateRegex = /(\d+) (\w+) ago/;
-    const [value, unit] = uploadDateElement.textContent
-      .toLowerCase()
-      .match(uploadDateRegex)
-      .slice(1);
-    const normalizedUnit = unit.endsWith("s") ? unit.slice(0, -1) : unit;
-    return parseFloat(value) * secondsByUnit[normalizedUnit];
+export class UploadDateParserContext {
+  constructor() {
+    this.parser = null;
+  }
+
+  /** @param {string} locale */
+  setParser(locale) {
+    switch (locale) {
+      case "en":
+      case "en-AU":
+      case "en-GB":
+      case "en-US":
+        this.parser = new EnUploadDateParser();
+        break;
+      case "zh-CN":
+        this.parser = new ZhCnUploadDateParser();
+        break;
+      default:
+        throw new Error("Unsupported locale for parsing upload dates");
+    }
+  }
+
+  /**
+   * Parses the upload date found within the video info element and returns its
+   * numerical value as seconds
+   * @param {Element} videoInfo
+   */
+  parse(videoInfo) {
+    if (!this.parser) {
+      throw new Error("No upload date parser defined");
+    }
+    return this.parser.parse(videoInfo);
   }
 }
