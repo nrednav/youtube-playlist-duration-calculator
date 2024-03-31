@@ -1,6 +1,4 @@
-import { ViewsParser } from "./base";
-
-export class EnViewsParser extends ViewsParser {
+export class EnViewsParser {
   /** @param {Element} videoInfo */
   parse(videoInfo) {
     const viewsElement = videoInfo.firstElementChild;

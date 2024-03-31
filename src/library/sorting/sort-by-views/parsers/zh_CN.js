@@ -1,6 +1,4 @@
-import { ViewsParser } from "./base";
-
-export class ZhCnViewsParser extends ViewsParser {
+export class ZhCnViewsParser {
   /** @param {Element} videoInfo */
   parse(videoInfo) {
     const viewsElement = videoInfo.firstElementChild;
