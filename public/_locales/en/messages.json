@@ -88,11 +88,11 @@
     "description": "Text to display for the descending 'sort by views' option"
   },
   "sortType_uploadDate_label_asc": {
-    "message": "Upload Date (Newest)",
+    "message": "Upload Date (Latest)",
     "description": "Text to display for the ascending 'sort by upload date' option"
   },
   "sortType_uploadDate_label_desc": {
-    "message": "Upload Date (Oldest)",
+    "message": "Upload Date (Earliest)",
     "description": "Text to display for the descending 'sort by upload date' option"
   }
 }
