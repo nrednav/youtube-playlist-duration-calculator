@@ -16,6 +16,8 @@ This document describes the process involved in testing the extension.
     - https://www.youtube.com/playlist?list=WL
   - Liked Videos
     - https://www.youtube.com/playlist?list=LL
+- Has unavailable videos
+  - https://www.youtube.com/playlist?list=PL3HWFB6aFvWBXGsbVJhJJK1ykcqlVz5lI
 
 ## Pre-requisites
 
@@ -43,7 +45,7 @@ This document describes the process involved in testing the extension.
         - Duration (Shortest/Longest)
         - Channel Name (A-Z/Z-A)
         - Views (Most/Least)
-        - (For public playlists only) Upload Date (Oldest/Newest)
+        - (For public playlists only) Upload Date (Earliest/Latest)
       - Clicking on a sort criterion updates the order of videos in the playlist
     - For playlists with more than 100 videos
       - Scrolling to the bottom updates the summary section to display the text
