@@ -1,4 +1,4 @@
-import { elementSelectors } from "../..";
+import { elementSelectors } from "src/shared/data/element-selectors";
 
 export class SortByIndexStrategy {
   /**

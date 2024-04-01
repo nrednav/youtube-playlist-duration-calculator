@@ -33,6 +33,11 @@ export default defineConfig(({ mode }) => {
       sourcemap: "inline",
       outDir: "dist",
       emptyOutDir: true
+    },
+    resolve: {
+      alias: {
+        src: "/src"
+      }
     }
   };
 });

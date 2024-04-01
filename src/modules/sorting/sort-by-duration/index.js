@@ -1,4 +1,4 @@
-import { getTimestampFromVideo } from "../..";
+import { getTimestampFromVideo } from "src/shared/modules/timestamp";
 
 export class SortByDurationStrategy {
   /**

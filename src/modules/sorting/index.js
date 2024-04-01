@@ -1,11 +1,11 @@
-import { elementSelectors } from "../index";
+import { elementSelectors } from "src/shared/data/element-selectors";
 import { SortByChannelNameStrategy } from "./sort-by-channel-name";
 import { SortByDurationStrategy } from "./sort-by-duration";
 import { SortByIndexStrategy } from "./sort-by-index";
 import { SortByUploadDateStrategy } from "./sort-by-upload-date";
 import { SortByViewsStrategy } from "./sort-by-views";
 
-class PlaylistSorter {
+export class PlaylistSorter {
   /**
    * @param {string} key Format "<sort-type>:<sort-order>"
    */
@@ -119,5 +119,3 @@ const pageHasNativeSortFeature = () => {
   );
   return nativeSortElement !== null;
 };
-
-export { PlaylistSorter };

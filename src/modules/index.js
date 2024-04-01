@@ -1,31 +1,9 @@
-import { PlaylistSorter } from "./sorting";
-
-const elementSelectors = {
-  timestamp: "ytd-thumbnail-overlay-time-status-renderer",
-  // Design anchor = Element that helps distinguish between old & new layouts
-  designAnchor: {
-    old: "ytd-playlist-sidebar-renderer",
-    new: "ytd-playlist-header-renderer"
-  },
-  playlistSummary: {
-    old: "#ytpdc-playlist-summary-old",
-    new: "#ytpdc-playlist-summary-new"
-  },
-  playlistMetadata: {
-    old: "ytd-playlist-sidebar-renderer #items",
-    new: ".immersive-header-content .metadata-action-bar"
-  },
-  video: "ytd-playlist-video-renderer",
-  playlist: "ytd-playlist-video-list-renderer #contents",
-  channelName: ".ytd-channel-name",
-  videoTitle: "#video-title",
-  videoIndex: "yt-formatted-string#index",
-  videoInfo: "yt-formatted-string#video-info",
-  stats: {
-    old: ".metadata-stats yt-formatted-string",
-    new: "#stats yt-formatted-string"
-  }
-};
+import { elementSelectors } from "src/shared/data/element-selectors";
+import { PlaylistSorter } from "src/modules/sorting";
+import {
+  convertSecondsToTimestamp,
+  getTimestampFromVideo
+} from "src/shared/modules/timestamp";
 
 const main = () => {
   if (
@@ -85,7 +63,7 @@ const isNewDesign = () => {
 };
 
 /**
- * Counts the number of invalid timestamps in a list of video container elements
+ * Counts the number of invalid timestamps in a list of video elements
  * @returns {number}
  */
 const countUnavailableTimestamps = () => {
@@ -98,49 +76,6 @@ const getVideos = () => {
   const playlistElement = document.querySelector(elementSelectors.playlist);
   const videos = playlistElement.getElementsByTagName(elementSelectors.video);
   return [...videos];
-};
-
-/**
- * Extracts a timestamp from a video element
- * @param {Element} video
- * @returns {number}
- */
-const getTimestampFromVideo = (video) => {
-  if (!video) return null;
-
-  const timestampElement = video.querySelector(elementSelectors.timestamp);
-  if (!timestampElement) return null;
-
-  const timestamp = timestampElement.innerText;
-  if (!timestamp) return null;
-
-  const timestampAsSeconds = convertTimestampToSeconds(timestamp);
-  return timestampAsSeconds;
-};
-
-/**
- * Converts a textual timestamp formatted as hh:mm:ss to its numerical value
- * represented in seconds
- * @param {string} timestamp
- * @returns {number}
- */
-const convertTimestampToSeconds = (timestamp) => {
-  let timeComponents = timestamp
-    .split(":")
-    .map((timeComponent) => parseInt(timeComponent, 10));
-
-  let seconds = 0;
-  let minutes = 1;
-
-  while (timeComponents.length > 0) {
-    let timeComponent = timeComponents.pop();
-    if (isNaN(timeComponent)) continue;
-
-    seconds += minutes * timeComponent;
-    minutes *= 60;
-  }
-
-  return seconds;
 };
 
 const countUnavailableVideos = () => {
@@ -356,20 +291,6 @@ const displayMessages = (messages) => {
   playlistSummaryElement.appendChild(containerElement);
 };
 
-/**
- * Converts a numerical amount of seconds to a textual timestamp formatted as
- * hh:mm:ss
- * @param {number} seconds
- * @returns {string}
- */
-const convertSecondsToTimestamp = (seconds) => {
-  const hours = `${Math.floor(seconds / 3600)}`.padStart(2, "0");
-  seconds %= 3600;
-  const minutes = `${Math.floor(seconds / 60)}`.padStart(2, "0");
-  const remainingSeconds = `${seconds % 60}`.padStart(2, "0");
-  return `${hours}:${minutes}:${remainingSeconds}`;
-};
-
 const addPlaylistSummaryToPage = ({
   timestamps,
   playlistDuration,
@@ -436,6 +357,7 @@ const createPlaylistSummaryElement = ({
   containerElement.appendChild(videosCounted);
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
+  console.log(totalVideosInPlaylist);
   const videosNotCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosNotCounted"),
     `${
@@ -566,4 +488,4 @@ const createSortDropdown = (playlistObserver) => {
   return container;
 };
 
-export { elementSelectors, main, getTimestampFromVideo };
+export { main };

@@ -1,12 +1,11 @@
-import { elementSelectors } from "../..";
-import { EnViewsParser } from "./parsers/en";
-import { ZhCnViewsParser } from "./parsers/zh_CN";
+import { elementSelectors } from "src/shared/data/element-selectors";
+import { EnUploadDateParser } from "./parsers/en";
+import { ZhCnUploadDateParser } from "./parsers/zh_CN";
 
-export class SortByViewsStrategy {
+export class SortByUploadDateStrategy {
   static supportedLocales = ["en", "en-AU", "en-GB", "en-US", "zh-CN"];
-
   /**
-   * Sorts a list of videos by their view count
+   * Sorts a list of videos by their upload date
    * @param {Array<Element>} videos
    * @param {"asc" | "desc"} sortOrder
    * @returns {Array<Element>}
@@ -16,32 +15,32 @@ export class SortByViewsStrategy {
       const videoInfoA = videoA.querySelector(elementSelectors.videoInfo);
       const videoInfoB = videoB.querySelector(elementSelectors.videoInfo);
 
-      const viewCountA = this.extractViews(videoInfoA);
-      const viewCountB = this.extractViews(videoInfoB);
+      const secondsA = this.parseUploadDate(videoInfoA);
+      const secondsB = this.parseUploadDate(videoInfoB);
 
       if (sortOrder === "asc") {
-        return viewCountA - viewCountB;
+        return secondsA - secondsB;
       }
 
       if (sortOrder === "desc") {
-        return viewCountB - viewCountA;
+        return secondsB - secondsA;
       }
     });
   }
 
   /**
-   * Extracts the view count as a number from a video info element
+   * Extracts the upload date from the video info element & parses it as seconds
    * @param {Element} videoInfo
    * @returns {number}
    */
-  extractViews(videoInfo) {
-    const context = new ViewsParserContext();
+  parseUploadDate(videoInfo) {
+    const context = new UploadDateParserContext();
     context.setParser(chrome.i18n.getUILanguage());
     return context.parse(videoInfo);
   }
 }
 
-export class ViewsParserContext {
+export class UploadDateParserContext {
   constructor() {
     this.parser = null;
   }
@@ -53,20 +52,24 @@ export class ViewsParserContext {
       case "en-AU":
       case "en-GB":
       case "en-US":
-        this.parser = new EnViewsParser();
+        this.parser = new EnUploadDateParser();
         break;
       case "zh-CN":
-        this.parser = new ZhCnViewsParser();
+        this.parser = new ZhCnUploadDateParser();
         break;
       default:
-        throw new Error("Unsupported locale for parsing views");
+        throw new Error("Unsupported locale for parsing upload dates");
     }
   }
 
-  /** @param {Element} videoInfo */
+  /**
+   * Parses the upload date found within the video info element and returns its
+   * numerical value as seconds
+   * @param {Element} videoInfo
+   */
   parse(videoInfo) {
     if (!this.parser) {
-      throw new Error("No views parser defined");
+      throw new Error("No upload date parser defined");
     }
     return this.parser.parse(videoInfo);
   }
