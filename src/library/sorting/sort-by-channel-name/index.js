@@ -1,3 +1,5 @@
+import { elementSelectors } from "../..";
+
 export class SortByChannelNameStrategy {
   /**
    * Sorts a list of videos by their channel name
@@ -7,8 +9,9 @@ export class SortByChannelNameStrategy {
    */
   sort(videos, sortOrder) {
     return [...videos].sort((videoA, videoB) => {
-      const channelNameA = videoA.querySelector(".ytd-channel-name").innerText;
-      const channelNameB = videoB.querySelector(".ytd-channel-name").innerText;
+      const selector = elementSelectors.channelName;
+      const channelNameA = videoA.querySelector(selector).innerText;
+      const channelNameB = videoB.querySelector(selector).innerText;
 
       if (sortOrder === "asc") {
         return channelNameA.localeCompare(channelNameB);

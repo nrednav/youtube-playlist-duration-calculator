@@ -16,7 +16,9 @@ const elementSelectors = {
     new: ".immersive-header-content .metadata-action-bar"
   },
   video: "ytd-playlist-video-renderer",
-  playlist: "ytd-playlist-video-list-renderer #contents"
+  playlist: "ytd-playlist-video-list-renderer #contents",
+  channelName: ".ytd-channel-name",
+  videoTitle: "#video-title"
 };
 
 const main = () => {
@@ -93,7 +95,7 @@ const getVideos = () => {
 };
 
 /**
- * Extracts a timestamp from a video container element
+ * Extracts a timestamp from a video element
  * @param {Element} video
  * @returns {number}
  */
@@ -136,28 +138,45 @@ const convertTimestampToSeconds = (timestamp) => {
 };
 
 const countUnavailableVideos = () => {
-  const unavailableVideoTitles = [
+  return getVideos().filter(isVideoUnavailable).length;
+};
+
+/**
+ * Checks whether a given video element meets the criteria for being considered
+ * "unavailable"
+ * @param {Element} video
+ */
+const isVideoUnavailable = (video) => {
+  const hasNoTimestamp =
+    video.querySelector(elementSelectors.timestamp)?.innerText.trim() === "";
+
+  if (hasNoTimestamp) return true;
+
+  const hasUnavailableTitle = [
     chrome.i18n.getMessage("videoTitle_private"),
     chrome.i18n.getMessage("videoTitle_deleted"),
     chrome.i18n.getMessage("videoTitle_unavailable_v1"),
     chrome.i18n.getMessage("videoTitle_unavailable_v2"),
     chrome.i18n.getMessage("videoTitle_restricted"),
     chrome.i18n.getMessage("videoTitle_ageRestricted")
-  ];
+  ].includes(getVideoTitle(video));
 
-  const videoTitles = document.querySelectorAll(
-    `${elementSelectors.playlist} #video-title`
-  );
+  if (hasUnavailableTitle) return true;
 
-  let unavailableVideosCount = 0;
+  const hasNoChannelName =
+    video.querySelector(elementSelectors.channelName)?.innerText.trim() === "";
 
-  videoTitles.forEach((videoTitle) => {
-    if (unavailableVideoTitles.includes(videoTitle.title)) {
-      unavailableVideosCount++;
-    }
-  });
+  if (hasNoChannelName) return true;
 
-  return unavailableVideosCount;
+  return false;
+};
+
+/**
+ * @param {Element} video
+ * @returns {string | undefined}
+ */
+const getVideoTitle = (video) => {
+  return video.querySelector(elementSelectors.videoTitle)?.title;
 };
 
 const processPlaylist = () => {
@@ -274,8 +293,8 @@ const onPlaylistMutated = (mutationList, observer) => {
     // playlist UI (correct video is removed by the server though)
     // So the following code re-adds that removed video to the playlist
     if (
-      removedVideo.querySelector("#video-title").textContent !==
-      window.ytpdc.lastVideoInteractedWith.querySelector("#video-title")
+      getVideoTitle(removedVideo) !==
+      getVideoTitle(window.ytpdc.lastVideoInteractedWith)
     ) {
       if (mutation.previousSibling) {
         mutation.previousSibling.after(removedVideo);

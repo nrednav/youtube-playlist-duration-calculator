@@ -49,7 +49,7 @@ class PlaylistSorter {
         strategy: SortByDurationStrategy
       },
       channelName: {
-        enabled: videoHasElement(".ytd-channel-name"),
+        enabled: videoHasElement(elementSelectors.channelName),
         label: {
           asc: chrome.i18n.getMessage("sortType_channelName_label_asc"),
           desc: chrome.i18n.getMessage("sortType_channelName_label_desc")
