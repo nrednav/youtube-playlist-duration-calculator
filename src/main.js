@@ -1,4 +1,4 @@
-import { main } from "./library/index";
+import { main } from "src/modules/index";
 import "./main.css";
 
 // Entry-point

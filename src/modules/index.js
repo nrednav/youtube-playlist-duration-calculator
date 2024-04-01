@@ -1,27 +1,9 @@
+import { elementSelectors } from "src/shared/data/element-selectors";
+import { PlaylistSorter } from "src/modules/sorting";
 import {
-  PlaylistSorter,
-  generateSortOptions,
-  generateSortTypes
-} from "./sorting";
-
-const elementSelectors = {
-  timestamp: "ytd-thumbnail-overlay-time-status-renderer",
-  // Design anchor = Element that helps distinguish between old & new layouts
-  designAnchor: {
-    old: "ytd-playlist-sidebar-renderer",
-    new: "ytd-playlist-header-renderer"
-  },
-  playlistSummary: {
-    old: "#ytpdc-playlist-summary-old",
-    new: "#ytpdc-playlist-summary-new"
-  },
-  playlistMetadata: {
-    old: "ytd-playlist-sidebar-renderer #items",
-    new: ".immersive-header-content .metadata-action-bar"
-  },
-  video: "ytd-playlist-video-renderer",
-  playlist: "ytd-playlist-video-list-renderer #contents"
-};
+  convertSecondsToTimestamp,
+  getTimestampFromVideo
+} from "src/shared/modules/timestamp";
 
 const main = () => {
   if (
@@ -59,7 +41,7 @@ const displayLoader = () => {
 
   const loaderElement = document.createElement("div");
   loaderElement.id = "ytpdc-loader";
-  loaderElement.textContent = "Calculating...";
+  loaderElement.textContent = chrome.i18n.getMessage("loaderMessage");
 
   playlistSummaryElement.innerHTML = "";
   playlistSummaryElement.appendChild(loaderElement);
@@ -81,7 +63,7 @@ const isNewDesign = () => {
 };
 
 /**
- * Counts the number of invalid timestamps in a list of video container elements
+ * Counts the number of invalid timestamps in a list of video elements
  * @returns {number}
  */
 const countUnavailableTimestamps = () => {
@@ -96,72 +78,46 @@ const getVideos = () => {
   return [...videos];
 };
 
-/**
- * Extracts a timestamp from a video container element
- * @param {Element} video
- * @returns {number}
- */
-const getTimestampFromVideo = (video) => {
-  if (!video) return null;
-
-  const timestampElement = video.querySelector(elementSelectors.timestamp);
-  if (!timestampElement) return null;
-
-  const timestamp = timestampElement.innerText;
-  if (!timestamp) return null;
-
-  const timestampAsSeconds = convertTimestampToSeconds(timestamp);
-  return timestampAsSeconds;
-};
-
-/**
- * Converts a textual timestamp formatted as hh:mm:ss to its numerical value
- * represented in seconds
- * @param {string} timestamp
- * @returns {number}
- */
-const convertTimestampToSeconds = (timestamp) => {
-  let timeComponents = timestamp
-    .split(":")
-    .map((timeComponent) => parseInt(timeComponent, 10));
-
-  let seconds = 0;
-  let minutes = 1;
-
-  while (timeComponents.length > 0) {
-    let timeComponent = timeComponents.pop();
-    if (isNaN(timeComponent)) continue;
-
-    seconds += minutes * timeComponent;
-    minutes *= 60;
-  }
-
-  return seconds;
-};
-
 const countUnavailableVideos = () => {
-  const unavailableVideoTitles = [
-    "[Private video]",
-    "[Deleted video]",
-    "[Unavailable]",
-    "[Video unavailable]",
-    "[Restricted video]",
-    "[Age restricted]"
-  ];
+  return getVideos().filter(isVideoUnavailable).length;
+};
 
-  const videoTitles = document.querySelectorAll(
-    `${elementSelectors.playlist} #video-title`
-  );
+/**
+ * Checks whether a given video element meets the criteria for being considered
+ * "unavailable"
+ * @param {Element} video
+ */
+const isVideoUnavailable = (video) => {
+  const hasNoTimestamp =
+    video.querySelector(elementSelectors.timestamp)?.innerText.trim() === "";
 
-  let unavailableVideosCount = 0;
+  if (hasNoTimestamp) return true;
 
-  videoTitles.forEach((videoTitle) => {
-    if (unavailableVideoTitles.includes(videoTitle.title)) {
-      unavailableVideosCount++;
-    }
-  });
+  const hasUnavailableTitle = [
+    chrome.i18n.getMessage("videoTitle_private"),
+    chrome.i18n.getMessage("videoTitle_deleted"),
+    chrome.i18n.getMessage("videoTitle_unavailable_v1"),
+    chrome.i18n.getMessage("videoTitle_unavailable_v2"),
+    chrome.i18n.getMessage("videoTitle_restricted"),
+    chrome.i18n.getMessage("videoTitle_ageRestricted")
+  ].includes(getVideoTitle(video));
 
-  return unavailableVideosCount;
+  if (hasUnavailableTitle) return true;
+
+  const hasNoChannelName =
+    video.querySelector(elementSelectors.channelName)?.innerText.trim() === "";
+
+  if (hasNoChannelName) return true;
+
+  return false;
+};
+
+/**
+ * @param {Element} video
+ * @returns {string | undefined}
+ */
+const getVideoTitle = (video) => {
+  return video.querySelector(elementSelectors.videoTitle)?.title;
 };
 
 const processPlaylist = () => {
@@ -195,10 +151,17 @@ const setupPage = () => {
   };
 
   const onYoutubeNavigationFinished = () => {
-    if (window.ytpdc.playlistObserver) {
-      window.ytpdc.playlistObserver?.disconnect();
-      window.ytpdc.playlistObserver = null;
-    }
+    window.ytpdc.playlistObserver?.disconnect();
+
+    window.ytpdc = {
+      pageSetupDone: false,
+      playlistObserver: null,
+      sortDropdown: {
+        used: false,
+        element: null
+      },
+      lastVideoInteractedWith: null
+    };
 
     main();
   };
@@ -263,8 +226,8 @@ const onPlaylistMutated = (mutationList, observer) => {
     if (shouldRequestPageReload(mutation)) {
       // Problem encountered, request a page reload
       displayMessages([
-        "Encountered a problem.",
-        "Please reload this page to recalculate the playlist duration."
+        chrome.i18n.getMessage("problemEncountered_paragraphOne"),
+        chrome.i18n.getMessage("problemEncountered_paragraphTwo")
       ]);
       observer.disconnect();
       return;
@@ -278,8 +241,8 @@ const onPlaylistMutated = (mutationList, observer) => {
     // playlist UI (correct video is removed by the server though)
     // So the following code re-adds that removed video to the playlist
     if (
-      removedVideo.querySelector("#video-title").textContent !==
-      window.ytpdc.lastVideoInteractedWith.querySelector("#video-title")
+      getVideoTitle(removedVideo) !==
+      getVideoTitle(window.ytpdc.lastVideoInteractedWith)
     ) {
       if (mutation.previousSibling) {
         mutation.previousSibling.after(removedVideo);
@@ -335,20 +298,6 @@ const displayMessages = (messages) => {
   playlistSummaryElement.appendChild(containerElement);
 };
 
-/**
- * Converts a numerical amount of seconds to a textual timestamp formatted as
- * hh:mm:ss
- * @param {number} seconds
- * @returns {string}
- */
-const convertSecondsToTimestamp = (seconds) => {
-  const hours = `${Math.floor(seconds / 3600)}`.padStart(2, "0");
-  seconds %= 3600;
-  const minutes = `${Math.floor(seconds / 60)}`.padStart(2, "0");
-  const remainingSeconds = `${seconds % 60}`.padStart(2, "0");
-  return `${hours}:${minutes}:${remainingSeconds}`;
-};
-
 const addPlaylistSummaryToPage = ({
   timestamps,
   playlistDuration,
@@ -401,22 +350,23 @@ const createPlaylistSummaryElement = ({
   }
 
   const totalDuration = createSummaryItem(
-    "Total duration:",
+    chrome.i18n.getMessage("playlistSummary_totalDuration"),
     `${playlistDuration}`,
     "#86efac"
   );
   containerElement.appendChild(totalDuration);
 
   const videosCounted = createSummaryItem(
-    "Videos counted:",
+    chrome.i18n.getMessage("playlistSummary_videosCounted"),
     `${timestamps.length}`,
     "#fdba74"
   );
   containerElement.appendChild(videosCounted);
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
+  console.log(totalVideosInPlaylist);
   const videosNotCounted = createSummaryItem(
-    "Videos not counted:",
+    chrome.i18n.getMessage("playlistSummary_videosNotCounted"),
     `${
       totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
     }`,
@@ -451,7 +401,7 @@ const createPlaylistSummaryElement = ({
     tooltipElement.appendChild(iconElement);
 
     const textElement = document.createElement("p");
-    textElement.textContent = "Scroll down to count more videos";
+    textElement.textContent = chrome.i18n.getMessage("playlistSummary_tooltip");
     tooltipElement.appendChild(textElement);
 
     containerElement.appendChild(tooltipElement);
@@ -484,9 +434,7 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
 
 const countTotalVideosInPlaylist = () => {
   const statsElement = document.querySelector(
-    isNewDesign()
-      ? ".metadata-stats yt-formatted-string"
-      : "#stats yt-formatted-string"
+    elementSelectors.stats[isNewDesign() ? "new" : "old"]
   );
 
   if (!statsElement) return null;
@@ -501,16 +449,14 @@ const createSortDropdown = (playlistObserver) => {
 
   const label = document.createElement("p");
   label.classList.add("label");
-  label.textContent = "Sort by:";
+  label.textContent = chrome.i18n.getMessage("sortDropdown_label");
 
   const group = document.createElement("div");
   group.classList.add("group");
 
   const dropdown = document.createElement("select");
-  const sortTypes = generateSortTypes();
-  const sortOptions = generateSortOptions(sortTypes);
 
-  sortOptions.forEach((sortOption) => {
+  PlaylistSorter.getSortOptions().forEach((sortOption) => {
     dropdown.appendChild(sortOption);
   });
 
@@ -522,10 +468,8 @@ const createSortDropdown = (playlistObserver) => {
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const videos = playlistElement.getElementsByTagName(elementSelectors.video);
 
-    const [sortType, sortOrder] = event.target.value.split(":");
-    const SortStrategy = sortTypes[sortType].strategy;
-    const playlistSorter = new PlaylistSorter(new SortStrategy(), sortOrder);
-    const sortedVideos = playlistSorter.sort(videos);
+    const playlistSorter = new PlaylistSorter(event.target.value);
+    const sortedVideos = playlistSorter.sort([...videos].slice(0, 100));
 
     playlistElement.replaceChildren(...sortedVideos);
 
@@ -551,4 +495,4 @@ const createSortDropdown = (playlistObserver) => {
   return container;
 };
 
-export { elementSelectors, main, getTimestampFromVideo };
+export { main };
