@@ -151,10 +151,17 @@ const setupPage = () => {
   };
 
   const onYoutubeNavigationFinished = () => {
-    if (window.ytpdc.playlistObserver) {
-      window.ytpdc.playlistObserver?.disconnect();
-      window.ytpdc.playlistObserver = null;
-    }
+    window.ytpdc.playlistObserver?.disconnect();
+
+    window.ytpdc = {
+      pageSetupDone: false,
+      playlistObserver: null,
+      sortDropdown: {
+        used: false,
+        element: null
+      },
+      lastVideoInteractedWith: null
+    };
 
     main();
   };
