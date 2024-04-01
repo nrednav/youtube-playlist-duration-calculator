@@ -18,7 +18,13 @@ const elementSelectors = {
   video: "ytd-playlist-video-renderer",
   playlist: "ytd-playlist-video-list-renderer #contents",
   channelName: ".ytd-channel-name",
-  videoTitle: "#video-title"
+  videoTitle: "#video-title",
+  videoIndex: "yt-formatted-string#index",
+  videoInfo: "yt-formatted-string#video-info",
+  stats: {
+    old: ".metadata-stats yt-formatted-string",
+    new: "#stats yt-formatted-string"
+  }
 };
 
 const main = () => {
@@ -499,9 +505,7 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
 
 const countTotalVideosInPlaylist = () => {
   const statsElement = document.querySelector(
-    isNewDesign()
-      ? ".metadata-stats yt-formatted-string"
-      : "#stats yt-formatted-string"
+    elementSelectors.stats[isNewDesign() ? "new" : "old"]
   );
 
   if (!statsElement) return null;

@@ -1,3 +1,5 @@
+import { elementSelectors } from "../..";
+
 export class SortByIndexStrategy {
   /**
    * Sorts a list of videos by their index
@@ -8,10 +10,10 @@ export class SortByIndexStrategy {
   sort(videos, sortOrder) {
     return [...videos].sort((videoA, videoB) => {
       const indexA = videoA.querySelector(
-        "yt-formatted-string#index"
+        elementSelectors.videoIndex
       ).innerText;
       const indexB = videoB.querySelector(
-        "yt-formatted-string#index"
+        elementSelectors.videoIndex
       ).innerText;
 
       if (sortOrder === "asc") {

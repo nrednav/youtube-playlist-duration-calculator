@@ -1,3 +1,4 @@
+import { elementSelectors } from "../..";
 import { EnUploadDateParser } from "./parsers/en";
 import { ZhCnUploadDateParser } from "./parsers/zh_CN";
 
@@ -11,8 +12,8 @@ export class SortByUploadDateStrategy {
    */
   sort(videos, sortOrder) {
     return [...videos].sort((videoA, videoB) => {
-      const videoInfoA = videoA.querySelector("yt-formatted-string#video-info");
-      const videoInfoB = videoB.querySelector("yt-formatted-string#video-info");
+      const videoInfoA = videoA.querySelector(elementSelectors.videoInfo);
+      const videoInfoB = videoB.querySelector(elementSelectors.videoInfo);
 
       const secondsA = this.parseUploadDate(videoInfoA);
       const secondsB = this.parseUploadDate(videoInfoB);

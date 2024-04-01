@@ -33,7 +33,7 @@ class PlaylistSorter {
   static getSortTypes() {
     return {
       index: {
-        enabled: videoHasElement("yt-formatted-string#index"),
+        enabled: videoHasElement(elementSelectors.videoIndex),
         label: {
           asc: chrome.i18n.getMessage("sortType_index_label_asc"),
           desc: chrome.i18n.getMessage("sortType_index_label_desc")
@@ -58,7 +58,7 @@ class PlaylistSorter {
       },
       views: {
         enabled:
-          videoHasElement("yt-formatted-string#video-info") &&
+          videoHasElement(elementSelectors.videoInfo) &&
           SortByViewsStrategy.supportedLocales.includes(
             chrome.i18n.getUILanguage()
           ),
@@ -70,7 +70,7 @@ class PlaylistSorter {
       },
       uploadDate: {
         enabled:
-          videoHasElement("yt-formatted-string#video-info") &&
+          videoHasElement(elementSelectors.videoInfo) &&
           !pageHasNativeSortFeature() &&
           SortByUploadDateStrategy.supportedLocales.includes(
             chrome.i18n.getUILanguage()

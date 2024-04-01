@@ -1,3 +1,4 @@
+import { elementSelectors } from "../..";
 import { EnViewsParser } from "./parsers/en";
 import { ZhCnViewsParser } from "./parsers/zh_CN";
 
@@ -12,8 +13,8 @@ export class SortByViewsStrategy {
    */
   sort(videos, sortOrder) {
     return [...videos].sort((videoA, videoB) => {
-      const videoInfoA = videoA.querySelector("yt-formatted-string#video-info");
-      const videoInfoB = videoB.querySelector("yt-formatted-string#video-info");
+      const videoInfoA = videoA.querySelector(elementSelectors.videoInfo);
+      const videoInfoB = videoB.querySelector(elementSelectors.videoInfo);
 
       const viewCountA = this.extractViews(videoInfoA);
       const viewCountB = this.extractViews(videoInfoB);
