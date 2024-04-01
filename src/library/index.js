@@ -1,8 +1,4 @@
-import {
-  PlaylistSorter,
-  generateSortOptions,
-  generateSortTypes
-} from "./sorting";
+import { PlaylistSorter } from "./sorting";
 
 const elementSelectors = {
   timestamp: "ytd-thumbnail-overlay-time-status-renderer",
