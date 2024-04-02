@@ -192,7 +192,7 @@ const setupPage = () => {
   * @returns {{
       disconnect: () => void,
       reconnect: () => void
-    }}
+    } | null}
   */
 const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return window.ytpdc.playlistObserver;
@@ -215,7 +215,7 @@ const setupPlaylistObserver = () => {
  * This function decides when the playlist duration should be recalculated & how
  * @param {MutationRecord[]} mutationList
  * @param {MutationObserver} observer
- * @returns {MutationCallback}
+ * @returns {void | undefined}
  */
 const onPlaylistMutated = (mutationList, observer) => {
   const playlistElement = document.querySelector(elementSelectors.playlist);
