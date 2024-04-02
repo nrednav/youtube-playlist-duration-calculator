@@ -364,7 +364,6 @@ const createPlaylistSummaryElement = ({
   containerElement.appendChild(videosCounted);
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
-  console.log(totalVideosInPlaylist);
   const videosNotCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosNotCounted"),
     `${
