@@ -21,7 +21,7 @@
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
     "prettier": "^3.0.3",
-    "vite": "^4.1.4",
+    "vite": "^4.5.3",
     "vite-plugin-web-extension": "^3.0.1",
     "webextension-polyfill": "^0.10.0"
   },
