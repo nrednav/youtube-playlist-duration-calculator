@@ -1,5 +1,5 @@
 import { EnUploadDateParser } from "./en";
-import { EsUploadDateParser } from "./es-ES";
+import { EsUploadDateParser } from "./es";
 import { ZhHansCnUploadDateParser } from "./zh-Hans-CN";
 
 const UPLOAD_DATE_PARSERS_BY_LOCALE = {
