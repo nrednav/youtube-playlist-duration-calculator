@@ -5,7 +5,6 @@ import { ZhCnViewsParser } from "./parsers/zh_CN";
 const PARSERS_BY_LOCALE = {
   "en": EnViewsParser,
   "en-GB": EnViewsParser,
-  "en-IN": EnViewsParser,
   "en-US": EnViewsParser,
   "zh-Hans-CN": ZhCnViewsParser
 };
