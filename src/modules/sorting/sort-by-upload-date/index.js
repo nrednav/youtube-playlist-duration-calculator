@@ -1,17 +1,8 @@
 import { elementSelectors } from "src/shared/data/element-selectors";
-import { EnUploadDateParser } from "./parsers/en";
-import { ZhCnUploadDateParser } from "./parsers/zh_CN";
-
-const PARSERS_BY_LOCALE = {
-  "en": EnUploadDateParser,
-  "en-GB": EnUploadDateParser,
-  "en-IN": EnUploadDateParser,
-  "en-US": EnUploadDateParser,
-  "zh-Hans-CN": ZhCnUploadDateParser
-};
+import { getSupportedLocales, getUploadDateParser } from "./parsers";
 
 export class SortByUploadDateStrategy {
-  static supportedLocales = Object.keys(PARSERS_BY_LOCALE);
+  static supportedLocales = getSupportedLocales();
 
   /**
    * Sorts a list of videos by their upload date
@@ -56,7 +47,7 @@ export class UploadDateParserContext {
 
   /** @param {string} locale */
   setParser(locale) {
-    const Parser = PARSERS_BY_LOCALE[locale] ?? EnUploadDateParser;
+    const Parser = getUploadDateParser(locale);
     this.parser = new Parser();
   }
 

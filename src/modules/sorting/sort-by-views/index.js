@@ -1,16 +1,8 @@
 import { elementSelectors } from "src/shared/data/element-selectors";
-import { EnViewsParser } from "./parsers/en";
-import { ZhCnViewsParser } from "./parsers/zh_CN";
-
-const PARSERS_BY_LOCALE = {
-  "en": EnViewsParser,
-  "en-GB": EnViewsParser,
-  "en-US": EnViewsParser,
-  "zh-Hans-CN": ZhCnViewsParser
-};
+import { getSupportedLocales, getViewsParser } from "./parsers";
 
 export class SortByViewsStrategy {
-  static supportedLocales = Object.keys(PARSERS_BY_LOCALE);
+  static supportedLocales = getSupportedLocales();
 
   /**
    * Sorts a list of videos by their view count
@@ -55,7 +47,7 @@ export class ViewsParserContext {
 
   /** @param {string} locale */
   setParser(locale) {
-    const Parser = PARSERS_BY_LOCALE[locale] ?? EnViewsParser;
+    const Parser = getViewsParser(locale);
     this.parser = new Parser();
   }
 

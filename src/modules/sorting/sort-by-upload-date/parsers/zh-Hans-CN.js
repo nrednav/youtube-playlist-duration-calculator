@@ -1,4 +1,4 @@
-export class ZhCnUploadDateParser {
+export class ZhHansCnUploadDateParser {
   /** @param {Element} videoInfo */
   parse(videoInfo) {
     const secondsByUnit = {
