@@ -77,6 +77,9 @@
 }
 
 #ytpdc-sort-control select {
+  width: 100%;
+  height: auto;
+  white-space: pre-wrap;
   appearance: none;
   color: #ddd;
   background-color: transparent;
