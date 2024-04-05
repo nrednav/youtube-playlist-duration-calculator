@@ -2,8 +2,15 @@ import { elementSelectors } from "src/shared/data/element-selectors";
 import { EnViewsParser } from "./parsers/en";
 import { ZhCnViewsParser } from "./parsers/zh_CN";
 
+const PARSERS_BY_LOCALE = {
+  "en": EnViewsParser,
+  "en-GB": EnViewsParser,
+  "en-US": EnViewsParser,
+  "zh-Hans-CN": ZhCnViewsParser
+};
+
 export class SortByViewsStrategy {
-  static supportedLocales = ["en", "en-AU", "en-GB", "en-US", "zh-CN"];
+  static supportedLocales = Object.keys(PARSERS_BY_LOCALE);
 
   /**
    * Sorts a list of videos by their view count
@@ -36,7 +43,7 @@ export class SortByViewsStrategy {
    */
   extractViews(videoInfo) {
     const context = new ViewsParserContext();
-    context.setParser(chrome.i18n.getUILanguage());
+    context.setParser(document.documentElement.lang);
     return context.parse(videoInfo);
   }
 }
@@ -48,19 +55,8 @@ export class ViewsParserContext {
 
   /** @param {string} locale */
   setParser(locale) {
-    switch (locale) {
-      case "en":
-      case "en-AU":
-      case "en-GB":
-      case "en-US":
-        this.parser = new EnViewsParser();
-        break;
-      case "zh-CN":
-        this.parser = new ZhCnViewsParser();
-        break;
-      default:
-        throw new Error("Unsupported locale for parsing views");
-    }
+    const Parser = PARSERS_BY_LOCALE[locale] ?? EnViewsParser;
+    this.parser = new Parser();
   }
 
   /** @param {Element} videoInfo */

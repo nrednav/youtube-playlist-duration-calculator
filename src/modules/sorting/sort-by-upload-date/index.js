@@ -2,8 +2,17 @@ import { elementSelectors } from "src/shared/data/element-selectors";
 import { EnUploadDateParser } from "./parsers/en";
 import { ZhCnUploadDateParser } from "./parsers/zh_CN";
 
+const PARSERS_BY_LOCALE = {
+  "en": EnUploadDateParser,
+  "en-GB": EnUploadDateParser,
+  "en-IN": EnUploadDateParser,
+  "en-US": EnUploadDateParser,
+  "zh-Hans-CN": ZhCnUploadDateParser
+};
+
 export class SortByUploadDateStrategy {
-  static supportedLocales = ["en", "en-AU", "en-GB", "en-US", "zh-CN"];
+  static supportedLocales = Object.keys(PARSERS_BY_LOCALE);
+
   /**
    * Sorts a list of videos by their upload date
    * @param {Array<Element>} videos
@@ -35,7 +44,7 @@ export class SortByUploadDateStrategy {
    */
   parseUploadDate(videoInfo) {
     const context = new UploadDateParserContext();
-    context.setParser(chrome.i18n.getUILanguage());
+    context.setParser(document.documentElement.lang);
     return context.parse(videoInfo);
   }
 }
@@ -47,19 +56,8 @@ export class UploadDateParserContext {
 
   /** @param {string} locale */
   setParser(locale) {
-    switch (locale) {
-      case "en":
-      case "en-AU":
-      case "en-GB":
-      case "en-US":
-        this.parser = new EnUploadDateParser();
-        break;
-      case "zh-CN":
-        this.parser = new ZhCnUploadDateParser();
-        break;
-      default:
-        throw new Error("Unsupported locale for parsing upload dates");
-    }
+    const Parser = PARSERS_BY_LOCALE[locale] ?? EnUploadDateParser;
+    this.parser = new Parser();
   }
 
   /**
