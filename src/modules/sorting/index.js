@@ -60,7 +60,7 @@ export class PlaylistSorter {
         enabled:
           videoHasElement(elementSelectors.videoInfo) &&
           SortByViewsStrategy.supportedLocales.includes(
-            chrome.i18n.getUILanguage()
+            document.documentElement.lang
           ),
         label: {
           asc: chrome.i18n.getMessage("sortType_views_label_asc"),
@@ -73,7 +73,7 @@ export class PlaylistSorter {
           videoHasElement(elementSelectors.videoInfo) &&
           !pageHasNativeSortFeature() &&
           SortByUploadDateStrategy.supportedLocales.includes(
-            chrome.i18n.getUILanguage()
+            document.documentElement.lang
           ),
         label: {
           asc: chrome.i18n.getMessage("sortType_uploadDate_label_asc"),
