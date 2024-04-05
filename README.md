@@ -163,7 +163,8 @@ clicking
 
 ## Translations
 
-At present, the extension only has translations for the `en` & `zh_CN` locales.
+For a list of locales currently supported by the extension, please see
+[public/\_locales](./public/_locales/)
 
 Additional translations are most welcome! Please see
 [docs/translations.md](./docs/translations.md) for more details.
