@@ -1,4 +1,4 @@
-export class ZhCnViewsParser {
+export class ZhHansCnViewsParser {
   /** @param {Element} videoInfo */
   parse(videoInfo) {
     const viewsElement = videoInfo.firstElementChild;
