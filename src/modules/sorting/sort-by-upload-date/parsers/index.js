@@ -7,6 +7,8 @@ const UPLOAD_DATE_PARSERS_BY_LOCALE = {
   "en-GB": EnUploadDateParser,
   "en-US": EnUploadDateParser,
   "es-ES": EsUploadDateParser,
+  "es-419": EsUploadDateParser,
+  "es-US": EsUploadDateParser,
   "zh-Hans-CN": ZhHansCnUploadDateParser
 };
 
