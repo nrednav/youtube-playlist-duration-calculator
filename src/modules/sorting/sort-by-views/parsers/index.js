@@ -1,5 +1,5 @@
 import { EnViewsParser } from "./en";
-import { EsViewsParser } from "./es-ES";
+import { EsViewsParser } from "./es";
 import { ZhHansCnViewsParser } from "./zh-Hans-CN";
 
 const VIEWS_PARSERS_BY_LOCALE = {
