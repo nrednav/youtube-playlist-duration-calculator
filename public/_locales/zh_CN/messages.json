@@ -1,6 +1,6 @@
 {
   "loaderMessage": {
-    "message": "数数...",
+    "message": "计算中...",
     "description": "Text to display when the extension is loading"
   },
   "videoTitle_private": {
@@ -24,31 +24,31 @@
     "description": "Title displayed by YouTube for restricted videos"
   },
   "videoTitle_ageRestricted": {
-    "message": "[Age restricted]",
+    "message": "[年龄受限]",
     "description": "Title displayed by YouTube for age-restricted videos"
   },
   "problemEncountered_paragraphOne": {
-    "message": "发现问题",
+    "message": "遇到问题了",
     "description": "Text to display in first paragraph when a problem has been encountered"
   },
   "problemEncountered_paragraphTwo": {
-    "message": "请重新加载此页面以再次计算播放列表持续时间",
+    "message": "请重新加载本页以再次计算播放列表时长",
     "description": "Text to display in second paragraph when a problem has been encountered"
   },
   "playlistSummary_totalDuration": {
-    "message": "总持续时间:",
+    "message": "总时长:",
     "description": "Text to display as label for the playlist duration"
   },
   "playlistSummary_videosCounted": {
-    "message": "计算中使用的视频数量:",
+    "message": "已统计视频:",
     "description": "Text to display as label for the videos counted"
   },
   "playlistSummary_videosNotCounted": {
-    "message": "未用于计算的视频数量:",
+    "message": "未统计视频:",
     "description": "Text to display as label for the videos not counted"
   },
   "playlistSummary_tooltip": {
-    "message": "向下滚动以计数更多",
+    "message": "向下滚动统计更多视频",
     "description": "Text to display within tooltip"
   },
   "sortDropdown_label": {
@@ -64,27 +64,27 @@
     "description": "Text to display for the descending 'sort by index' option"
   },
   "sortType_duration_label_asc": {
-    "message": "持续时间 (最短)",
+    "message": "时长 (最短)",
     "description": "Text to display for the ascending 'sort by duration' option"
   },
   "sortType_duration_label_desc": {
-    "message": "持续时间 (最长)",
+    "message": "时长 (最长)",
     "description": "Text to display for the descending 'sort by duration' option"
   },
   "sortType_channelName_label_asc": {
-    "message": "频道名称 (升序)",
+    "message": "频道 (升序)",
     "description": "Text to display for the ascending 'sort by channel name' option"
   },
   "sortType_channelName_label_desc": {
-    "message": "频道名称 (降序)",
+    "message": "频道 (降序)",
     "description": "Text to display for the descending 'sort by channel name' option"
   },
   "sortType_views_label_asc": {
-    "message": "观看次数 (升序)",
+    "message": "播放量 (升序)",
     "description": "Text to display for the ascending 'sort by views' option"
   },
   "sortType_views_label_desc": {
-    "message": "观看次数 (降序)",
+    "message": "播放量 (降序)",
     "description": "Text to display for the descending 'sort by views' option"
   },
   "sortType_uploadDate_label_asc": {
