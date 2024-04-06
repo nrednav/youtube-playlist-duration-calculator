@@ -34,19 +34,14 @@ export class SortByViewsStrategy {
    * @returns {number}
    */
   extractViews(videoInfo) {
-    const context = new ViewsParserContext();
-    context.setParser(document.documentElement.lang);
+    const context = new ViewsParserContext(document.documentElement.lang);
     return context.parse(videoInfo);
   }
 }
 
 export class ViewsParserContext {
-  constructor() {
-    this.parser = null;
-  }
-
   /** @param {string} locale */
-  setParser(locale) {
+  constructor(locale) {
     const Parser = getViewsParser(locale);
     this.parser = new Parser();
   }

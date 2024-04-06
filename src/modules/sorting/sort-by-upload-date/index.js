@@ -34,19 +34,14 @@ export class SortByUploadDateStrategy {
    * @returns {number}
    */
   parseUploadDate(videoInfo) {
-    const context = new UploadDateParserContext();
-    context.setParser(document.documentElement.lang);
+    const context = new UploadDateParserContext(document.documentElement.lang);
     return context.parse(videoInfo);
   }
 }
 
 export class UploadDateParserContext {
-  constructor() {
-    this.parser = null;
-  }
-
   /** @param {string} locale */
-  setParser(locale) {
+  constructor(locale) {
     const Parser = getUploadDateParser(locale);
     this.parser = new Parser();
   }
