@@ -442,32 +442,57 @@ const countTotalVideosInPlaylist = () => {
 };
 
 const createSortDropdown = (playlistObserver) => {
-  const container = document.createElement("div");
-  container.id = "ytpdc-sort-control";
-  container.classList.add("container");
+  const containerElement = document.createElement("div");
+  containerElement.id = "ytpdc-sort-control";
 
-  const label = document.createElement("p");
-  label.classList.add("label");
-  label.textContent = chrome.i18n.getMessage("sortDropdown_label");
+  const labelElement = document.createElement("p");
+  labelElement.classList.add("label");
+  labelElement.textContent = chrome.i18n.getMessage("sortDropdown_label");
 
-  const group = document.createElement("div");
-  group.classList.add("group");
+  const dropdownElement = document.createElement("div");
+  dropdownElement.id = "ytpdc-sort-control-dropdown-container";
 
-  const dropdown = document.createElement("select");
+  const dropdownButtonElement = document.createElement("button");
+  dropdownButtonElement.id = "ytpdc-sort-control-dropdown-button";
 
-  PlaylistSorter.getSortOptions().forEach((sortOption) => {
-    dropdown.appendChild(sortOption);
+  const dropdownButtonTextElement = document.createElement("span");
+
+  const dropdownOptionsElement = document.createElement("div");
+  dropdownOptionsElement.id = "ytpdc-sort-control-dropdown-options";
+  dropdownOptionsElement.classList.add("hidden");
+
+  dropdownButtonElement.addEventListener("click", () => {
+    dropdownOptionsElement.classList.toggle("hidden");
   });
 
-  dropdown.addEventListener("change", (event) => {
+  const sortOptions = PlaylistSorter.getSortOptions();
+
+  sortOptions.forEach((sortOption) => {
+    dropdownOptionsElement.appendChild(sortOption);
+  });
+
+  dropdownButtonTextElement.textContent = sortOptions[0].textContent;
+
+  dropdownOptionsElement.addEventListener("click", (event) => {
+    if (
+      !event.target.classList.contains("ytpdc-sort-control-dropdown-option")
+    ) {
+      return;
+    }
+
     window.ytpdc.sortDropdown.used = true;
+
+    dropdownOptionsElement.classList.toggle("hidden");
+    dropdownButtonTextElement.textContent = event.target.textContent;
 
     playlistObserver?.disconnect();
 
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const videos = playlistElement.getElementsByTagName(elementSelectors.video);
 
-    const playlistSorter = new PlaylistSorter(event.target.value);
+    const playlistSorter = new PlaylistSorter(
+      event.target.getAttribute("value")
+    );
     const sortedVideos = playlistSorter.sort([...videos].slice(0, 100));
 
     playlistElement.replaceChildren(...sortedVideos);
@@ -479,19 +504,19 @@ const createSortDropdown = (playlistObserver) => {
     "http://www.w3.org/2000/svg",
     "svg"
   );
-  caretDownIcon.style.width = "1em";
-  caretDownIcon.style.height = "1em";
   caretDownIcon.setAttribute("viewBox", "0 0 256 256");
   caretDownIcon.innerHTML = `<path fill="currentColor" d="m216.49 104.49l-80
   80a12 12 0 0 1-17 0l-80-80a12 12 0 0 1 17-17L128 159l71.51-71.52a12 12 0 0 1
   17 17Z"/>`;
 
-  container.appendChild(label);
-  group.appendChild(dropdown);
-  group.appendChild(caretDownIcon);
-  container.appendChild(group);
+  dropdownButtonElement.appendChild(dropdownButtonTextElement);
+  dropdownButtonElement.appendChild(caretDownIcon);
+  dropdownElement.appendChild(dropdownButtonElement);
+  dropdownElement.appendChild(dropdownOptionsElement);
+  containerElement.appendChild(labelElement);
+  containerElement.appendChild(dropdownElement);
 
-  return container;
+  return containerElement;
 };
 
 export { main };
