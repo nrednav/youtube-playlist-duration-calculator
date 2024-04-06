@@ -5,6 +5,7 @@ import { ZhHansCnUploadDateParser } from "./zh-Hans-CN";
 const UPLOAD_DATE_PARSERS_BY_LOCALE = {
   "en": EnUploadDateParser,
   "en-GB": EnUploadDateParser,
+  "en-IN": EnUploadDateParser,
   "en-US": EnUploadDateParser,
   "es-ES": EsUploadDateParser,
   "es-419": EsUploadDateParser,
