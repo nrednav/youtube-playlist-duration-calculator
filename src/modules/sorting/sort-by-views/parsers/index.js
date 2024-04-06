@@ -1,10 +1,12 @@
 import { EnViewsParser } from "./en";
+import { EnInViewsParser } from "./en-IN";
 import { EsViewsParser } from "./es";
 import { ZhHansCnViewsParser } from "./zh-Hans-CN";
 
 const VIEWS_PARSERS_BY_LOCALE = {
   "en": EnViewsParser,
   "en-GB": EnViewsParser,
+  "en-IN": EnInViewsParser,
   "en-US": EnViewsParser,
   "es-ES": EsViewsParser,
   "es-419": EsViewsParser,
