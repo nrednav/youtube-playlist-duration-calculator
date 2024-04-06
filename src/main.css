@@ -95,6 +95,7 @@
 }
 
 #ytpdc-sort-control-dropdown-button span {
+  font-size: 1.25rem;
   pointer-events: none;
   text-align: start;
 }
