@@ -450,12 +450,15 @@ const createSortDropdown = (playlistObserver) => {
   labelElement.textContent = chrome.i18n.getMessage("sortDropdown_label");
 
   const dropdownElement = document.createElement("div");
+  dropdownElement.id = "ytpdc-sort-control-dropdown-container";
 
   const dropdownButtonElement = document.createElement("button");
-  dropdownButtonElement.id = "ytpdc-sort-control-button";
+  dropdownButtonElement.id = "ytpdc-sort-control-dropdown-button";
+
+  const dropdownButtonTextElement = document.createElement("span");
 
   const dropdownOptionsElement = document.createElement("div");
-  dropdownOptionsElement.id = "ytpdc-sort-control-options";
+  dropdownOptionsElement.id = "ytpdc-sort-control-dropdown-options";
   dropdownOptionsElement.classList.add("hidden");
 
   dropdownButtonElement.addEventListener("click", () => {
@@ -468,15 +471,19 @@ const createSortDropdown = (playlistObserver) => {
     dropdownOptionsElement.appendChild(sortOption);
   });
 
-  dropdownButtonElement.textContent = sortOptions[0].textContent;
+  dropdownButtonTextElement.textContent = sortOptions[0].textContent;
 
   dropdownOptionsElement.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("ytpdc-sort-control-option")) return;
+    if (
+      !event.target.classList.contains("ytpdc-sort-control-dropdown-option")
+    ) {
+      return;
+    }
 
     window.ytpdc.sortDropdown.used = true;
 
     dropdownOptionsElement.classList.toggle("hidden");
-    dropdownButtonElement.textContent = event.target.textContent;
+    dropdownButtonTextElement.textContent = event.target.textContent;
 
     playlistObserver?.disconnect();
 
@@ -497,13 +504,13 @@ const createSortDropdown = (playlistObserver) => {
     "http://www.w3.org/2000/svg",
     "svg"
   );
-  caretDownIcon.style.width = "1em";
-  caretDownIcon.style.height = "1em";
   caretDownIcon.setAttribute("viewBox", "0 0 256 256");
   caretDownIcon.innerHTML = `<path fill="currentColor" d="m216.49 104.49l-80
   80a12 12 0 0 1-17 0l-80-80a12 12 0 0 1 17-17L128 159l71.51-71.52a12 12 0 0 1
   17 17Z"/>`;
 
+  dropdownButtonElement.appendChild(dropdownButtonTextElement);
+  dropdownButtonElement.appendChild(caretDownIcon);
   dropdownElement.appendChild(dropdownButtonElement);
   dropdownElement.appendChild(dropdownOptionsElement);
   containerElement.appendChild(labelElement);

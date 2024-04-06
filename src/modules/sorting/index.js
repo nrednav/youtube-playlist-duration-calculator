@@ -94,7 +94,7 @@ export class PlaylistSorter {
       if (!enabled) return [];
       return Object.keys(label).map((sortOrder) => {
         const optionElement = document.createElement("div");
-        optionElement.classList.add("ytpdc-sort-control-option");
+        optionElement.classList.add("ytpdc-sort-control-dropdown-option");
         optionElement.setAttribute("value", `${sortType}:${sortOrder}`);
         optionElement.textContent = label[sortOrder];
         return optionElement;
