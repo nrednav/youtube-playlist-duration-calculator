@@ -85,7 +85,7 @@ export class PlaylistSorter {
   }
 
   /**
-   * Generates a list of <option> elements for each type of sort
+   * Generates a list of <div> elements representing each type of sort
    */
   static getSortOptions() {
     const sortTypes = PlaylistSorter.getSortTypes();
@@ -93,10 +93,11 @@ export class PlaylistSorter {
       const { enabled, label } = sortTypes[sortType];
       if (!enabled) return [];
       return Object.keys(label).map((sortOrder) => {
-        const option = document.createElement("option");
-        option.value = `${sortType}:${sortOrder}`;
-        option.textContent = label[sortOrder];
-        return option;
+        const optionElement = document.createElement("div");
+        optionElement.classList.add("ytpdc-sort-control-option");
+        optionElement.setAttribute("value", `${sortType}:${sortOrder}`);
+        optionElement.textContent = label[sortOrder];
+        return optionElement;
       });
     });
   }
