@@ -6,12 +6,7 @@ import {
 } from "src/shared/modules/timestamp";
 
 const main = () => {
-  if (
-    window.location.pathname === "/playlist" &&
-    window.location.search.startsWith("?list=")
-  ) {
-    checkPlaylistReady();
-  }
+  checkPlaylistReady();
 };
 
 const checkPlaylistReady = () => {
@@ -22,6 +17,11 @@ const checkPlaylistReady = () => {
 
   let playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
+
+    if (pollCount > 15 && window.location.pathname !== "/playlist") {
+      clearInterval(playlistPoll);
+      return;
+    }
 
     if (
       document.querySelector(elementSelectors.timestamp) &&
