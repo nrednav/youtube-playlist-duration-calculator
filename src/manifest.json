@@ -4,6 +4,7 @@
   "name": "Youtube Playlist Duration Calculator",
   "short_name": "YTPD Calc",
   "description": "An extension to calculate & display the total duration of a youtube playlist.",
+  "default_locale": "en",
   "icons": {
     "128": "icon128.png",
     "48": "icon48.png",
@@ -23,7 +24,7 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "run_at": "document_end",
-      "js": ["src/library.js", "src/content.js"]
+      "js": ["src/main.js"]
     }
   ],
   "{{chrome}}.host_permissions": ["https://www.youtube.com/*"],

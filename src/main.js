@@ -1,10 +1,11 @@
-import { pollPlaylistReady } from "./library";
+import { main } from "src/modules/index";
+import "./main.css";
 
 // Entry-point
 if (document.readyState !== "loading") {
-  pollPlaylistReady();
+  main();
 } else {
   document.addEventListener("DOMContentLoaded", () => {
-    pollPlaylistReady();
+    main();
   });
 }
