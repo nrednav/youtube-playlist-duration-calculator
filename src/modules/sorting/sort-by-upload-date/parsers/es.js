@@ -13,7 +13,7 @@ export class EsUploadDateParser {
 
     const uploadDateElement = videoInfo.children[2];
     const uploadDateRegex =
-      /hace (\d+) (minutos?|horas?|días?|semanas?|mes|meses|años?)/u;
+      /(?:emitido )?hace (\d+) (minutos?|horas?|días?|semanas?|mes|meses|años?)/u;
     const [value, unit] = uploadDateElement.textContent
       .toLowerCase()
       .match(uploadDateRegex)

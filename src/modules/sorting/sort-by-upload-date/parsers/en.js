@@ -11,7 +11,7 @@ export class EnUploadDateParser {
     };
 
     const uploadDateElement = videoInfo.children[2];
-    const uploadDateRegex = /(\d+) (\w+) ago/;
+    const uploadDateRegex = /(?:streamed )?(\d+) (\w+) ago/;
     const [value, unit] = uploadDateElement.textContent
       .toLowerCase()
       .match(uploadDateRegex)

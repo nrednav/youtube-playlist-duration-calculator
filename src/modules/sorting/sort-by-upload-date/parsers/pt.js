@@ -13,7 +13,7 @@ export class PtUploadDateParser {
 
     const uploadDateElement = videoInfo.children[2];
     const uploadDateRegex =
-      /há (\d+) (minutos?|horas?|dias?|semanas?|mês|meses|anos?)/u;
+      /(?:transmitido )?há (\d+) (minutos?|horas?|dias?|semanas?|mês|meses|anos?)/u;
     const [value, unit] = uploadDateElement.textContent
       .toLowerCase()
       .replaceAll(/\s/g, " ")
