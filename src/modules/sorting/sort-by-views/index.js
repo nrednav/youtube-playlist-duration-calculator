@@ -15,6 +15,13 @@ export class SortByViewsStrategy {
       const videoInfoA = videoA.querySelector(elementSelectors.videoInfo);
       const videoInfoB = videoB.querySelector(elementSelectors.videoInfo);
 
+      if (
+        videoInfoA.children.length === 0 ||
+        videoInfoB.children.length === 0
+      ) {
+        return 0;
+      }
+
       const viewCountA = this.extractViews(videoInfoA);
       const viewCountB = this.extractViews(videoInfoB);
 
