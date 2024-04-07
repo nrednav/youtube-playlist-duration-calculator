@@ -2,6 +2,7 @@ import { EnUploadDateParser } from "./en";
 import { EsUploadDateParser } from "./es";
 import { PtUploadDateParser } from "./pt";
 import { ZhHansCnUploadDateParser } from "./zh-Hans-CN";
+import { ZhHantTwUploadDateParser } from "./zh-Hant-TW";
 
 const UPLOAD_DATE_PARSERS_BY_LOCALE = {
   "en": EnUploadDateParser,
@@ -13,7 +14,8 @@ const UPLOAD_DATE_PARSERS_BY_LOCALE = {
   "es-US": EsUploadDateParser,
   "pt-PT": PtUploadDateParser,
   "pt-BR": PtUploadDateParser,
-  "zh-Hans-CN": ZhHansCnUploadDateParser
+  "zh-Hans-CN": ZhHansCnUploadDateParser,
+  "zh-Hant-TW": ZhHantTwUploadDateParser
 };
 
 /** @param {string} locale */
