@@ -1,0 +1,98 @@
+{
+  "loaderMessage": {
+    "message": "Calculando...",
+    "description": "Text to display when the extension is loading"
+  },
+  "videoTitle_private": {
+    "message": "[Vídeo privado]",
+    "description": "Title displayed by YouTube for private videos"
+  },
+  "videoTitle_deleted": {
+    "message": "[Vídeo excluído]",
+    "description": "Title displayed by YouTube for deleted videos"
+  },
+  "videoTitle_unavailable_v1": {
+    "message": "[Indisponível]",
+    "description": "First variation of title displayed by YouTube for unavailable videos"
+  },
+  "videoTitle_unavailable_v2": {
+    "message": "[Vídeo indisponível]",
+    "description": "Second variation of title displayed by YouTube for unavailable videos"
+  },
+  "videoTitle_restricted": {
+    "message": "[Vídeo restrito]",
+    "description": "Title displayed by YouTube for restricted videos"
+  },
+  "videoTitle_ageRestricted": {
+    "message": "[Idade restrita]",
+    "description": "Title displayed by YouTube for age-restricted videos"
+  },
+  "problemEncountered_paragraphOne": {
+    "message": "Encontramos um problema.",
+    "description": "Text to display in first paragraph when a problem has been encountered"
+  },
+  "problemEncountered_paragraphTwo": {
+    "message": "Atualize esta página para recalcular a duração da playlist.",
+    "description": "Text to display in second paragraph when a problem has been encountered"
+  },
+  "playlistSummary_totalDuration": {
+    "message": "Duração total:",
+    "description": "Text to display as label for the playlist duration"
+  },
+  "playlistSummary_videosCounted": {
+    "message": "Vídeos contabilizados:",
+    "description": "Text to display as label for the videos counted"
+  },
+  "playlistSummary_videosNotCounted": {
+    "message": "Vídeos não contabilizados:",
+    "description": "Text to display as label for the videos not counted"
+  },
+  "playlistSummary_tooltip": {
+    "message": "Role para baixo para contar mais vídeos",
+    "description": "Text to display within tooltip"
+  },
+  "sortDropdown_label": {
+    "message": "Ordenar por:",
+    "description": "Text to display as label for the sort dropdown"
+  },
+  "sortType_index_label_asc": {
+    "message": "Índice (Ascendente)",
+    "description": "Text to display for the ascending 'sort by index' option"
+  },
+  "sortType_index_label_desc": {
+    "message": "Índice (Descendente)",
+    "description": "Text to display for the descending 'sort by index' option"
+  },
+  "sortType_duration_label_asc": {
+    "message": "Duração (Mais curta)",
+    "description": "Text to display for the ascending 'sort by duration' option"
+  },
+  "sortType_duration_label_desc": {
+    "message": "Duração (Mais longa)",
+    "description": "Text to display for the descending 'sort by duration' option"
+  },
+  "sortType_channelName_label_asc": {
+    "message": "Nome do canal (A-Z)",
+    "description": "Text to display for the ascending 'sort by channel name' option"
+  },
+  "sortType_channelName_label_desc": {
+    "message": "Nome do canal (Z-A)",
+    "description": "Text to display for the descending 'sort by channel name' option"
+  },
+  "sortType_views_label_asc": {
+    "message": "Vistas (Mínimo)",
+    "description": "Text to display for the ascending 'sort by views' option"
+  },
+  "sortType_views_label_desc": {
+    "message": "Vistas (Máximo)",
+    "description": "Text to display for the descending 'sort by views' option"
+  },
+  "sortType_uploadDate_label_asc": {
+    "message": "Data de upload (Mais recente)",
+    "description": "Text to display for the ascending 'sort by upload date' option"
+  },
+  "sortType_uploadDate_label_desc": {
+    "message": "Data de upload (Mais antigo)",
+    "description": "Text to display for the descending 'sort by upload date' option"
+  }
+}
