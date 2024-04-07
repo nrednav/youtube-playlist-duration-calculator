@@ -3,6 +3,7 @@ import { EnInViewsParser } from "./en-IN";
 import { EsViewsParser } from "./es";
 import { PtViewsParser } from "./pt";
 import { ZhHansCnViewsParser } from "./zh-Hans-CN";
+import { ZhHantTwViewsParser } from "./zh-Hant-TW";
 
 const VIEWS_PARSERS_BY_LOCALE = {
   "en": EnViewsParser,
@@ -14,7 +15,8 @@ const VIEWS_PARSERS_BY_LOCALE = {
   "es-US": EsViewsParser,
   "pt-PT": PtViewsParser,
   "pt-BR": PtViewsParser,
-  "zh-Hans-CN": ZhHansCnViewsParser
+  "zh-Hans-CN": ZhHansCnViewsParser,
+  "zh-Hant-TW": ZhHantTwViewsParser
 };
 
 /** @param {string} locale */
