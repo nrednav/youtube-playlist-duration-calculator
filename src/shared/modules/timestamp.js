@@ -53,6 +53,12 @@ export const getTimestampFromVideo = (video) => {
   const timestamp = timestampElement.innerText;
   if (!timestamp) return null;
 
-  const timestampAsSeconds = convertTimestampToSeconds(timestamp);
+  // Ref: Timestamp regex from https://stackoverflow.com/a/8318367
+  const timestampSanitized = timestamp
+    .trim()
+    .replace(/\n/g, "")
+    .match(/((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/)[0];
+
+  const timestampAsSeconds = convertTimestampToSeconds(timestampSanitized);
   return timestampAsSeconds;
 };
