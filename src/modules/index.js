@@ -160,6 +160,12 @@ const setupPage = () => {
   };
 
   const onYoutubeNavigationFinished = () => {
+    document.removeEventListener(
+      "yt-navigate-finish",
+      onYoutubeNavigationFinished,
+      false
+    );
+
     window.ytpdc.playlistObserver?.disconnect();
 
     window.ytpdc = {
