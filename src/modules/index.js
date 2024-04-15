@@ -17,7 +17,7 @@ const checkPlaylistReady = () => {
   let pollCount = 0;
 
   let playlistPoll = setInterval(() => {
-    if (pollCount >= maxPollCount) return clearInterval(playlistPoll);
+    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
     if (pollCount > 15 && window.location.pathname !== "/playlist") {
       logger.warn("Could not find a playlist.");
