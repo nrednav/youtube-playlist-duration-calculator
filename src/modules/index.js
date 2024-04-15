@@ -16,7 +16,7 @@ const checkPlaylistReady = () => {
   let pollCount = 0;
 
   let playlistPoll = setInterval(() => {
-    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
+    if (pollCount >= maxPollCount) return clearInterval(playlistPoll);
 
     if (pollCount > 15 && window.location.pathname !== "/playlist") {
       clearInterval(playlistPoll);
@@ -24,6 +24,7 @@ const checkPlaylistReady = () => {
     }
 
     if (
+      document.querySelector(elementSelectors.playlist) &&
       document.querySelector(elementSelectors.timestamp) &&
       countUnavailableTimestamps() === countUnavailableVideos()
     ) {
@@ -72,8 +73,14 @@ const countUnavailableTimestamps = () => {
     .filter((timestamp) => timestamp === null).length;
 };
 
+/**
+ * Returns a list of video elements found within the playlist element
+ * @returns {Element[]}
+ **/
 const getVideos = () => {
   const playlistElement = document.querySelector(elementSelectors.playlist);
+  if (!playlistElement) return [];
+
   const videos = playlistElement.getElementsByTagName(elementSelectors.video);
   return [...videos];
 };
