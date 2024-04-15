@@ -57,7 +57,8 @@ export const getTimestampFromVideo = (video) => {
   const timestampSanitized = timestamp
     .trim()
     .replace(/\n/g, "")
-    .match(/((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/)[0];
+    .toLowerCase()
+    .match(/((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))|upcoming/)[0];
 
   const timestampAsSeconds = convertTimestampToSeconds(timestampSanitized);
   return timestampAsSeconds;
