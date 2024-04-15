@@ -7,7 +7,6 @@ import {
 import { logger } from "src/shared/modules/logger";
 
 const main = () => {
-  logger.info("Loaded.");
   checkPlaylistReady();
 };
 
