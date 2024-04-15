@@ -4,8 +4,10 @@ import {
   convertSecondsToTimestamp,
   getTimestampFromVideo
 } from "src/shared/modules/timestamp";
+import { logger } from "src/shared/modules/logger";
 
 const main = () => {
+  logger.info("Loaded.");
   checkPlaylistReady();
 };
 
@@ -19,6 +21,7 @@ const checkPlaylistReady = () => {
     if (pollCount >= maxPollCount) return clearInterval(playlistPoll);
 
     if (pollCount > 15 && window.location.pathname !== "/playlist") {
+      logger.warn("Could not find a playlist.");
       clearInterval(playlistPoll);
       return;
     }
@@ -128,6 +131,7 @@ const getVideoTitle = (video) => {
 };
 
 const processPlaylist = () => {
+  logger.info("Processing playlist...");
   setupPage();
   const playlistObserver = setupPlaylistObserver();
   const videos = getVideos();
@@ -142,6 +146,7 @@ const processPlaylist = () => {
     playlistDuration,
     playlistObserver
   });
+  logger.info("Finished processing playlist.");
 };
 
 const setupPage = () => {
