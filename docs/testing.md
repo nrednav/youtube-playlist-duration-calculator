@@ -28,6 +28,8 @@ This document describes the process involved in testing the extension.
 
 - For each type of playlist
   - [ ] Visit playlist page
+  - [ ] Verify extension loaded
+    - There should be a log in the browser console with the text `Loaded.`
   - [ ] Verify the following
     - [ ] A summary section is displayed within the playlist information panel
           located on the left-hand side of the page
@@ -60,3 +62,5 @@ This document describes the process involved in testing the extension.
             summary section
       - [ ] Selecting the "Show unavailable videos" settings triggers a
             recalulation of the playlist duration
+- For non-playlist pages, after 15 seconds have elapsed there should be a yellow
+  warning log in the browser console with the text `Could not find a playlist.`
