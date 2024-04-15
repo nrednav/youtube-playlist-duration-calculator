@@ -130,7 +130,6 @@ const getVideoTitle = (video) => {
 };
 
 const processPlaylist = () => {
-  logger.info("Processing playlist...");
   setupPage();
   const playlistObserver = setupPlaylistObserver();
   const videos = getVideos();
@@ -145,7 +144,6 @@ const processPlaylist = () => {
     playlistDuration,
     playlistObserver
   });
-  logger.info("Finished processing playlist.");
 };
 
 const setupPage = () => {
