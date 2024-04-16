@@ -53,12 +53,18 @@ export const getTimestampFromVideo = (video) => {
   const timestamp = timestampElement.innerText;
   if (!timestamp) return null;
 
-  // Ref: Timestamp regex from https://stackoverflow.com/a/8318367
-  const timestampSanitized = timestamp
-    .trim()
-    .replace(/\n/g, "")
-    .match(/((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/)[0];
+  const sanitizedTimestamp = timestamp.trim().replace(/\n/g, "");
 
-  const timestampAsSeconds = convertTimestampToSeconds(timestampSanitized);
-  return timestampAsSeconds;
+  // Does the timetamp match hh:mm:ss?
+  // Ref: Timestamp regex from https://stackoverflow.com/a/8318367
+  const matches = sanitizedTimestamp.match(
+    /((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/
+  );
+
+  if (matches) {
+    return convertTimestampToSeconds(matches[0]);
+  } else {
+    // Timestamp exists but does not match hh:mm:ss, treat it as 0 seconds
+    return 0;
+  }
 };
