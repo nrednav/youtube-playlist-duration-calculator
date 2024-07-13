@@ -12,7 +12,10 @@ const main = () => {
 };
 
 const checkPlaylistReady = () => {
+  logger.debug("Checking if playlist is ready to be processed");
+
   displayLoader();
+  setupPage();
 
   const maxPollCount = 60;
   let pollCount = 0;
@@ -20,19 +23,48 @@ const checkPlaylistReady = () => {
   let playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) clearInterval(playlistPoll);
 
-    if (pollCount > 15 && window.location.pathname !== "/playlist") {
-      logger.warn("Could not find a playlist.");
+    const playlistElement = document.querySelector(elementSelectors.playlist);
+    const playlistExists = playlistElement !== null;
+
+    if (
+      pollCount > 15 &&
+      !(playlistExists && isElementVisible(playlistElement)) &&
+      window.location.pathname !== "/playlist"
+    ) {
       clearInterval(playlistPoll);
+
+      logger.warn("Could not find a playlist.");
+
+      logger.debug(
+        "Could not find a playlist",
+        JSON.stringify({
+          pollCount: pollCount,
+          playlistExists: playlistExists,
+          playlistVisible: isElementVisible(playlistElement),
+          location: window.location
+        })
+      );
+
       return;
     }
 
+    const timestampElement = document.querySelector(elementSelectors.timestamp);
+    const timestampExists = timestampElement !== null;
+
     if (
-      document.querySelector(elementSelectors.playlist) &&
-      document.querySelector(elementSelectors.timestamp) &&
+      playlistExists &&
+      timestampExists &&
       countUnavailableTimestamps() === countUnavailableVideos()
     ) {
       clearInterval(playlistPoll);
-      processPlaylist();
+
+      const playlistVisible = isElementVisible(playlistElement);
+
+      if (playlistVisible) {
+        processPlaylist();
+      } else {
+        logger.debug("Playlist exists but is not visible, skipping processing");
+      }
     }
 
     pollCount++;
@@ -49,6 +81,87 @@ const displayLoader = () => {
 
   playlistSummaryElement.innerHTML = "";
   playlistSummaryElement.appendChild(loaderElement);
+};
+
+const setupPage = () => {
+  if (window.ytpdc && window.ytpdc.pageSetupDone) return;
+
+  window.ytpdc = {
+    pageSetupDone: false,
+    playlistObserver: null,
+    sortDropdown: {
+      used: false,
+      element: null
+    },
+    lastVideoInteractedWith: null
+  };
+
+  const onYoutubeNavigationFinished = () => {
+    logger.debug(
+      "YT Navigation Finished",
+      `${JSON.stringify(window.location)}`
+    );
+
+    document.removeEventListener(
+      "yt-navigate-finish",
+      onYoutubeNavigationFinished,
+      false
+    );
+
+    window.ytpdc.playlistObserver?.disconnect();
+
+    window.ytpdc = {
+      pageSetupDone: false,
+      playlistObserver: null,
+      sortDropdown: {
+        used: false,
+        element: null
+      },
+      lastVideoInteractedWith: null
+    };
+
+    main();
+  };
+
+  document.addEventListener(
+    "yt-navigate-finish",
+    onYoutubeNavigationFinished,
+    false
+  );
+
+  const onPlaylistInteractedWith = (event) => {
+    window.ytpdc.lastVideoInteractedWith = event.target.closest(
+      elementSelectors.video
+    );
+  };
+
+  document
+    .querySelector(elementSelectors.playlist)
+    ?.addEventListener("click", onPlaylistInteractedWith);
+
+  window.ytpdc.pageSetupDone = true;
+};
+
+/**
+ * Checks whether a given element is visible to the browser
+ *
+ * Ref:
+ * - https://developer.mozilla.org/en-US/docs/Web/API/Element/checkVisibility
+ * - https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
+ *
+ * @param {Element} element
+ */
+const isElementVisible = (element) => {
+  if (!element) return false;
+
+  return (
+    element?.offsetParent !== null ||
+    element?.checkVisibility({
+      contentVisibilityAuto: true,
+      opacityProperty: true,
+      visibilityProperty: true
+    })
+  );
 };
 
 const getPlaylistSummaryElement = () => {
@@ -131,74 +244,21 @@ const getVideoTitle = (video) => {
 };
 
 const processPlaylist = () => {
-  setupPage();
+  logger.debug("Processing playlist");
+
   const playlistObserver = setupPlaylistObserver();
   const videos = getVideos();
   const timestamps = videos.map(getTimestampFromVideo);
+
+  logger.debug("Calculating total duration");
+
   const totalDurationInSeconds =
     Array.isArray(timestamps) && timestamps.length > 0
       ? timestamps.reduce((a, b) => a + b)
       : 0;
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
-  addPlaylistSummaryToPage({
-    timestamps,
-    playlistDuration,
-    playlistObserver
-  });
-};
 
-const setupPage = () => {
-  if (window.ytpdc && window.ytpdc.pageSetupDone) return;
-
-  window.ytpdc = {
-    pageSetupDone: false,
-    playlistObserver: null,
-    sortDropdown: {
-      used: false,
-      element: null
-    },
-    lastVideoInteractedWith: null
-  };
-
-  const onYoutubeNavigationFinished = () => {
-    document.removeEventListener(
-      "yt-navigate-finish",
-      onYoutubeNavigationFinished,
-      false
-    );
-
-    window.ytpdc.playlistObserver?.disconnect();
-
-    window.ytpdc = {
-      pageSetupDone: false,
-      playlistObserver: null,
-      sortDropdown: {
-        used: false,
-        element: null
-      },
-      lastVideoInteractedWith: null
-    };
-
-    main();
-  };
-
-  document.addEventListener(
-    "yt-navigate-finish",
-    onYoutubeNavigationFinished,
-    false
-  );
-
-  const onPlaylistInteractedWith = (event) => {
-    window.ytpdc.lastVideoInteractedWith = event.target.closest(
-      elementSelectors.video
-    );
-  };
-
-  document
-    .querySelector(elementSelectors.playlist)
-    ?.addEventListener("click", onPlaylistInteractedWith);
-
-  window.ytpdc.pageSetupDone = true;
+  addPlaylistSummaryToPage({ timestamps, playlistDuration, playlistObserver });
 };
 
 /**
@@ -319,6 +379,8 @@ const addPlaylistSummaryToPage = ({
   playlistDuration,
   playlistObserver
 }) => {
+  logger.debug("Adding playlist summary to page");
+
   const playlistSummaryElement = createPlaylistSummaryElement({
     timestamps,
     playlistDuration,
