@@ -66,3 +66,5 @@ This document describes the process involved in testing the extension.
   warning log in the browser console with the text `Could not find a playlist.`
 - Appending `?ytpdc-debug=true` or `&ytpdc-debug=true` to the URL should enable
   & output extension debug logs to the browser console
+  - Note: To see the logs, you must have `DEBUG` logs selected in the console
+    for Firefox and `VERBOSE` for Chrome
