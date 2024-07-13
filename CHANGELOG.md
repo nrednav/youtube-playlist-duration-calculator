@@ -3,7 +3,38 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic
+Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v2.1.3] - 2024-07-12
+
+### Added
+
+- Added `isElementVisible` function
+
+### Changed
+
+- Updated the logger `debug` method to be controlled by the presence of a
+  `ytpdc-debug=true` search param in the URL
+
+### Fixed
+
+- Fixed (hopefully) a rare bug where the extension would not load despite the
+  playlist being visible
+  - This was caused by unreliable logic in the `checkPlaylistReady` function
+
+## [v2.1.2] - 2024-04-16
+
+### Fixed
+
+- Fixed bug with extension on non-playlist pages where it would spam error logs
+  due to not finding a playlist element
+- Fixed bug where playlists containing "Upcoming" videos would not calculate a
+  total duration
+- Fixed bug where the yt-navigate-finish event listener was not being removed
+  before a new one could be added
+- Added browser console logs to indicate when the extension loads & when it
+  cannot find a playlist
 
 ## [v2.1.1] - 2024-04-13
 
@@ -23,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added ability to sort playlists by different criteria (index, duration, views, channel name, upload date)
+- Added ability to sort playlists by different criteria (index, duration, views,
+  channel name, upload date)
 - Added i18n support & language translations:
   - English (en, en-GB, en-IN, en-US)
   - Spanish (es, es-419, es-us)
@@ -39,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed several bugs
-  - Bug with mutation observer not disconnecting when navigating between playlists
+  - Bug with mutation observer not disconnecting when navigating between
+    playlists
   - Bug where timestamps were not being summed properly
 - Addressed vulnerabilities reported by pnpm audit and dependabot
