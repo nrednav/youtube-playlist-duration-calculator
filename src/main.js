@@ -8,6 +8,7 @@ import {
 import "./main.css";
 
 const main = () => {
+  setupPage();
   checkPlaylistReady();
 };
 
@@ -15,7 +16,6 @@ const checkPlaylistReady = () => {
   logger.debug("Checking if playlist is ready to be processed");
 
   displayLoader();
-  setupPage();
 
   const maxPollCount = 60;
   let pollCount = 0;
