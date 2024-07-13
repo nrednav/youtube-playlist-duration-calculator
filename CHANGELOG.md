@@ -8,26 +8,20 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [v2.1.3] - 2024-07-12
 
+### Added
+
+- Added `isElementVisible` function
+
+### Changed
+
+- Updated the logger `debug` method to be controlled by the presence of a
+  `ytpdc-debug=true` search param in the URL
+
 ### Fixed
 
 - Fixed (hopefully) a rare bug where the extension would not load despite the
   playlist being visible
-  - As part of the process that checks whether a playlist is ready to be
-    processed, the extension checks whether the user is currently on a playlist
-    overview page
-    - This check is important because we don't want the extension to load on
-      non-playlist pages and consume browser resources unnecessarily
-  - For a playlist overview page, the value of `window.location.pathname` should
-    start with `/playlist`
-  - Unfortunately, in some rare cases, when a user navigates to their "Watch
-    Later" playlist, `window.location.pathname` would still contain the value of
-    the page they navigated from, despite the browser address bar updating to
-    display a url that contains `/playlist`
-    - A timeout of 15 seconds was added to give the pathname enough time to
-      update but it appears this had no effect and the extension would not
-      proceed with loading
-  - To fix this, the extension will now also check whether a playlist is visible
-    before blocking further loading
+  - This was caused by unreliable logic in the `checkPlaylistReady` function
 
 ## [v2.1.2] - 2024-04-16
 
