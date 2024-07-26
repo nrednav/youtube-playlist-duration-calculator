@@ -21,7 +21,9 @@ const checkPlaylistReady = () => {
   let pollCount = 0;
 
   let playlistPoll = setInterval(() => {
-    if (pollCount >= maxPollCount) clearInterval(playlistPoll);
+    if (pollCount >= maxPollCount) {
+      clearInterval(playlistPoll);
+    }
 
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const playlistExists = playlistElement !== null;
@@ -50,11 +52,13 @@ const checkPlaylistReady = () => {
 
     const timestampElement = document.querySelector(elementSelectors.timestamp);
     const timestampExists = timestampElement !== null;
+    const unavailableTimestampsCount = countUnavailableTimestamps();
+    const unavailableVideosCount = countUnavailableVideos();
 
     if (
       playlistExists &&
       timestampExists &&
-      countUnavailableTimestamps() === countUnavailableVideos()
+      unavailableTimestampsCount === unavailableVideosCount
     ) {
       clearInterval(playlistPoll);
 
@@ -208,6 +212,11 @@ const countUnavailableVideos = () => {
 /**
  * Checks whether a given video element meets the criteria for being considered
  * "unavailable"
+ *
+ * Criteria:
+ * - Has no timestamp
+ * - Title is unavailable
+ *
  * @param {Element} video
  */
 const isVideoUnavailable = (video) => {
@@ -226,11 +235,6 @@ const isVideoUnavailable = (video) => {
   ].includes(getVideoTitle(video));
 
   if (hasUnavailableTitle) return true;
-
-  const hasNoChannelName =
-    video.querySelector(elementSelectors.channelName)?.innerText.trim() === "";
-
-  if (hasNoChannelName) return true;
 
   return false;
 };

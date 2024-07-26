@@ -3,7 +3,7 @@
   "description": "An extension to calculate & display the total duration of a youtube playlist.",
   "author": "nrednav",
   "private": true,
-  "version": "2.1.3",
+  "version": "2.1.4",
   "type": "module",
   "engines": {
     "node": ">=20",

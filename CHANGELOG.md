@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.1.4] - 2024-07-26
+
+### Removed
+
+- Removed code which checks whether the video has a channel name from the
+  `isVideoUnavailable` function
+  - Found a rare situation where a
+    [video](https://www.youtube.com/watch?v=QwtyIDmhxh4) (as of 2024-07-26) had
+    a valid title and timestamp but no channel name
+  - This incorrectly flagged the video as "unavailable"
+  - The `checkPlaylistReady` function relies on the count of unavailable videos
+    & timestamps to determine whether a playlist is ready to be processed
+  - The video being incorrectly flagged, led to one count being higher than the
+    other, and so the extension determined the playlist was "not ready"
+
 ## [v2.1.3] - 2024-07-12
 
 ### Added
