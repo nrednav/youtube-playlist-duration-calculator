@@ -11,8 +11,10 @@ export const elementSelectors = {
   },
   playlistMetadata: {
     old: "ytd-playlist-sidebar-renderer #items",
-    new: ".immersive-header-content .metadata-action-bar"
+    new: ".immersive-header-content .metadata-action-bar",
+    youtubePremium: "yt-content-metadata-view-model"
   },
+  playlistDownloadButton: "ytd-download-playlist-button-renderer",
   video: "ytd-playlist-video-renderer",
   playlist: "ytd-playlist-video-list-renderer #contents",
   channelName: ".ytd-channel-name",

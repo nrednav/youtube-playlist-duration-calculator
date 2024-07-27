@@ -10,6 +10,15 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Added try-catch error handling to `main()`
+- Created `getPlaylistMetadataElement` function
+  - The playlist metadata element appears to have a different identifier
+    depending on if the user has YouTube premium or not
+  - This function will take that into account and use the appropriate selector
+    to find the metadata element
+- Added `playlistDownloadButton` to list of element selectors
+- Added `youtubePremium` variant to list of `playlistMetadata` element selectors
+
 ## [v2.1.4] - 2024-07-26
 
 ### Removed

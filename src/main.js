@@ -8,8 +8,12 @@ import {
 import "./main.css";
 
 const main = () => {
-  setupPage();
-  checkPlaylistReady();
+  try {
+    setupPage();
+    checkPlaylistReady();
+  } catch (error) {
+    logger.error(error.message);
+  }
 };
 
 const checkPlaylistReady = () => {
@@ -77,7 +81,10 @@ const checkPlaylistReady = () => {
 
 const displayLoader = () => {
   const playlistSummaryElement = getPlaylistSummaryElement();
-  if (!playlistSummaryElement) return;
+
+  if (!playlistSummaryElement) {
+    return;
+  }
 
   const loaderElement = document.createElement("div");
   loaderElement.id = "ytpdc-loader";
@@ -171,6 +178,7 @@ const isElementVisible = (element) => {
 const getPlaylistSummaryElement = () => {
   const selector =
     elementSelectors.playlistSummary[isNewDesign() ? "new" : "old"];
+
   return document.querySelector(selector);
 };
 
@@ -199,9 +207,11 @@ const countUnavailableTimestamps = () => {
  **/
 const getVideos = () => {
   const playlistElement = document.querySelector(elementSelectors.playlist);
+
   if (!playlistElement) return [];
 
   const videos = playlistElement.getElementsByTagName(elementSelectors.video);
+
   return [...videos];
 };
 
@@ -260,6 +270,7 @@ const processPlaylist = () => {
     Array.isArray(timestamps) && timestamps.length > 0
       ? timestamps.reduce((a, b) => a + b)
       : 0;
+
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
 
   addPlaylistSummaryToPage({ timestamps, playlistDuration, playlistObserver });
@@ -278,10 +289,15 @@ const setupPlaylistObserver = () => {
   if (window.ytpdc.playlistObserver) return window.ytpdc.playlistObserver;
 
   const playlistElement = document.querySelector(elementSelectors.playlist);
-  if (!playlistElement) return null;
+
+  if (!playlistElement) {
+    return null;
+  }
 
   const playlistObserver = new MutationObserver(onPlaylistMutated);
+
   playlistObserver.observe(playlistElement, { childList: true });
+
   window.ytpdc.playlistObserver = playlistObserver;
 
   return {
@@ -309,12 +325,13 @@ const onPlaylistMutated = (mutationList, observer) => {
         chrome.i18n.getMessage("problemEncountered_paragraphOne"),
         chrome.i18n.getMessage("problemEncountered_paragraphTwo")
       ]);
+
       observer.disconnect();
+
       return;
     }
 
     // No problem encountered, continue processing mutation
-
     const removedVideo = mutation.removedNodes[0];
 
     // If the playlist was sorted, YouTube removes the wrong video from the
@@ -332,8 +349,11 @@ const onPlaylistMutated = (mutationList, observer) => {
     }
 
     observer.disconnect();
+
     window.ytpdc.lastVideoInteractedWith.remove();
+
     observer.observe(playlistElement, { childList: true });
+
     main();
   } else {
     main();
@@ -363,7 +383,10 @@ const shouldRequestPageReload = (mutation) => {
  */
 const displayMessages = (messages) => {
   const playlistSummaryElement = getPlaylistSummaryElement();
-  if (!playlistSummaryElement) return;
+
+  if (!playlistSummaryElement) {
+    return;
+  }
 
   const containerElement = document.createElement("div");
   containerElement.id = "messages-container";
@@ -396,14 +419,20 @@ const addPlaylistSummaryToPage = ({
   if (existingPlaylistSummaryElement) {
     existingPlaylistSummaryElement.replaceWith(playlistSummaryElement);
   } else {
-    const metadataElement = document.querySelector(
-      elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"]
-    );
-    if (!metadataElement) return null;
+    const playlistMetadataElement = getPlaylistMetadataElement();
 
-    metadataElement.parentElement.insertBefore(
+    if (!playlistMetadataElement) {
+      throw new Error(
+        [
+          "Cannot add playlist summary to page",
+          "Reason = Cannot find playlist metadata element in document"
+        ].join(", ")
+      );
+    }
+
+    playlistMetadataElement.parentElement.insertBefore(
       playlistSummaryElement,
-      metadataElement.nextElementSibling
+      playlistMetadataElement.nextElementSibling
     );
   }
 };
@@ -436,6 +465,7 @@ const createPlaylistSummaryElement = ({
     `${playlistDuration}`,
     "#86efac"
   );
+
   containerElement.appendChild(totalDuration);
 
   const videosCounted = createSummaryItem(
@@ -443,6 +473,7 @@ const createPlaylistSummaryElement = ({
     `${timestamps.length}`,
     "#fdba74"
   );
+
   containerElement.appendChild(videosCounted);
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
@@ -453,6 +484,7 @@ const createPlaylistSummaryElement = ({
     }`,
     "#fca5a5"
   );
+
   containerElement.appendChild(videosNotCounted);
 
   if (totalVideosInPlaylist <= 100) {
@@ -473,22 +505,49 @@ const createPlaylistSummaryElement = ({
       "http://www.w3.org/2000/svg",
       "svg"
     );
+
     iconElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
     iconElement.setAttribute("viewBox", "0 0 24 24");
     iconElement.innerHTML = `<path fill="white" fill-rule="evenodd" d="M12 1C5.925 1 1
     5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1Zm-.5 5a1 1 0 1 0 0
     2h.5a1 1 0 1 0 0-2h-.5ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0
     0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/>`;
+
     tooltipElement.appendChild(iconElement);
 
     const textElement = document.createElement("p");
     textElement.textContent = chrome.i18n.getMessage("playlistSummary_tooltip");
+
     tooltipElement.appendChild(textElement);
 
     containerElement.appendChild(tooltipElement);
   }
 
   return containerElement;
+};
+
+const getPlaylistMetadataElement = () => {
+  const playlistMetadataElement = document.querySelector(
+    elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"]
+  );
+
+  if (!playlistMetadataElement) {
+    const playlistDownloadButton = document.querySelector(
+      elementSelectors.playlistDownloadButton
+    );
+
+    const userHasYoutubePremium = isElementVisible(playlistDownloadButton);
+
+    if (userHasYoutubePremium) {
+      return document.querySelector(
+        elementSelectors.playlistMetadata.youtubePremium
+      );
+    } else {
+      return null;
+    }
+  }
+
+  return playlistMetadataElement;
 };
 
 const isDarkMode = () => {
@@ -571,7 +630,6 @@ const createSortDropdown = (playlistObserver) => {
 
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const videos = playlistElement.getElementsByTagName(elementSelectors.video);
-
     const playlistSorter = new PlaylistSorter(
       event.target.getAttribute("value")
     );
@@ -593,8 +651,10 @@ const createSortDropdown = (playlistObserver) => {
 
   dropdownButtonElement.appendChild(dropdownButtonTextElement);
   dropdownButtonElement.appendChild(caretDownIcon);
+
   dropdownElement.appendChild(dropdownButtonElement);
   dropdownElement.appendChild(dropdownOptionsElement);
+
   containerElement.appendChild(labelElement);
   containerElement.appendChild(dropdownElement);
 
