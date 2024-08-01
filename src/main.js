@@ -532,19 +532,9 @@ const getPlaylistMetadataElement = () => {
   );
 
   if (!playlistMetadataElement) {
-    const playlistDownloadButton = document.querySelector(
-      elementSelectors.playlistDownloadButton
+    return document.querySelector(
+      elementSelectors.playlistMetadata.youtubePremium
     );
-
-    const userHasYoutubePremium = isElementVisible(playlistDownloadButton);
-
-    if (userHasYoutubePremium) {
-      return document.querySelector(
-        elementSelectors.playlistMetadata.youtubePremium
-      );
-    } else {
-      return null;
-    }
   }
 
   return playlistMetadataElement;
