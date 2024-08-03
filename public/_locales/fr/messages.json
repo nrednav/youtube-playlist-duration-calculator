@@ -36,15 +36,15 @@
     "description": "Text to display in second paragraph when a problem has been encountered"
   },
   "playlistSummary_totalDuration": {
-    "message": "Durée totale :",
+    "message": "Durée totale:",
     "description": "Text to display as label for the playlist duration"
   },
   "playlistSummary_videosCounted": {
-    "message": "Vidéos comptées :",
+    "message": "Vidéos comptées:",
     "description": "Text to display as label for the videos counted"
   },
   "playlistSummary_videosNotCounted": {
-    "message": "Vidéos non comptées :",
+    "message": "Vidéos non comptées:",
     "description": "Text to display as label for the videos not counted"
   },
   "playlistSummary_tooltip": {
@@ -52,7 +52,7 @@
     "description": "Text to display within tooltip"
   },
   "sortDropdown_label": {
-    "message": "Trier par :",
+    "message": "Trier par:",
     "description": "Text to display as label for the sort dropdown"
   },
   "sortType_index_label_asc": {
