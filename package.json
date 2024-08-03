@@ -13,6 +13,7 @@
     "dev": "vite",
     "build:chrome": "pnpm run clean && vite build --mode chrome",
     "build:firefox": "pnpm run clean && vite build --mode firefox",
+    "test": "node --test",
     "clean": "pnpm exec del dist/",
     "watch": "pnpm run clean && vite build --watch --mode development",
     "lint": "eslint .",
