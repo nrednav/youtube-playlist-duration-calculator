@@ -2,10 +2,6 @@ import test from "node:test";
 import assert from "node:assert";
 import { FrUploadDateParser } from "./fr.js";
 
-const createMockVideoElement = (textContent) => {
-  return { children: ["", "", { textContent }] };
-};
-
 test.describe("upload-date-parser/fr", () => {
   const testCases = [
     { input: "il y a 1 minute", expected: 1 * 60 },
@@ -26,17 +22,17 @@ test.describe("upload-date-parser/fr", () => {
 
   for (const testCase of testCases) {
     test(testCase.input, () => {
-      const mockVideoElement = createMockVideoElement(testCase.input);
-      const result = parser.parse(mockVideoElement);
-      assert.equal(result, testCase.expected);
-    });
+      const variants = [testCase.input, `Diffusé ${testCase.input}`];
 
-    test(`Diffusé ${testCase.input}`, () => {
-      const mockVideoElement = createMockVideoElement(
-        `Diffusé ${testCase.input}`
-      );
-      const result = parser.parse(mockVideoElement);
-      assert.equal(result, testCase.expected);
+      for (const variant of variants) {
+        const mockElement = {
+          children: ["", "", { textContent: variant }]
+        };
+
+        const result = parser.parse(mockElement);
+
+        assert.equal(result, testCase.expected);
+      }
     });
   }
 });

@@ -10,16 +10,16 @@ const UPLOAD_DATE_PARSERS_BY_LOCALE = {
   "en-GB": EnUploadDateParser,
   "en-IN": EnUploadDateParser,
   "en-US": EnUploadDateParser,
-  "es-ES": EsUploadDateParser,
   "es-419": EsUploadDateParser,
+  "es-ES": EsUploadDateParser,
   "es-US": EsUploadDateParser,
-  "pt-PT": PtUploadDateParser,
-  "pt-BR": PtUploadDateParser,
-  "zh-Hans-CN": ZhHansCnUploadDateParser,
-  "zh-Hant-TW": ZhHantTwUploadDateParser,
   "fr": FrUploadDateParser,
+  "fr-CA": FrUploadDateParser,
   "fr-FR": FrUploadDateParser,
-  "fr-CA": FrUploadDateParser
+  "pt-BR": PtUploadDateParser,
+  "pt-PT": PtUploadDateParser,
+  "zh-Hans-CN": ZhHansCnUploadDateParser,
+  "zh-Hant-TW": ZhHantTwUploadDateParser
 };
 
 /** @param {string} locale */
