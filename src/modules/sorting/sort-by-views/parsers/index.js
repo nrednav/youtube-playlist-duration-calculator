@@ -1,6 +1,7 @@
 import { EnViewsParser } from "./en";
 import { EnInViewsParser } from "./en-IN";
 import { EsViewsParser } from "./es";
+import { FrViewsParser } from "./fr";
 import { PtViewsParser } from "./pt";
 import { ZhHansCnViewsParser } from "./zh-Hans-CN";
 import { ZhHantTwViewsParser } from "./zh-Hant-TW";
@@ -10,11 +11,14 @@ const VIEWS_PARSERS_BY_LOCALE = {
   "en-GB": EnViewsParser,
   "en-IN": EnInViewsParser,
   "en-US": EnViewsParser,
-  "es-ES": EsViewsParser,
   "es-419": EsViewsParser,
+  "es-ES": EsViewsParser,
   "es-US": EsViewsParser,
-  "pt-PT": PtViewsParser,
+  "fr": FrViewsParser,
+  "fr-CA": FrViewsParser,
+  "fr-FR": FrViewsParser,
   "pt-BR": PtViewsParser,
+  "pt-PT": PtViewsParser,
   "zh-Hans-CN": ZhHansCnViewsParser,
   "zh-Hant-TW": ZhHantTwViewsParser
 };

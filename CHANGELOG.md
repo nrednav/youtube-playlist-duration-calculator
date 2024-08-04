@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.2.0] - 2024-07-27
+
+### Added
+
+- Added try-catch error handling to `main()`
+- Created `getPlaylistMetadataElement` function
+  - The playlist metadata element appears to have a different identifier
+    depending on if the user has YouTube premium or not
+  - This function will take that into account and use the appropriate selector
+    to find the metadata element
+- Added `youtubePremium` variant to list of `playlistMetadata` element selectors
+- Added translations for `fr` locale
+- Implemented sorting by view count & upload date for `fr` locale
+- Added tests for the `fr` locale parsers
+
+### Fixed
+
+- Fixed extension not loading for youtube premium layouts
+
 ## [v2.1.4] - 2024-07-26
 
 ### Removed
