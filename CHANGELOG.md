@@ -21,6 +21,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Implemented sorting by view count & upload date for `fr` locale
 - Added tests for the `fr` locale parsers
 
+### Fixed
+
+- Fixed extension not loading for youtube premium layouts
+
 ## [v2.1.4] - 2024-07-26
 
 ### Removed
