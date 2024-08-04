@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v2.1.5] - 2024-07-27
+## [v2.2.0] - 2024-07-27
 
 ### Added
 
@@ -17,6 +17,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   - This function will take that into account and use the appropriate selector
     to find the metadata element
 - Added `youtubePremium` variant to list of `playlistMetadata` element selectors
+- Added translations for `fr` locale
+- Implemented sorting by view count & upload date for `fr` locale
+- Added tests for the `fr` locale parsers
 
 ## [v2.1.4] - 2024-07-26
 
