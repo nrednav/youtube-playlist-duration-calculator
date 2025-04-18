@@ -32,7 +32,7 @@
     "description": "Text to display in first paragraph when a problem has been encountered"
   },
   "problemEncountered_paragraphTwo": {
-    "message": "請重新加載分頁以重新計算播放列表时长",
+    "message": "請重新加載分頁以重新計算播放列表時長",
     "description": "Text to display in second paragraph when a problem has been encountered"
   },
   "playlistSummary_totalDuration": {
