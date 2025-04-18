@@ -1,14 +1,14 @@
 {
   "loaderMessage": {
-    "message": "计算中...",
+    "message": "計算中...",
     "description": "Text to display when the extension is loading"
   },
   "videoTitle_private": {
-    "message": "[私享视频]",
+    "message": "[私人影片]",
     "description": "Title displayed by YouTube for private videos"
   },
   "videoTitle_deleted": {
-    "message": "[已删除的视频]",
+    "message": "[已刪除的影片]",
     "description": "Title displayed by YouTube for deleted videos"
   },
   "videoTitle_unavailable_v1": {
@@ -16,39 +16,39 @@
     "description": "First variation of title displayed by YouTube for unavailable videos"
   },
   "videoTitle_unavailable_v2": {
-    "message": "[视频不可用]",
+    "message": "[影片不可用]",
     "description": "Second variation of title displayed by YouTube for unavailable videos"
   },
   "videoTitle_restricted": {
-    "message": "[受限视频]",
+    "message": "[嚴格篩選限制影片]",
     "description": "Title displayed by YouTube for restricted videos"
   },
   "videoTitle_ageRestricted": {
-    "message": "[年龄受限]",
+    "message": "[設有年齡限制的影片]",
     "description": "Title displayed by YouTube for age-restricted videos"
   },
   "problemEncountered_paragraphOne": {
-    "message": "遇到问题了",
+    "message": "遇到問題了",
     "description": "Text to display in first paragraph when a problem has been encountered"
   },
   "problemEncountered_paragraphTwo": {
-    "message": "请重新加载本页以再次计算播放列表时长",
+    "message": "請重新加載分頁以重新計算播放列表时长",
     "description": "Text to display in second paragraph when a problem has been encountered"
   },
   "playlistSummary_totalDuration": {
-    "message": "总时长:",
+    "message": "總時長:",
     "description": "Text to display as label for the playlist duration"
   },
   "playlistSummary_videosCounted": {
-    "message": "已统计视频:",
+    "message": "已統計影片:",
     "description": "Text to display as label for the videos counted"
   },
   "playlistSummary_videosNotCounted": {
-    "message": "未统计视频:",
+    "message": "未統計影片:",
     "description": "Text to display as label for the videos not counted"
   },
   "playlistSummary_tooltip": {
-    "message": "向下滚动统计更多视频",
+    "message": "向下滑動統計更多影片",
     "description": "Text to display within tooltip"
   },
   "sortDropdown_label": {
@@ -64,19 +64,19 @@
     "description": "Text to display for the descending 'sort by index' option"
   },
   "sortType_duration_label_asc": {
-    "message": "时长 (最短)",
+    "message": "時長 (最短)",
     "description": "Text to display for the ascending 'sort by duration' option"
   },
   "sortType_duration_label_desc": {
-    "message": "时长 (最长)",
+    "message": "時長 (最長)",
     "description": "Text to display for the descending 'sort by duration' option"
   },
   "sortType_channelName_label_asc": {
-    "message": "频道 (升序)",
+    "message": "頻道 (升序)",
     "description": "Text to display for the ascending 'sort by channel name' option"
   },
   "sortType_channelName_label_desc": {
-    "message": "频道 (降序)",
+    "message": "頻道 (降序)",
     "description": "Text to display for the descending 'sort by channel name' option"
   },
   "sortType_views_label_asc": {
@@ -88,11 +88,11 @@
     "description": "Text to display for the descending 'sort by views' option"
   },
   "sortType_uploadDate_label_asc": {
-    "message": "上传日期 (最新)",
+    "message": "上傳日期 (最新)",
     "description": "Text to display for the ascending 'sort by upload date' option"
   },
   "sortType_uploadDate_label_desc": {
-    "message": "上传日期 (最早)",
+    "message": "上傳日期 (最舊)",
     "description": "Text to display for the descending 'sort by upload date' option"
   }
 }
