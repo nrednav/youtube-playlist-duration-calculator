@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["src/*"]
     }
   }
 }

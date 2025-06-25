@@ -12,7 +12,7 @@
     "dev": "vite",
     "build:chrome": "npm run clean && vite build --mode chrome",
     "build:firefox": "npm run clean && vite build --mode firefox",
-    "test": "node --test",
+    "test": "tsx --test",
     "clean": "npx del dist/",
     "watch": "npm run clean && vite build --watch --mode development",
     "lint": "biome lint --write",
@@ -23,6 +23,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.0.5",
     "husky": "^8.0.3",
+    "tsx": "4.20.3",
     "vite": "7.0.0",
     "vite-plugin-web-extension": "^4.4.4",
     "webextension-polyfill": "^0.10.0"
