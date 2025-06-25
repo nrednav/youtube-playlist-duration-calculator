@@ -6,16 +6,15 @@
   "version": "2.2.0",
   "type": "module",
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=7"
+    "node": ">=20"
   },
   "scripts": {
     "dev": "vite",
-    "build:chrome": "pnpm run clean && vite build --mode chrome",
-    "build:firefox": "pnpm run clean && vite build --mode firefox",
+    "build:chrome": "npm run clean && vite build --mode chrome",
+    "build:firefox": "npm run clean && vite build --mode firefox",
     "test": "node --test",
-    "clean": "pnpm exec del dist/",
-    "watch": "pnpm run clean && vite build --watch --mode development",
+    "clean": "npm exec del dist/",
+    "watch": "npm run clean && vite build --watch --mode development",
     "lint": "eslint .",
     "format": "prettier --ignore-unknown --write",
     "prepare": "husky install"
@@ -36,12 +35,6 @@
       "npx eslint --ext .js",
       "npx prettier --ignore-unknown --write"
     ]
-  },
-  "pnpm": {
-    "overrides": {
-      "postcss@<8.4.31": ">=8.4.31",
-      "del-cli@5.1.0>braces": "3.0.3"
-    }
   },
   "dependencies": {
     "del-cli": "^5.1.0"
