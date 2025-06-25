@@ -21,15 +21,15 @@ export const convertSecondsToTimestamp = (seconds) => {
  * @returns {number}
  */
 export const convertTimestampToSeconds = (timestamp) => {
-  let timeComponents = timestamp
+  const timeComponents = timestamp
     .split(":")
-    .map((timeComponent) => parseInt(timeComponent, 10));
+    .map((timeComponent) => Number.parseInt(timeComponent, 10));
 
   let seconds = 0;
   let minutes = 1;
 
   while (timeComponents.length > 0) {
-    let timeComponent = timeComponents.pop();
+    const timeComponent = timeComponents.pop();
     if (isNaN(timeComponent)) continue;
 
     seconds += minutes * timeComponent;
@@ -58,13 +58,12 @@ export const getTimestampFromVideo = (video) => {
   // Does the timetamp match hh:mm:ss?
   // Ref: Timestamp regex from https://stackoverflow.com/a/8318367
   const matches = sanitizedTimestamp.match(
-    /((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/
+    /((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/,
   );
 
   if (matches) {
     return convertTimestampToSeconds(matches[0]);
-  } else {
-    // Timestamp exists but does not match hh:mm:ss, treat it as 0 seconds
-    return 0;
   }
+  // Timestamp exists but does not match hh:mm:ss, treat it as 0 seconds
+  return 0;
 };

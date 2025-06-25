@@ -7,7 +7,7 @@ export class EnViewsParser {
       .toLowerCase()
       .match(viewsRegex);
     const suffix = viewsString.slice(-1);
-    const baseViews = parseFloat(viewsString);
+    const baseViews = Number.parseFloat(viewsString);
 
     if (isNaN(baseViews)) {
       return 0;
@@ -15,10 +15,10 @@ export class EnViewsParser {
 
     if (suffix === "k") {
       return Math.round(baseViews * 1000);
-    } else if (suffix === "m") {
-      return Math.round(baseViews * 1_000_000);
-    } else {
-      return Math.round(baseViews);
     }
+    if (suffix === "m") {
+      return Math.round(baseViews * 1_000_000);
+    }
+    return Math.round(baseViews);
   }
 }

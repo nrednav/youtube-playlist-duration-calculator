@@ -8,7 +8,7 @@ export class FrViewsParser {
       .replaceAll(/\s/g, " ")
       .split(" ");
 
-    const baseViews = parseFloat(value.replace(",", "."));
+    const baseViews = Number.parseFloat(value.replace(",", "."));
 
     if (isNaN(baseViews)) {
       return 0;
@@ -16,10 +16,10 @@ export class FrViewsParser {
 
     if (unit === "k") {
       return Math.round(baseViews * 1000);
-    } else if (unit === "m") {
-      return Math.round(baseViews * 1_000_000);
-    } else {
-      return Math.round(baseViews);
     }
+    if (unit === "m") {
+      return Math.round(baseViews * 1_000_000);
+    }
+    return Math.round(baseViews);
   }
 }

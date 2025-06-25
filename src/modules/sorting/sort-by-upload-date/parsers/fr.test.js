@@ -1,5 +1,5 @@
-import test from "node:test";
 import assert from "node:assert";
+import test from "node:test";
 import { FrUploadDateParser } from "./fr.js";
 
 test.describe("upload-date-parser/fr", () => {
@@ -15,7 +15,7 @@ test.describe("upload-date-parser/fr", () => {
     { input: "il y a 1 mois", expected: 1 * 30 * 86400 },
     { input: "il y a 2 mois", expected: 2 * 30 * 86400 },
     { input: "il y a 1 an", expected: 1 * 365 * 86400 },
-    { input: "il y a 2 ans", expected: 2 * 365 * 86400 }
+    { input: "il y a 2 ans", expected: 2 * 365 * 86400 },
   ];
 
   const parser = new FrUploadDateParser();
@@ -26,7 +26,7 @@ test.describe("upload-date-parser/fr", () => {
 
       for (const variant of variants) {
         const mockElement = {
-          children: ["", "", { textContent: variant }]
+          children: ["", "", { textContent: variant }],
         };
 
         const result = parser.parse(mockElement);

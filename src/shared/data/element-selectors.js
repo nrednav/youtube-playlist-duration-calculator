@@ -3,16 +3,16 @@ export const elementSelectors = {
   // Design anchor = Element that helps distinguish between old & new layouts
   designAnchor: {
     old: "ytd-playlist-sidebar-renderer",
-    new: "ytd-playlist-header-renderer"
+    new: "ytd-playlist-header-renderer",
   },
   playlistSummary: {
     old: "#ytpdc-playlist-summary-old",
-    new: "#ytpdc-playlist-summary-new"
+    new: "#ytpdc-playlist-summary-new",
   },
   playlistMetadata: {
     old: "ytd-playlist-sidebar-renderer #items",
     new: ".immersive-header-content .metadata-action-bar",
-    youtubePremium: ".yt-flexible-actions-view-model-wiz__action-row"
+    youtubePremium: ".yt-flexible-actions-view-model-wiz__action-row",
   },
   video: "ytd-playlist-video-renderer",
   playlist: "ytd-playlist-video-list-renderer #contents",
@@ -22,6 +22,6 @@ export const elementSelectors = {
   videoInfo: "yt-formatted-string#video-info",
   stats: {
     old: "#stats yt-formatted-string",
-    new: ".metadata-stats yt-formatted-string"
-  }
+    new: ".metadata-stats yt-formatted-string",
+  },
 };

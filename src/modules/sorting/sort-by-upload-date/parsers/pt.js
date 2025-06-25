@@ -8,7 +8,7 @@ export class PtUploadDateParser {
       semana: 7 * 86400,
       mês: 30 * 86400,
       meses: 30 * 86400,
-      ano: 365 * 86400
+      ano: 365 * 86400,
     };
 
     const uploadDateElement = videoInfo.children[2];
@@ -23,6 +23,6 @@ export class PtUploadDateParser {
     const seconds =
       secondsByUnit[unit] ?? secondsByUnit[unit.slice(0, -1)] ?? 1;
 
-    return parseFloat(value) * seconds;
+    return Number.parseFloat(value) * seconds;
   }
 }

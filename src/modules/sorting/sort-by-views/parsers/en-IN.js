@@ -6,7 +6,7 @@ export class EnInViewsParser {
       .toLowerCase()
       .replaceAll(/\s/g, " ")
       .split(" ");
-    const baseViews = parseFloat(parts[0]);
+    const baseViews = Number.parseFloat(parts[0]);
 
     if (parts.length === 3 && parts[1] === "lakh") {
       return Math.round(baseViews * 100_000);

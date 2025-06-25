@@ -36,51 +36,51 @@ export class PlaylistSorter {
         enabled: videoHasElement(elementSelectors.videoIndex),
         label: {
           asc: chrome.i18n.getMessage("sortType_index_label_asc"),
-          desc: chrome.i18n.getMessage("sortType_index_label_desc")
+          desc: chrome.i18n.getMessage("sortType_index_label_desc"),
         },
-        strategy: SortByIndexStrategy
+        strategy: SortByIndexStrategy,
       },
       duration: {
         enabled: videoHasElement(elementSelectors.timestamp),
         label: {
           asc: chrome.i18n.getMessage("sortType_duration_label_asc"),
-          desc: chrome.i18n.getMessage("sortType_duration_label_desc")
+          desc: chrome.i18n.getMessage("sortType_duration_label_desc"),
         },
-        strategy: SortByDurationStrategy
+        strategy: SortByDurationStrategy,
       },
       channelName: {
         enabled: videoHasElement(elementSelectors.channelName),
         label: {
           asc: chrome.i18n.getMessage("sortType_channelName_label_asc"),
-          desc: chrome.i18n.getMessage("sortType_channelName_label_desc")
+          desc: chrome.i18n.getMessage("sortType_channelName_label_desc"),
         },
-        strategy: SortByChannelNameStrategy
+        strategy: SortByChannelNameStrategy,
       },
       views: {
         enabled:
           videoHasElement(elementSelectors.videoInfo) &&
           SortByViewsStrategy.supportedLocales.includes(
-            document.documentElement.lang
+            document.documentElement.lang,
           ),
         label: {
           asc: chrome.i18n.getMessage("sortType_views_label_asc"),
-          desc: chrome.i18n.getMessage("sortType_views_label_desc")
+          desc: chrome.i18n.getMessage("sortType_views_label_desc"),
         },
-        strategy: SortByViewsStrategy
+        strategy: SortByViewsStrategy,
       },
       uploadDate: {
         enabled:
           videoHasElement(elementSelectors.videoInfo) &&
           !pageHasNativeSortFeature() &&
           SortByUploadDateStrategy.supportedLocales.includes(
-            document.documentElement.lang
+            document.documentElement.lang,
           ),
         label: {
           asc: chrome.i18n.getMessage("sortType_uploadDate_label_asc"),
-          desc: chrome.i18n.getMessage("sortType_uploadDate_label_desc")
+          desc: chrome.i18n.getMessage("sortType_uploadDate_label_desc"),
         },
-        strategy: SortByUploadDateStrategy
-      }
+        strategy: SortByUploadDateStrategy,
+      },
     };
   }
 
@@ -116,7 +116,7 @@ const videoHasElement = (identifier) => {
 
 const pageHasNativeSortFeature = () => {
   const nativeSortElement = document.querySelector(
-    "#filter-menu yt-sort-filter-sub-menu-renderer"
+    "#filter-menu yt-sort-filter-sub-menu-renderer",
   );
   return nativeSortElement !== null;
 };

@@ -7,7 +7,7 @@ export class ZhHansCnViewsParser {
       .toLowerCase()
       .match(viewsRegex);
     const suffix = viewsString.slice(-1);
-    const baseViews = parseFloat(viewsString);
+    const baseViews = Number.parseFloat(viewsString);
 
     if (isNaN(baseViews)) {
       return 0;
