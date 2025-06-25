@@ -48,7 +48,7 @@
     "description": "Text to display as label for the videos not counted"
   },
   "playlistSummary_tooltip": {
-    "message": "向下滑動統計更多影片",
+    "message": "向下捲動統計更多影片",
     "description": "Text to display within tooltip"
   },
   "sortDropdown_label": {
@@ -80,11 +80,11 @@
     "description": "Text to display for the descending 'sort by channel name' option"
   },
   "sortType_views_label_asc": {
-    "message": "播放量 (升序)",
+    "message": "觀看次數 (升序)",
     "description": "Text to display for the ascending 'sort by views' option"
   },
   "sortType_views_label_desc": {
-    "message": "播放量 (降序)",
+    "message": "觀看次數 (降序)",
     "description": "Text to display for the descending 'sort by views' option"
   },
   "sortType_uploadDate_label_asc": {
