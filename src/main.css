@@ -23,7 +23,7 @@
   margin: 16px 0px;
   padding: 16px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   font-size: 1.5rem;
 }
 
@@ -70,6 +70,7 @@
 #ytpdc-sort-control .label {
   padding-right: 8px;
   flex-shrink: 0;
+  color: #fff;
 }
 
 #ytpdc-sort-control-dropdown-container {
@@ -130,6 +131,7 @@
   padding: 4px 8px 4px 8px;
   border-radius: 2px;
   cursor: pointer;
+  color: #fff;
 }
 
 .ytpdc-sort-control-dropdown-option:hover {

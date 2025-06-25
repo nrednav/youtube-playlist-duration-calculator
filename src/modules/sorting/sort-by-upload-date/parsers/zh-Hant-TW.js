@@ -2,12 +2,12 @@ export class ZhHantTwUploadDateParser {
   /** @param {Element} videoInfo */
   parse(videoInfo) {
     const secondsByUnit = {
-      "分鐘": 60, // minute
-      "小時": 60 * 60,
-      "天": 1 * 86400,
-      "週": 7 * 86400,
-      "個月": 30 * 86400,
-      "年": 365 * 86400 // year
+      分鐘: 60, // minute
+      小時: 60 * 60,
+      天: 1 * 86400,
+      週: 7 * 86400,
+      個月: 30 * 86400,
+      年: 365 * 86400, // year
     };
 
     const uploadDateElement = videoInfo.children[2];
@@ -18,6 +18,6 @@ export class ZhHantTwUploadDateParser {
       .match(uploadDateRegex)
       .slice(1)
       .map((x) => x.trim());
-    return parseFloat(value) * secondsByUnit[unit];
+    return Number.parseFloat(value) * secondsByUnit[unit];
   }
 }

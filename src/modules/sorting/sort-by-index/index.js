@@ -10,10 +10,10 @@ export class SortByIndexStrategy {
   sort(videos, sortOrder) {
     return [...videos].sort((videoA, videoB) => {
       const indexA = videoA.querySelector(
-        elementSelectors.videoIndex
+        elementSelectors.videoIndex,
       ).innerText;
       const indexB = videoB.querySelector(
-        elementSelectors.videoIndex
+        elementSelectors.videoIndex,
       ).innerText;
 
       if (sortOrder === "asc") {

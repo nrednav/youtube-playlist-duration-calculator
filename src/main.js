@@ -1,9 +1,9 @@
 import { PlaylistSorter } from "./modules/sorting";
-import { logger } from "./shared/modules/logger";
 import { elementSelectors } from "./shared/data/element-selectors";
+import { logger } from "./shared/modules/logger";
 import {
   convertSecondsToTimestamp,
-  getTimestampFromVideo
+  getTimestampFromVideo,
 } from "./shared/modules/timestamp";
 import "./main.css";
 
@@ -24,7 +24,7 @@ const checkPlaylistReady = () => {
   const maxPollCount = 60;
   let pollCount = 0;
 
-  let playlistPoll = setInterval(() => {
+  const playlistPoll = setInterval(() => {
     if (pollCount >= maxPollCount) {
       clearInterval(playlistPoll);
     }
@@ -47,8 +47,8 @@ const checkPlaylistReady = () => {
           pollCount: pollCount,
           playlistExists: playlistExists,
           playlistVisible: isElementVisible(playlistElement),
-          location: window.location
-        })
+          location: window.location,
+        }),
       );
 
       return;
@@ -95,28 +95,28 @@ const displayLoader = () => {
 };
 
 const setupPage = () => {
-  if (window.ytpdc && window.ytpdc.pageSetupDone) return;
+  if (window.ytpdc?.pageSetupDone) return;
 
   window.ytpdc = {
     pageSetupDone: false,
     playlistObserver: null,
     sortDropdown: {
       used: false,
-      element: null
+      element: null,
     },
-    lastVideoInteractedWith: null
+    lastVideoInteractedWith: null,
   };
 
   const onYoutubeNavigationFinished = () => {
     logger.debug(
       "YT Navigation Finished",
-      `${JSON.stringify(window.location)}`
+      `${JSON.stringify(window.location)}`,
     );
 
     document.removeEventListener(
       "yt-navigate-finish",
       onYoutubeNavigationFinished,
-      false
+      false,
     );
 
     window.ytpdc.playlistObserver?.disconnect();
@@ -126,9 +126,9 @@ const setupPage = () => {
       playlistObserver: null,
       sortDropdown: {
         used: false,
-        element: null
+        element: null,
       },
-      lastVideoInteractedWith: null
+      lastVideoInteractedWith: null,
     };
 
     main();
@@ -137,12 +137,12 @@ const setupPage = () => {
   document.addEventListener(
     "yt-navigate-finish",
     onYoutubeNavigationFinished,
-    false
+    false,
   );
 
   const onPlaylistInteractedWith = (event) => {
     window.ytpdc.lastVideoInteractedWith = event.target.closest(
-      elementSelectors.video
+      elementSelectors.video,
     );
   };
 
@@ -170,7 +170,7 @@ const isElementVisible = (element) => {
     element?.checkVisibility({
       contentVisibilityAuto: true,
       opacityProperty: true,
-      visibilityProperty: true
+      visibilityProperty: true,
     })
   );
 };
@@ -185,7 +185,7 @@ const getPlaylistSummaryElement = () => {
 const isNewDesign = () => {
   const designAnchors = {
     new: document.querySelector(elementSelectors.designAnchor.new),
-    old: document.querySelector(elementSelectors.designAnchor.old)
+    old: document.querySelector(elementSelectors.designAnchor.old),
   };
 
   return designAnchors.new && designAnchors.old.getAttribute("hidden") !== null;
@@ -241,7 +241,7 @@ const isVideoUnavailable = (video) => {
     chrome.i18n.getMessage("videoTitle_unavailable_v1"),
     chrome.i18n.getMessage("videoTitle_unavailable_v2"),
     chrome.i18n.getMessage("videoTitle_restricted"),
-    chrome.i18n.getMessage("videoTitle_ageRestricted")
+    chrome.i18n.getMessage("videoTitle_ageRestricted"),
   ].includes(getVideoTitle(video));
 
   if (hasUnavailableTitle) return true;
@@ -303,7 +303,7 @@ const setupPlaylistObserver = () => {
   return {
     disconnect: () => playlistObserver.disconnect(),
     reconnect: () =>
-      playlistObserver.observe(playlistElement, { childList: true })
+      playlistObserver.observe(playlistElement, { childList: true }),
   };
 };
 
@@ -323,7 +323,7 @@ const onPlaylistMutated = (mutationList, observer) => {
       // Problem encountered, request a page reload
       displayMessages([
         chrome.i18n.getMessage("problemEncountered_paragraphOne"),
-        chrome.i18n.getMessage("problemEncountered_paragraphTwo")
+        chrome.i18n.getMessage("problemEncountered_paragraphTwo"),
       ]);
 
       observer.disconnect();
@@ -404,14 +404,14 @@ const displayMessages = (messages) => {
 const addPlaylistSummaryToPage = ({
   timestamps,
   playlistDuration,
-  playlistObserver
+  playlistObserver,
 }) => {
   logger.debug("Adding playlist summary to page");
 
   const playlistSummaryElement = createPlaylistSummaryElement({
     timestamps,
     playlistDuration,
-    playlistObserver
+    playlistObserver,
   });
 
   const existingPlaylistSummaryElement = getPlaylistSummaryElement();
@@ -425,14 +425,14 @@ const addPlaylistSummaryToPage = ({
       throw new Error(
         [
           "Cannot add playlist summary to page",
-          "Reason = Cannot find playlist metadata element in document"
-        ].join(", ")
+          "Reason = Cannot find playlist metadata element in document",
+        ].join(", "),
       );
     }
 
     playlistMetadataElement.parentElement.insertBefore(
       playlistSummaryElement,
-      playlistMetadataElement.nextElementSibling
+      playlistMetadataElement.nextElementSibling,
     );
   }
 };
@@ -440,7 +440,7 @@ const addPlaylistSummaryToPage = ({
 const createPlaylistSummaryElement = ({
   timestamps,
   playlistDuration,
-  playlistObserver
+  playlistObserver,
 }) => {
   const newDesign = isNewDesign();
 
@@ -463,7 +463,7 @@ const createPlaylistSummaryElement = ({
   const totalDuration = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_totalDuration"),
     `${playlistDuration}`,
-    "#86efac"
+    "#86efac",
   );
 
   containerElement.appendChild(totalDuration);
@@ -471,7 +471,7 @@ const createPlaylistSummaryElement = ({
   const videosCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosCounted"),
     `${timestamps.length}`,
-    "#fdba74"
+    "#fdba74",
   );
 
   containerElement.appendChild(videosCounted);
@@ -482,7 +482,7 @@ const createPlaylistSummaryElement = ({
     `${
       totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
     }`,
-    "#fca5a5"
+    "#fca5a5",
   );
 
   containerElement.appendChild(videosNotCounted);
@@ -503,7 +503,7 @@ const createPlaylistSummaryElement = ({
 
     const iconElement = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "svg"
+      "svg",
     );
 
     iconElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
@@ -528,12 +528,12 @@ const createPlaylistSummaryElement = ({
 
 const getPlaylistMetadataElement = () => {
   const playlistMetadataElement = document.querySelector(
-    elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"]
+    elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"],
   );
 
   if (!playlistMetadataElement) {
     return document.querySelector(
-      elementSelectors.playlistMetadata.youtubePremium
+      elementSelectors.playlistMetadata.youtubePremium,
     );
   }
 
@@ -565,12 +565,12 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
 
 const countTotalVideosInPlaylist = () => {
   const statsElement = document.querySelector(
-    elementSelectors.stats[isNewDesign() ? "new" : "old"]
+    elementSelectors.stats[isNewDesign() ? "new" : "old"],
   );
 
   if (!statsElement) return null;
 
-  return parseInt(statsElement.innerText.replace(/\D/g, ""));
+  return Number.parseInt(statsElement.innerText.replace(/\D/g, ""));
 };
 
 const createSortDropdown = (playlistObserver) => {
@@ -622,7 +622,7 @@ const createSortDropdown = (playlistObserver) => {
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const videos = playlistElement.getElementsByTagName(elementSelectors.video);
     const playlistSorter = new PlaylistSorter(
-      event.target.getAttribute("value")
+      event.target.getAttribute("value"),
     );
     const sortedVideos = playlistSorter.sort([...videos].slice(0, 100));
 
@@ -633,7 +633,7 @@ const createSortDropdown = (playlistObserver) => {
 
   const caretDownIcon = document.createElementNS(
     "http://www.w3.org/2000/svg",
-    "svg"
+    "svg",
   );
   caretDownIcon.setAttribute("viewBox", "0 0 256 256");
   caretDownIcon.innerHTML = `<path fill="currentColor" d="m216.49 104.49l-80
