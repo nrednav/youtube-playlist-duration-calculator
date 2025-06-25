@@ -8,7 +8,7 @@ export class EsUploadDateParser {
       semana: 7 * 86400,
       mes: 30 * 86400,
       meses: 30 * 86400,
-      año: 365 * 86400
+      año: 365 * 86400,
     };
 
     const uploadDateElement = videoInfo.children[2];
@@ -22,6 +22,6 @@ export class EsUploadDateParser {
     const seconds =
       secondsByUnit[unit] ?? secondsByUnit[unit.slice(0, -1)] ?? 1;
 
-    return parseFloat(value) * seconds;
+    return Number.parseFloat(value) * seconds;
   }
 }

@@ -7,20 +7,20 @@ import { ZhHansCnViewsParser } from "./zh-Hans-CN";
 import { ZhHantTwViewsParser } from "./zh-Hant-TW";
 
 const VIEWS_PARSERS_BY_LOCALE = {
-  "en": EnViewsParser,
+  en: EnViewsParser,
   "en-GB": EnViewsParser,
   "en-IN": EnInViewsParser,
   "en-US": EnViewsParser,
   "es-419": EsViewsParser,
   "es-ES": EsViewsParser,
   "es-US": EsViewsParser,
-  "fr": FrViewsParser,
+  fr: FrViewsParser,
   "fr-CA": FrViewsParser,
   "fr-FR": FrViewsParser,
   "pt-BR": PtViewsParser,
   "pt-PT": PtViewsParser,
   "zh-Hans-CN": ZhHansCnViewsParser,
-  "zh-Hant-TW": ZhHantTwViewsParser
+  "zh-Hant-TW": ZhHantTwViewsParser,
 };
 
 /** @param {string} locale */

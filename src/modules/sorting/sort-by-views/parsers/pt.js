@@ -6,7 +6,7 @@ export class PtViewsParser {
       .toLowerCase()
       .replaceAll(/\s/g, " ")
       .split(" ");
-    const baseViews = parseFloat(parts[0].replace(",", "."));
+    const baseViews = Number.parseFloat(parts[0].replace(",", "."));
 
     if (parts.length === 3 && parts[1] === "mil") {
       return Math.round(baseViews * 1000);

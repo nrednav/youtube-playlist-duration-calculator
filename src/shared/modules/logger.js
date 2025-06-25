@@ -21,9 +21,8 @@ class Logger {
 
       if (url.searchParams.has("ytpdc-debug", "true")) {
         return this.logWithPrefix(console.debug);
-      } else {
-        return () => {};
       }
+      return () => {};
     } catch (error) {
       this.error(error.message);
       return () => {};

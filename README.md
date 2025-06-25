@@ -52,8 +52,6 @@ To work with this project, you will need the following dependencies:
   - https://nodejs.org/en/download
   - https://github.com/Schniz/fnm
   - https://github.com/nvm-sh/nvm
-- pnpm
-  - https://pnpm.io/
 
 ### Get the Source
 
@@ -80,7 +78,7 @@ To install the project's dependencies:
 
 ```
 cd youtube-playlist-duration-calculator/
-pnpm install
+npm install
 ```
 
 ### Building
@@ -88,8 +86,8 @@ pnpm install
 Build the extension for a specific browser using:
 
 ```
-pnpm run build:chrome
-pnpm run build:firefox
+npm run build:chrome
+npm run build:firefox
 ```
 
 This will output the extension files into a sub-directory named `dist` within
@@ -102,7 +100,7 @@ the `youtube-playlist-duration-calculator` directory.
 Run the project in development mode with:
 
 ```
-pnpm run dev
+npm run dev
 ```
 
 This will do the following:
@@ -122,7 +120,7 @@ To install & run the extension manually, follow these steps:
 
 Firefox:
 
-- Build the extension with `pnpm run build:firefox`
+- Build the extension with `npm run build:firefox`
 - Install the `web-ext` tool from Mozilla
   - Link: https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/
 - Test the extension by running `web-ext run` from within `dist/` directory
@@ -142,7 +140,7 @@ Firefox:
 
 Chrome:
 
-- Build the extension with `pnpm run build:chrome`
+- Build the extension with `npm run build:chrome`
 - In your Chrome browser
   - Navigate to `chrome://extensions` via the address bar
   - Select the checkbox next to `Developer Mode`
