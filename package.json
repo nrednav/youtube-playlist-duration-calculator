@@ -20,12 +20,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.32.0",
     "husky": "^8.0.3",
-    "lint-staged": "^16.1.2",
-    "prettier": "^3.6.1",
     "vite": "7.0.0",
     "vite-plugin-web-extension": "^4.4.4",
     "webextension-polyfill": "^0.10.0"
