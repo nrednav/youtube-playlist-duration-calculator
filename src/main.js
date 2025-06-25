@@ -549,6 +549,7 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
   container.classList.add("ytpdc-playlist-summary-item");
 
   const labelContainer = document.createElement("p");
+  labelContainer.classList.add("ytpdc-playlist-summary-item-label");
   labelContainer.textContent = label;
 
   const valueContainer = document.createElement("p");

@@ -33,6 +33,10 @@
   flex-direction: row;
 }
 
+.ytpdc-playlist-summary-item-label {
+  color: #fff;
+}
+
 .ytpdc-playlist-summary-item-value {
   font-weight: 700;
   padding-left: 8px;
