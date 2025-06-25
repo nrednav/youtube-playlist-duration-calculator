@@ -8,6 +8,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [v2.2.1] - 2025-06-25
 
+### Updated
+
+- Updated dependencies
+
 ### Fixed
 
 - Fixed the text color of playlist summary item labels (e.g. Total duration,
