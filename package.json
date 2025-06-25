@@ -18,11 +18,12 @@
     "lint": "biome lint --write",
     "format": "biome format --write",
     "check": "biome check --write",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.5",
-    "husky": "^8.0.3",
+    "husky": "9.1.7",
+    "lint-staged": "16.1.2",
     "tsx": "4.20.3",
     "vite": "7.0.0",
     "vite-plugin-web-extension": "^4.4.4",
@@ -30,5 +31,10 @@
   },
   "dependencies": {
     "del-cli": "^5.1.0"
+  },
+  "lint-staged": {
+    "**/*.{js,cjs,mjs,json}": [
+      "npm run check"
+    ]
   }
 }

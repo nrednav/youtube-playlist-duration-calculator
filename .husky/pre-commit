@@ -1,5 +1,5 @@
 echo "Running git pre-commit hook..."
 
-npx biome check --staged
+npx lint-staged
 
 echo "Finished running git pre-commit hook."
