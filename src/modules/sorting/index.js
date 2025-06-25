@@ -111,7 +111,7 @@ export class PlaylistSorter {
  */
 const videoHasElement = (identifier) => {
   const videoElement = document.querySelector(elementSelectors.video);
-  return videoElement && videoElement.querySelector(identifier);
+  return videoElement?.querySelector(identifier);
 };
 
 const pageHasNativeSortFeature = () => {

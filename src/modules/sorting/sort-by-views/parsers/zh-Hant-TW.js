@@ -5,7 +5,7 @@ export class ZhHantTwViewsParser {
     const parts = viewsElement.textContent.trim().toLowerCase().split("："); // Note: This is not an ordinary colon character
     const baseViews = Number.parseFloat(parts[1]);
 
-    if (isNaN(baseViews)) {
+    if (Number.isNaN(baseViews)) {
       return 0;
     }
 

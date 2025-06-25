@@ -95,7 +95,7 @@ const displayLoader = () => {
 };
 
 const setupPage = () => {
-  if (window.ytpdc && window.ytpdc.pageSetupDone) return;
+  if (window.ytpdc?.pageSetupDone) return;
 
   window.ytpdc = {
     pageSetupDone: false,

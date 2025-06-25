@@ -30,7 +30,7 @@ export const convertTimestampToSeconds = (timestamp) => {
 
   while (timeComponents.length > 0) {
     const timeComponent = timeComponents.pop();
-    if (isNaN(timeComponent)) continue;
+    if (Number.isNaN(timeComponent)) continue;
 
     seconds += minutes * timeComponent;
     minutes *= 60;

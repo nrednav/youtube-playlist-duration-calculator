@@ -9,7 +9,7 @@ export class ZhHansCnViewsParser {
     const suffix = viewsString.slice(-1);
     const baseViews = Number.parseFloat(viewsString);
 
-    if (isNaN(baseViews)) {
+    if (Number.isNaN(baseViews)) {
       return 0;
     }
 

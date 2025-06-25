@@ -10,7 +10,7 @@ export class FrViewsParser {
 
     const baseViews = Number.parseFloat(value.replace(",", "."));
 
-    if (isNaN(baseViews)) {
+    if (Number.isNaN(baseViews)) {
       return 0;
     }
 
