@@ -11,6 +11,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Updated
 
 - Updated dependencies
+- Refactored build system
+  - Migrated from pnpm to npm
+  - Migrated from ESLint + Prettier to Biome
 
 ### Fixed
 
