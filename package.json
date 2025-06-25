@@ -13,7 +13,7 @@
     "build:chrome": "npm run clean && vite build --mode chrome",
     "build:firefox": "npm run clean && vite build --mode firefox",
     "test": "node --test",
-    "clean": "npm exec del dist/",
+    "clean": "npx del dist/",
     "watch": "npm run clean && vite build --watch --mode development",
     "lint": "eslint .",
     "format": "prettier --ignore-unknown --write",
