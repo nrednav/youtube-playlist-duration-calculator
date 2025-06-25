@@ -15,21 +15,17 @@
     "test": "node --test",
     "clean": "npx del dist/",
     "watch": "npm run clean && vite build --watch --mode development",
-    "lint": "eslint .",
-    "format": "prettier --ignore-unknown --write",
+    "lint": "biome lint --write",
+    "format": "biome format --write",
+    "check": "biome check --write",
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.0.5",
     "husky": "^8.0.3",
     "vite": "7.0.0",
     "vite-plugin-web-extension": "^4.4.4",
     "webextension-polyfill": "^0.10.0"
-  },
-  "lint-staged": {
-    "**/*.js": [
-      "npx eslint --ext .js",
-      "npx prettier --ignore-unknown --write"
-    ]
   },
   "dependencies": {
     "del-cli": "^5.1.0"

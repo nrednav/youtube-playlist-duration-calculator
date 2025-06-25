@@ -1,5 +1,5 @@
 echo "Running git pre-commit hook..."
 
-npx lint-staged
+npm run check .
 
 echo "Finished running git pre-commit hook."
