@@ -527,17 +527,25 @@ const createPlaylistSummaryElement = ({
 };
 
 const getPlaylistMetadataElement = () => {
-  const playlistMetadataElement = document.querySelector(
-    elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"],
-  );
+  for (const meta of elementSelectors.playlistMetadata) {
+    let element;
 
-  if (!playlistMetadataElement) {
-    return document.querySelector(
-      elementSelectors.playlistMetadata.youtubePremium,
-    );
+    if (meta.queryMethod === "querySelectorAllAndFilter") {
+      const potentialElements = document.querySelectorAll(meta.selector);
+
+      if (potentialElements.length > 0) {
+        element = [...potentialElements].find(isElementVisible);
+      }
+    } else {
+      element = document.querySelector(meta.selector);
+    }
+
+    if (element) {
+      return element;
+    }
   }
 
-  return playlistMetadataElement;
+  return null;
 };
 
 const isDarkMode = () => {
