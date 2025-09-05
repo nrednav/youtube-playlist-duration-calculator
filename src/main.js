@@ -89,6 +89,7 @@ const displayLoader = () => {
   const loaderElement = document.createElement("div");
   loaderElement.id = "ytpdc-loader";
   loaderElement.textContent = chrome.i18n.getMessage("loaderMessage");
+  loaderElement.style.color = "#fff";
 
   playlistSummaryElement.innerHTML = "";
   playlistSummaryElement.appendChild(loaderElement);
@@ -120,6 +121,8 @@ const setupPage = () => {
     );
 
     window.ytpdc.playlistObserver?.disconnect();
+
+    getPlaylistSummaryElement()?.remove();
 
     window.ytpdc = {
       pageSetupDone: false,
@@ -527,17 +530,25 @@ const createPlaylistSummaryElement = ({
 };
 
 const getPlaylistMetadataElement = () => {
-  const playlistMetadataElement = document.querySelector(
-    elementSelectors.playlistMetadata[isNewDesign() ? "new" : "old"],
-  );
+  for (const meta of elementSelectors.playlistMetadata) {
+    let element;
 
-  if (!playlistMetadataElement) {
-    return document.querySelector(
-      elementSelectors.playlistMetadata.youtubePremium,
-    );
+    if (meta.queryMethod === "querySelectorAllAndFilter") {
+      const potentialElements = document.querySelectorAll(meta.selector);
+
+      if (potentialElements.length > 0) {
+        element = [...potentialElements].find(isElementVisible);
+      }
+    } else {
+      element = document.querySelector(meta.selector);
+    }
+
+    if (element) {
+      return element;
+    }
   }
 
-  return playlistMetadataElement;
+  return null;
 };
 
 const isDarkMode = () => {
