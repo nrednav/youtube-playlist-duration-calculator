@@ -10,6 +10,12 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Ensure the summary element is removed on page navigation to prevent
+  duplication.
+- Update the playlist metadata element selector to support recent YouTube UI
+  changes.
+- Set a default text color for the loading indicator to improve contrast.
+
 ## [v2.2.1] - 2025-06-25
 
 ### Updated
