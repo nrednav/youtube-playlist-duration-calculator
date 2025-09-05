@@ -1,12 +1,11 @@
-import { describe, it } from "node:test";
 import assert from "node:assert";
+import { describe, it } from "node:test";
+import { elementSelectors } from "src/shared/data/element-selectors.js";
 import {
   convertSecondsToTimestamp,
   convertTimestampToSeconds,
   getTimestampFromVideo,
 } from "./timestamp.js";
-
-import { elementSelectors } from "src/shared/data/element-selectors.js";
 
 describe("timestamp module", () => {
   describe("convertSecondsToTimestamp()", () => {
