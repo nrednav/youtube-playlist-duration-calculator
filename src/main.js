@@ -89,6 +89,7 @@ const displayLoader = () => {
   const loaderElement = document.createElement("div");
   loaderElement.id = "ytpdc-loader";
   loaderElement.textContent = chrome.i18n.getMessage("loaderMessage");
+  loaderElement.style.color = "#fff";
 
   playlistSummaryElement.innerHTML = "";
   playlistSummaryElement.appendChild(loaderElement);
@@ -120,6 +121,8 @@ const setupPage = () => {
     );
 
     window.ytpdc.playlistObserver?.disconnect();
+
+    getPlaylistSummaryElement()?.remove();
 
     window.ytpdc = {
       pageSetupDone: false,
