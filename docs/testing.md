@@ -2,6 +2,18 @@
 
 This document describes the process involved in testing the extension.
 
+## Unit Tests
+
+Unit tests use Node.js built-in `node:test` and `node:assert`, run via `tsx --test`.
+
+```
+npm test
+```
+
+Test files are co-located with their modules: `foo.js` has a corresponding
+`foo.test.js` in the same directory. New logic must include a co-located test
+file.
+
 ## Types of Playlists
 
 - Public

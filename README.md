@@ -32,7 +32,7 @@ The extension is available for download at:
   - Index
   - Views (only for some locales)
   - Upload Date (only for public playlists & some locales)
-- Translations for several locales (en, es, pt, zh)
+- Translations for several locales (en, es, fr, pt, zh)
 
 > **Note:** The sorting feature is only enabled for playlists containing 100
 > videos or less. This is because for larger playlists (>100 videos), YouTube

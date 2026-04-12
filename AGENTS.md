@@ -67,7 +67,7 @@ Before committing, run `npm run check` to auto-fix lint and format issues.
 
 ## i18n
 
-- Locales: `en`, `es`, `pt`, `zh` in `public/_locales/`.
+- Locales: `en`, `es`, `fr`, `pt`, `zh` in `public/_locales/`.
 - When adding or modifying user-facing strings, update all four locale files.
 
 ## Git Workflow

@@ -84,7 +84,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Fixed (hopefully) a rare bug where the extension would not load despite the
+- Fixed a rare bug where the extension would not load despite the
   playlist being visible
   - This was caused by unreliable logic in the `checkPlaylistReady` function
 
@@ -140,3 +140,13 @@ Versioning](https://semver.org/spec/v2.0.0.html).
     playlists
   - Bug where timestamps were not being summed properly
 - Addressed vulnerabilities reported by pnpm audit and dependabot
+
+[v2.2.3]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.2...v2.2.3
+[v2.2.2]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.1...v2.2.2
+[v2.2.1]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.0...v2.2.1
+[v2.2.0]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.1.4...v2.2.0
+[v2.1.4]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.1.3...v2.1.4
+[v2.1.3]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.1.2...v2.1.3
+[v2.1.2]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.1.1...v2.1.2
+[v2.1.1]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.1.0...v2.1.1
+[v2.1.0]: https://github.com/nrednav/youtube-playlist-duration-calculator/releases/tag/v2.1.0

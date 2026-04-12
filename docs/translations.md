@@ -16,10 +16,10 @@ translations for the extension.
 - Within the extracted folder, navigate into the `public/_locales` folder
 - Make a copy of the `en` folder
 - Rename the copy to `<locale-code>`
-  - `<locale-code>` should be replaced with the locale code for the translations
+  - Replace `<locale-code>` with the locale code for the translations
     you are adding
   - For a full list of supported locale codes, please see: https://developer.chrome.com/docs/extensions/reference/api/i18n#locales
-- Edit the `messages.json` file within `<localeCode>` to add your translations
+- Edit the `messages.json` file within `<locale-code>` to add your translations
   - You only have to update the values of the `message` properties throughout
     the file
 - Once you have finished adding translations
