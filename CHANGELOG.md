@@ -8,10 +8,20 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [v2.2.3] - 2026-04-12
 
+### Changed
+
+- Refactored logger `debug` method to use structured event labels with
+  lazy-evaluated data payloads
+- Added structured debug logging across playlist detection, observer lifecycle,
+  mutation handling, and summary insertion
+- Deduplicated extension entry-point initialization
+
 ### Fixed
 
 - Fixed playlist metadata element not rendering on public & private playlists
-  due to the element selector being updated
+  due to YouTube renaming the page header CSS class
+- Fixed `getPlaylistMetadataElement` returning invisible elements from
+  `querySelector` matches, which could prevent the summary from appearing
 
 ## [v2.2.2] - 2025-09-04
 
