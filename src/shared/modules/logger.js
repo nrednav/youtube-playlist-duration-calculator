@@ -21,14 +21,18 @@ class Logger {
   warn = this.logWithPrefix(console.warn);
   error = this.logWithPrefix(console.error);
 
-  debug(...args) {
+  #debugEnabled = (() => {
     try {
       const url = new URL(window.location.href);
-      if (url.searchParams.has("ytpdc-debug", "true")) {
-        console.debug(this.prefix, ...args);
-      }
-    } catch (error) {
-      this.error("debug_check_failed", error.message);
+      return url.searchParams.has("ytpdc-debug", "true");
+    } catch {
+      return false;
+    }
+  })();
+
+  debug(...args) {
+    if (this.#debugEnabled) {
+      console.debug(this.prefix, ...args);
     }
   }
 }
