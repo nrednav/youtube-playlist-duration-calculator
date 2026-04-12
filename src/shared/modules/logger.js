@@ -7,7 +7,10 @@ class Logger {
   }
 
   static getInstance() {
-    return Logger.instance ? Logger.instance : new Logger();
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
   }
 
   logWithPrefix(logMethod) {
@@ -15,21 +18,19 @@ class Logger {
   }
 
   info = this.logWithPrefix(console.info);
-  debug = (() => {
-    try {
-      const url = new URL(window.location.href);
-
-      if (url.searchParams.has("ytpdc-debug", "true")) {
-        return this.logWithPrefix(console.debug);
-      }
-      return () => {};
-    } catch (error) {
-      this.error(error.message);
-      return () => {};
-    }
-  })();
   warn = this.logWithPrefix(console.warn);
   error = this.logWithPrefix(console.error);
+
+  debug(...args) {
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("ytpdc-debug", "true")) {
+        console.debug(this.prefix, ...args);
+      }
+    } catch (error) {
+      this.error("debug_check_failed", error.message);
+    }
+  }
 }
 
 export const logger = Logger.getInstance();

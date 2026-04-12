@@ -12,7 +12,7 @@ const main = () => {
     setupPage();
     checkPlaylistReady();
   } catch (error) {
-    logger.error(error.message);
+    logger.error("main_failed", error.message);
   }
 };
 
@@ -41,15 +41,12 @@ const checkPlaylistReady = () => {
 
       logger.warn("Could not find a playlist.");
 
-      logger.debug(
-        "Could not find a playlist",
-        JSON.stringify({
-          pollCount: pollCount,
-          playlistExists: playlistExists,
-          playlistVisible: isElementVisible(playlistElement),
-          location: window.location,
-        }),
-      );
+      logger.debug("playlist_not_found", {
+        pollCount,
+        playlistExists,
+        playlistVisible: isElementVisible(playlistElement),
+        pathname: window.location.pathname,
+      });
 
       return;
     }
@@ -109,10 +106,10 @@ const setupPage = () => {
   };
 
   const onYoutubeNavigationFinished = () => {
-    logger.debug(
-      "YT Navigation Finished",
-      `${JSON.stringify(window.location)}`,
-    );
+    logger.debug("yt_navigation_finished", {
+      pathname: window.location.pathname,
+      search: window.location.search,
+    });
 
     document.removeEventListener(
       "yt-navigate-finish",
@@ -664,12 +661,13 @@ const createSortDropdown = (playlistObserver) => {
 };
 
 // Entry-point
-if (document.readyState !== "loading") {
+const start = () => {
   logger.info("Loaded.");
   main();
+};
+
+if (document.readyState !== "loading") {
+  start();
 } else {
-  document.addEventListener("DOMContentLoaded", () => {
-    logger.info("Loaded.");
-    main();
-  });
+  document.addEventListener("DOMContentLoaded", start);
 }
