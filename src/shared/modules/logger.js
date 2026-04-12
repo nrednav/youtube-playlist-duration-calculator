@@ -30,9 +30,14 @@ class Logger {
     }
   })();
 
-  debug(...args) {
+  debug(label, data) {
     if (this.#debugEnabled) {
-      console.debug(this.prefix, ...args);
+      const resolved = typeof data === "function" ? data() : data;
+      if (resolved !== undefined) {
+        console.debug(this.prefix, label, resolved);
+      } else {
+        console.debug(this.prefix, label);
+      }
     }
   }
 }
