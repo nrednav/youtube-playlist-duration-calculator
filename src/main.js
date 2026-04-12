@@ -543,7 +543,7 @@ const getPlaylistMetadataElement = () => {
       element = document.querySelector(meta.selector);
     }
 
-    if (element) {
+    if (element && isElementVisible(element)) {
       return element;
     }
   }

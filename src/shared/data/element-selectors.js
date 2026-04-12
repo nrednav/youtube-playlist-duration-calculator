@@ -15,6 +15,10 @@ export const elementSelectors = {
       queryMethod: "querySelectorAllAndFilter",
     },
     {
+      selector: ".ytPageHeaderViewModelContent",
+      queryMethod: "querySelectorAllAndFilter",
+    },
+    {
       selector: ".immersive-header-content .metadata-action-bar",
       queryMethod: "querySelector",
     },
