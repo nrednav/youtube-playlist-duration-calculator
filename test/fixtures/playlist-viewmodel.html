@@ -1,0 +1,44 @@
+<!--
+  ViewModel Architecture Fixture
+  Mimics a YouTube playlist page using the new yt-*-view-model and badge-shape layout.
+  No ytd-playlist-video-list-renderer — desyncIndicators detects "viewmodel".
+  Used by: discovery strategy-structural-invariant, extraction strategy-content-pattern
+-->
+<html>
+<body>
+  <yt-section-list-renderer>
+    <div id="contents">
+      <yt-lockup-view-model>
+        <a id="video-title" title="Getting started guide">Getting started guide</a>
+        <badge-shape>
+          <span>12:34</span>
+        </badge-shape>
+      </yt-lockup-view-model>
+      <yt-lockup-view-model>
+        <a id="video-title" title="Intermediate patterns">Intermediate patterns</a>
+        <badge-shape>
+          <span>25:00</span>
+        </badge-shape>
+      </yt-lockup-view-model>
+      <yt-lockup-view-model>
+        <a id="video-title" title="Master class">Master class</a>
+        <badge-shape>
+          <span>1:15:30</span>
+        </badge-shape>
+      </yt-lockup-view-model>
+      <yt-lockup-view-model>
+        <a id="video-title" title="Tips and tricks">Tips and tricks</a>
+        <badge-shape>
+          <span>8:45</span>
+        </badge-shape>
+      </yt-lockup-view-model>
+      <yt-lockup-view-model>
+        <a id="video-title" title="Final review">Final review</a>
+        <badge-shape>
+          <span>3:20</span>
+        </badge-shape>
+      </yt-lockup-view-model>
+    </div>
+  </yt-section-list-renderer>
+</body>
+</html>

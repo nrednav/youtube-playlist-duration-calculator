@@ -1,0 +1,39 @@
+<!--
+  Renderer Architecture Fixture
+  Mimics a YouTube playlist page using the traditional ytd-*-renderer elements.
+  Used by: discovery strategy-selector-match, extraction strategy-selector-match
+  Selectors: ytd-playlist-video-list-renderer, ytd-playlist-video-renderer,
+             ytd-thumbnail-overlay-time-status-renderer
+-->
+<html>
+<body>
+  <ytd-playlist-sidebar-renderer>
+  </ytd-playlist-sidebar-renderer>
+  <ytd-playlist-video-list-renderer>
+    <div id="contents">
+      <ytd-playlist-video-renderer>
+        <a id="video-title" title="Introduction to the topic">Introduction to the topic</a>
+        <ytd-thumbnail-overlay-time-status-renderer>12:34</ytd-thumbnail-overlay-time-status-renderer>
+      </ytd-playlist-video-renderer>
+      <ytd-playlist-video-renderer>
+        <a id="video-title" title="Deep dive into concepts">Deep dive into concepts</a>
+        <ytd-thumbnail-overlay-time-status-renderer>5:00</ytd-thumbnail-overlay-time-status-renderer>
+      </ytd-playlist-video-renderer>
+      <ytd-playlist-video-renderer>
+        <a id="video-title" title="Practical examples and walkthrough">Practical examples and walkthrough</a>
+        <ytd-thumbnail-overlay-time-status-renderer>1:23:45</ytd-thumbnail-overlay-time-status-renderer>
+      </ytd-playlist-video-renderer>
+      <ytd-playlist-video-renderer>
+        <a id="video-title" title="Advanced techniques">Advanced techniques</a>
+        <ytd-thumbnail-overlay-time-status-renderer>8:15</ytd-thumbnail-overlay-time-status-renderer>
+      </ytd-playlist-video-renderer>
+      <ytd-playlist-video-renderer>
+        <a id="video-title" title="Wrapping up and next steps">Wrapping up and next steps</a>
+        <ytd-thumbnail-overlay-time-status-renderer>3:30</ytd-thumbnail-overlay-time-status-renderer>
+      </ytd-playlist-video-renderer>
+    </div>
+  </ytd-playlist-video-list-renderer>
+  <ytd-playlist-header-renderer>
+  </ytd-playlist-header-renderer>
+</body>
+</html>

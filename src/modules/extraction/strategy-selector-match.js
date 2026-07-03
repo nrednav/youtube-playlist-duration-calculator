@@ -33,7 +33,7 @@ export const strategy = {
       return { value: null, confidence: 0, strategyName: "selector-match" };
     }
 
-    const text = timestampElement.innerText;
+    const text = timestampElement.textContent;
 
     if (!text) {
       return { value: null, confidence: 0, strategyName: "selector-match" };

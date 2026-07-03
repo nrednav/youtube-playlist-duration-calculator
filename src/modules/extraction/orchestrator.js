@@ -51,7 +51,14 @@ const sortStrategiesByPriority = (strategies, variant) => {
  * @returns {{ seconds: number|null, confidence: number, strategyName: string }}
  */
 export const extractTimestamp = (videoElement) => {
-  const variant = desyncIndicators.detectVariant();
+  if (!videoElement) {
+    return { seconds: null, confidence: 0, strategyName: "none" };
+  }
+
+  // Use the video element's document for variant detection.
+  // Falls back to global document when called in browser context.
+  const doc = videoElement.ownerDocument || document;
+  const variant = desyncIndicators.detectVariant(doc);
   const sorted = sortStrategiesByPriority(EXTRACTION_STRATEGIES, variant);
 
   for (const strategy of sorted) {
