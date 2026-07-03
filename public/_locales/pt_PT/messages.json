@@ -106,5 +106,17 @@
   "sortDropdown_noOptions": {
     "message": "Nenhuma opção disponível",
     "description": "Text to display in the sort dropdown when no sort options are available"
+  },
+  "playlistSummary_estimatedError": {
+    "message": "Erro estimado",
+    "description": "Rótulo para a margem de erro estimada na duração da lista"
+  },
+  "playlistSummary_verified": {
+    "message": "verificados",
+    "description": "Rótulo para carimbos de data/hora de alta confiança"
+  },
+  "playlistSummary_estimated": {
+    "message": "estimados",
+    "description": "Rótulo para carimbos de data/hora de baixa confiança"
   }
 }

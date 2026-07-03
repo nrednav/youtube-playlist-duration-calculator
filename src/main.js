@@ -8,6 +8,7 @@ import {
 import { logger } from "./shared/modules/logger";
 import {
   convertSecondsToTimestamp,
+  convertTimestampToSeconds,
   getTimestampFromVideo,
 } from "./shared/modules/timestamp";
 import "./main.css";
@@ -430,25 +431,94 @@ const processPlaylist = () => {
 
   const playlistObserver = setupPlaylistObserver();
   const videos = getVideos();
-  const timestamps = videos.map(getTimestampFromVideo);
-  const nullTimestamps = timestamps.filter((t) => t === null).length;
 
-  const totalDurationInSeconds =
-    Array.isArray(timestamps) && timestamps.length > 0
-      ? timestamps.reduce((a, b) => a + b)
-      : 0;
+  // Extract timestamps in a single pass: build the timestamps array and
+  // compute all confidence statistics without multiple map/filter passes.
+  const timestamps = [];
+  let nullTimestamps = 0;
+  let highConfidenceCount = 0;
+  let lowConfidenceCount = 0;
+  let totalDurationInSeconds = 0;
+
+  for (const video of videos) {
+    // Strategy 1: Known element selector (high confidence)
+    const timestampElement = video.querySelector(elementSelectors.timestamp);
+
+    let seconds = null;
+    let confidence = 0;
+
+    if (timestampElement) {
+      const text = timestampElement.innerText;
+
+      if (text) {
+        const sanitized = text.trim().replace(/\n/g, "");
+        const matches = sanitized.match(
+          /((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/,
+        );
+
+        if (matches) {
+          seconds = convertTimestampToSeconds(matches[0]);
+          confidence = 1.0;
+        } else {
+          seconds = 0;
+          confidence = 0.5;
+        }
+      }
+    }
+
+    // Strategy 2: Content-pattern extraction (medium confidence)
+    if (seconds === null) {
+      const patternResult = extractTimestampByPattern(video);
+
+      if (patternResult.value) {
+        seconds = convertTimestampToSeconds(patternResult.value);
+        confidence = patternResult.confidence;
+      }
+    }
+
+    timestamps.push(seconds);
+
+    if (seconds === null) {
+      nullTimestamps++;
+    } else {
+      totalDurationInSeconds += seconds;
+
+      if (confidence >= 0.8) {
+        highConfidenceCount++;
+      } else {
+        lowConfidenceCount++;
+      }
+    }
+  }
 
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
+
+  // Estimated error: each low-confidence video could be off by up to 59:59
+  const maxErrorSeconds = lowConfidenceCount * (59 * 60 + 59);
+  const maxErrorFormatted =
+    maxErrorSeconds > 0
+      ? `±${convertSecondsToTimestamp(maxErrorSeconds)}`
+      : "±0:00";
 
   logger.debug("playlist_calculated", () => ({
     videoCount: videos.length,
     timestampCount: timestamps.length,
     nullTimestamps,
+    highConfidence: highConfidenceCount,
+    lowConfidence: lowConfidenceCount,
+    maxErrorSeconds,
     totalDurationInSeconds,
     playlistDuration,
   }));
 
-  addPlaylistSummaryToPage({ timestamps, playlistDuration, playlistObserver });
+  addPlaylistSummaryToPage({
+    timestamps,
+    playlistDuration,
+    maxErrorFormatted,
+    highConfidenceCount,
+    lowConfidenceCount,
+    playlistObserver,
+  });
 };
 
 /**
@@ -596,11 +666,17 @@ const displayMessages = (messages) => {
 const addPlaylistSummaryToPage = ({
   timestamps,
   playlistDuration,
+  maxErrorFormatted,
+  highConfidenceCount,
+  lowConfidenceCount,
   playlistObserver,
 }) => {
   const playlistSummaryElement = createPlaylistSummaryElement({
     timestamps,
     playlistDuration,
+    maxErrorFormatted,
+    highConfidenceCount,
+    lowConfidenceCount,
     playlistObserver,
   });
 
@@ -649,6 +725,9 @@ const addPlaylistSummaryToPage = ({
 const createPlaylistSummaryElement = ({
   timestamps,
   playlistDuration,
+  maxErrorFormatted,
+  highConfidenceCount,
+  lowConfidenceCount,
   playlistObserver,
 }) => {
   const newDesign = isNewDesign();
@@ -687,13 +766,28 @@ const createPlaylistSummaryElement = ({
 
   containerElement.appendChild(totalDuration);
 
+  const videosCountedValue =
+    lowConfidenceCount > 0
+      ? `${timestamps.length} (${highConfidenceCount > 0 ? `${highConfidenceCount} ${chrome.i18n.getMessage("playlistSummary_verified")}, ` : ""}${lowConfidenceCount} ${chrome.i18n.getMessage("playlistSummary_estimated")})`
+      : `${timestamps.length}`;
+
   const videosCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosCounted"),
-    `${timestamps.length}`,
+    videosCountedValue,
     "#fdba74",
   );
 
   containerElement.appendChild(videosCounted);
+
+  // Estimated error: shown when some timestamps were pattern-extracted
+  if (lowConfidenceCount > 0) {
+    const estimatedError = createSummaryItem(
+      chrome.i18n.getMessage("playlistSummary_estimatedError"),
+      maxErrorFormatted,
+      "#fbbf24",
+    );
+    containerElement.appendChild(estimatedError);
+  }
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
