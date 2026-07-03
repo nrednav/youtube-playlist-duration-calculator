@@ -1,5 +1,5 @@
-import { discoverPlaylist } from "./modules/discovery/structural-invariant-search";
-import { extractTimestampByPattern } from "./modules/extraction/content-pattern-extraction";
+import { discoverPlaylist } from "./modules/discovery/orchestrator";
+import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { PlaylistSorter } from "./modules/sorting";
 import {
   desyncIndicators,
@@ -8,7 +8,6 @@ import {
 import { logger } from "./shared/modules/logger";
 import {
   convertSecondsToTimestamp,
-  convertTimestampToSeconds,
   getTimestampFromVideo,
 } from "./shared/modules/timestamp";
 import "./main.css";
@@ -179,8 +178,8 @@ const checkPlaylistReady = () => {
       // Verify that at least some discovered videos have extractable timestamps
       const sampleVideos = discoveryResult.videos?.slice(0, 3) || [];
       const hasTimestamps = sampleVideos.some((v) => {
-        const { value } = extractTimestampByPattern(v);
-        return value !== null;
+        const result = extractTimestamp(v);
+        return result.seconds !== null && result.confidence > 0;
       });
 
       if (hasTimestamps) {
@@ -441,49 +440,16 @@ const processPlaylist = () => {
   let totalDurationInSeconds = 0;
 
   for (const video of videos) {
-    // Strategy 1: Known element selector (high confidence)
-    const timestampElement = video.querySelector(elementSelectors.timestamp);
+    const result = extractTimestamp(video);
 
-    let seconds = null;
-    let confidence = 0;
+    timestamps.push(result.seconds);
 
-    if (timestampElement) {
-      const text = timestampElement.innerText;
-
-      if (text) {
-        const sanitized = text.trim().replace(/\n/g, "");
-        const matches = sanitized.match(
-          /((?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d))/,
-        );
-
-        if (matches) {
-          seconds = convertTimestampToSeconds(matches[0]);
-          confidence = 1.0;
-        } else {
-          seconds = 0;
-          confidence = 0.5;
-        }
-      }
-    }
-
-    // Strategy 2: Content-pattern extraction (medium confidence)
-    if (seconds === null) {
-      const patternResult = extractTimestampByPattern(video);
-
-      if (patternResult.value) {
-        seconds = convertTimestampToSeconds(patternResult.value);
-        confidence = patternResult.confidence;
-      }
-    }
-
-    timestamps.push(seconds);
-
-    if (seconds === null) {
+    if (result.seconds === null) {
       nullTimestamps++;
     } else {
-      totalDurationInSeconds += seconds;
+      totalDurationInSeconds += result.seconds;
 
-      if (confidence >= 0.8) {
+      if (result.confidence >= 0.8) {
         highConfidenceCount++;
       } else {
         lowConfidenceCount++;

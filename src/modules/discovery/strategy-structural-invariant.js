@@ -1,0 +1,38 @@
+/**
+ * Discovery Strategy: Structural Invariant
+ *
+ * Finds the playlist by structural invariants (video-renderer children,
+ * lockup elements with duration text) rather than by YouTube's chosen
+ * element names. Works across renderer and viewmodel architectures.
+ *
+ * Strategy contract: { name, priority, designedFor, discover(doc) }
+ */
+
+import { discoverPlaylist as discoverByInvariants } from "./structural-invariant-search";
+
+export const strategy = {
+  name: "structural-invariant",
+  priority: 2,
+  designedFor: "any",
+
+  /**
+   * Find the playlist container and/or video elements using structural
+   * invariants, detecting the architecture automatically.
+   *
+   * @param {Document} doc
+   * @returns {{ element: Element|null, videos: Element[]|null, confidence: number, strategyName: string }}
+   */
+  discover(doc) {
+    const result = discoverByInvariants(doc, {
+      known: true,
+      variant: "unknown",
+    });
+
+    return {
+      element: result.container,
+      videos: result.videos,
+      confidence: result.confidence,
+      strategyName: "structural-invariant",
+    };
+  },
+};
