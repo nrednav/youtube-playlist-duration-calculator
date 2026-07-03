@@ -1,5 +1,8 @@
 import { PlaylistSorter } from "./modules/sorting";
-import { elementSelectors } from "./shared/data/element-selectors";
+import {
+  desyncIndicators,
+  elementSelectors,
+} from "./shared/data/element-selectors";
 import { logger } from "./shared/modules/logger";
 import {
   convertSecondsToTimestamp,
@@ -32,6 +35,9 @@ const checkPlaylistReady = () => {
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const playlistExists = playlistElement !== null;
 
+    // Desynchronization detection: which rendering architecture is active?
+    const variant = desyncIndicators.detectVariant();
+
     logger.debug("poll_tick", () => ({
       pollCount,
       playlistExists,
@@ -39,11 +45,15 @@ const checkPlaylistReady = () => {
         ? isElementVisible(playlistElement)
         : null,
       pathname: window.location.pathname,
+      variant: variant.variant,
+      variantKnown: variant.known,
     }));
 
+    // If the page isn't a playlist page at all, stop polling
     if (
       pollCount > 15 &&
-      !(playlistExists && isElementVisible(playlistElement)) &&
+      !playlistExists &&
+      !variant.known &&
       window.location.pathname !== "/playlist"
     ) {
       clearInterval(playlistPoll);
@@ -55,9 +65,25 @@ const checkPlaylistReady = () => {
         playlistExists,
         playlistVisible: isElementVisible(playlistElement),
         pathname: window.location.pathname,
+        variant: variant.variant,
       }));
 
       return;
+    }
+
+    // Unknown variant on a playlist page. Desync detected but this is expected
+    // on viewmodel pages. Log it and let polling continue.
+    if (
+      pollCount === 15 &&
+      !playlistExists &&
+      variant.known &&
+      variant.variant === "viewmodel"
+    ) {
+      logger.info("desync_viewmodel_detected", () => ({
+        pollCount,
+        variant: variant.variant,
+        pathname: window.location.pathname,
+      }));
     }
 
     const timestampElement = document.querySelector(elementSelectors.timestamp);
