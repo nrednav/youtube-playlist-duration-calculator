@@ -1,4 +1,5 @@
 import { discoverPlaylist } from "./modules/discovery/structural-invariant-search";
+import { extractTimestampByPattern } from "./modules/extraction/content-pattern-extraction";
 import { PlaylistSorter } from "./modules/sorting";
 import {
   desyncIndicators,
@@ -10,6 +11,8 @@ import {
   getTimestampFromVideo,
 } from "./shared/modules/timestamp";
 import "./main.css";
+
+let activePlaylistInterval = null;
 
 const main = () => {
   try {
@@ -23,14 +26,18 @@ const main = () => {
 const checkPlaylistReady = () => {
   logger.debug("Checking if playlist is ready to be processed");
 
+  if (activePlaylistInterval) {
+    clearInterval(activePlaylistInterval);
+  }
+
   displayLoader();
 
   const maxPollCount = 60;
   let pollCount = 0;
 
-  const playlistPoll = setInterval(() => {
+  activePlaylistInterval = setInterval(() => {
     if (pollCount >= maxPollCount) {
-      clearInterval(playlistPoll);
+      clearInterval(activePlaylistInterval);
     }
 
     const playlistElement = document.querySelector(elementSelectors.playlist);
@@ -57,7 +64,7 @@ const checkPlaylistReady = () => {
       !variant.known &&
       window.location.pathname !== "/playlist"
     ) {
-      clearInterval(playlistPoll);
+      clearInterval(activePlaylistInterval);
 
       signalFailure(variant, {
         pollCount,
@@ -67,6 +74,18 @@ const checkPlaylistReady = () => {
         variant: variant.variant,
       });
 
+      return;
+    }
+
+    // If variant is known but we're not on a playlist page, stop polling silently.
+    // Viewmodel lockups exist on /feed/playlists and other non-playlist pages.
+    if (
+      pollCount > 15 &&
+      !playlistExists &&
+      variant.known &&
+      window.location.pathname !== "/playlist"
+    ) {
+      clearInterval(activePlaylistInterval);
       return;
     }
 
@@ -87,7 +106,14 @@ const checkPlaylistReady = () => {
 
     // If the known selector didn't find the playlist, try invariant search.
     // This handles viewmodel architecture and any future variant.
-    if (!playlistExists && variant.known && pollCount >= 10) {
+    // Only run once when discoveryResult hasn't been populated yet.
+    if (
+      !playlistExists &&
+      variant.known &&
+      window.location.pathname === "/playlist" &&
+      pollCount >= (variant.variant === "viewmodel" ? 2 : 10) &&
+      !window.ytpdc?.discoveryResult
+    ) {
       const discoveryResult = discoverPlaylist(document, variant);
 
       logger.debug("invariant_search", () => ({
@@ -114,7 +140,7 @@ const checkPlaylistReady = () => {
       timestampExists &&
       unavailableTimestampsCount === unavailableVideosCount
     ) {
-      clearInterval(playlistPoll);
+      clearInterval(activePlaylistInterval);
 
       const playlistVisible = isElementVisible(playlistElement);
 
@@ -137,6 +163,36 @@ const checkPlaylistReady = () => {
           display: getComputedStyle(playlistElement).display,
           visibility: getComputedStyle(playlistElement).visibility,
         }));
+      }
+    }
+
+    // Viewmodel architecture readiness check
+    // The known selectors don't match, but invariant search found elements
+    const discoveryResult = window.ytpdc?.discoveryResult;
+    if (
+      !playlistExists &&
+      discoveryResult &&
+      discoveryResult.confidence > 0.5 &&
+      window.location.pathname === "/playlist"
+    ) {
+      // Verify that at least some discovered videos have extractable timestamps
+      const sampleVideos = discoveryResult.videos?.slice(0, 3) || [];
+      const hasTimestamps = sampleVideos.some((v) => {
+        const { value } = extractTimestampByPattern(v);
+        return value !== null;
+      });
+
+      if (hasTimestamps) {
+        clearInterval(activePlaylistInterval);
+
+        logger.debug("viewmodel_ready_check", () => ({
+          pollCount,
+          videoCount: discoveryResult.videos?.length || 0,
+          confidence: discoveryResult.confidence,
+          hasTimestamps,
+        }));
+
+        processPlaylist();
       }
     }
 
@@ -819,7 +875,13 @@ const createSortDropdown = (playlistObserver) => {
     dropdownOptionsElement.appendChild(sortOption);
   });
 
-  dropdownButtonTextElement.textContent = sortOptions[0].textContent;
+  if (sortOptions.length > 0) {
+    dropdownButtonTextElement.textContent = sortOptions[0].textContent;
+  } else {
+    dropdownButtonTextElement.textContent = chrome.i18n.getMessage(
+      "sortDropdown_noOptions",
+    );
+  }
 
   dropdownOptionsElement.addEventListener("click", (event) => {
     if (

@@ -4,6 +4,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: ytpdc-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ytpdc-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 #ytpdc-playlist-summary-new #messages-container,

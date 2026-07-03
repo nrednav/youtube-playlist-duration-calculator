@@ -126,9 +126,18 @@ const discoverByViewModel = (doc) => {
     containerTag: container?.tagName || "none",
   }));
 
-  // High confidence if we found lockups with duration text
+  // High confidence if we found lockups with duration text.
+  // Even 1-2 lockups with timestamps is a strong signal on small playlists.
   const confidence =
-    usableVideos.length >= 10 ? 0.9 : usableVideos.length >= 3 ? 0.7 : 0.4;
+    usableVideos.length >= 10
+      ? 0.95
+      : usableVideos.length >= 5
+        ? 0.85
+        : usableVideos.length >= 3
+          ? 0.7
+          : usableVideos.length >= 1 && withTimestamps.length > 0
+            ? 0.6
+            : 0.3;
 
   return {
     container,

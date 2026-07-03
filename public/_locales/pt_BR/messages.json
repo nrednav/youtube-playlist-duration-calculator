@@ -102,5 +102,9 @@
   "failureIndicator_body": {
     "message": "Isso pode ser devido a uma mudança no layout do YouTube. Tente recarregar a página.",
     "description": "Body text displayed when the extension cannot locate the playlist"
+  },
+  "sortDropdown_noOptions": {
+    "message": "Nenhuma opção disponível",
+    "description": "Text to display in the sort dropdown when no sort options are available"
   }
 }
