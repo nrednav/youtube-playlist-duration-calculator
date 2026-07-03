@@ -34,7 +34,8 @@ The extension is available for download at:
   - Upload Date (only for public playlists & some locales)
 - Translations for several locales (en, es, fr, pt, zh)
 
-> **Note:** The sorting feature is only enabled for playlists containing 100
+> [!NOTE]  
+> The sorting feature is only enabled for playlists containing 100
 > videos or less. This is because for larger playlists (>100 videos), YouTube
 > only loads the next 100 videos after you scroll to the bottom of the page.
 > This can often produce inconsistent & inaccurate sorting results, so it has
