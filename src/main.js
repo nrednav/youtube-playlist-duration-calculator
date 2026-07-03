@@ -1,3 +1,4 @@
+import { discoverPlaylist } from "./modules/discovery/structural-invariant-search";
 import { PlaylistSorter } from "./modules/sorting";
 import {
   desyncIndicators,
@@ -82,6 +83,25 @@ const checkPlaylistReady = () => {
         variant: variant.variant,
         pathname: window.location.pathname,
       }));
+    }
+
+    // If the known selector didn't find the playlist, try invariant search.
+    // This handles viewmodel architecture and any future variant.
+    if (!playlistExists && variant.known && pollCount >= 10) {
+      const discoveryResult = discoverPlaylist(document, variant);
+
+      logger.debug("invariant_search", () => ({
+        pollCount,
+        variant: variant.variant,
+        confidence: discoveryResult.confidence,
+        strategy: discoveryResult.strategy,
+        hasContainer: !!discoveryResult.container,
+        videoCount: discoveryResult.videos?.length || 0,
+      }));
+
+      if (discoveryResult.confidence > 0) {
+        window.ytpdc.discoveryResult = discoveryResult;
+      }
     }
 
     const timestampElement = document.querySelector(elementSelectors.timestamp);
@@ -254,12 +274,23 @@ const countUnavailableTimestamps = () => {
  * @returns {Element[]}
  **/
 const getVideos = () => {
-  const playlistElement = document.querySelector(elementSelectors.playlist);
+  // Viewmodel architecture: use directly discovered video elements
+  if (window.ytpdc?.discoveryResult?.videos) {
+    return window.ytpdc.discoveryResult.videos;
+  }
 
+  // Renderer-invariant: use discovered container, extract by tag name
+  if (window.ytpdc?.discoveryResult?.container) {
+    const container = window.ytpdc.discoveryResult.container;
+    const videos = container.getElementsByTagName(elementSelectors.video);
+    if (videos.length > 0) return [...videos];
+  }
+
+  // Fallback: use the known renderer selector
+  const playlistElement = document.querySelector(elementSelectors.playlist);
   if (!playlistElement) return [];
 
   const videos = playlistElement.getElementsByTagName(elementSelectors.video);
-
   return [...videos];
 };
 
