@@ -94,5 +94,13 @@
   "sortType_uploadDate_label_desc": {
     "message": "上传日期 (最早)",
     "description": "Text to display for the descending 'sort by upload date' option"
+  },
+  "failureIndicator_title": {
+    "message": "无法计算播放列表时长。",
+    "description": "Title text displayed when the extension cannot locate the playlist"
+  },
+  "failureIndicator_body": {
+    "message": "这可能是由于YouTube布局变更导致的。请尝试重新加载页面。",
+    "description": "Body text displayed when the extension cannot locate the playlist"
   }
 }

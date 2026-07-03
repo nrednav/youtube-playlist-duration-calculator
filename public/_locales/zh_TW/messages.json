@@ -94,5 +94,13 @@
   "sortType_uploadDate_label_desc": {
     "message": "上傳日期 (最舊)",
     "description": "Text to display for the descending 'sort by upload date' option"
+  },
+  "failureIndicator_title": {
+    "message": "無法計算播放清單時長。",
+    "description": "Title text displayed when the extension cannot locate the playlist"
+  },
+  "failureIndicator_body": {
+    "message": "這可能是由於YouTube版面變更導致的。請嘗試重新載入頁面。",
+    "description": "Body text displayed when the extension cannot locate the playlist"
   }
 }

@@ -94,5 +94,13 @@
   "sortType_uploadDate_label_desc": {
     "message": "Fecha de subida (Más antiguo)",
     "description": "Text to display for the descending 'sort by upload date' option"
+  },
+  "failureIndicator_title": {
+    "message": "No se pudo calcular la duración de la lista de reproducción.",
+    "description": "Title text displayed when the extension cannot locate the playlist"
+  },
+  "failureIndicator_body": {
+    "message": "Esto puede deberse a un cambio en el diseño de YouTube. Intenta recargar la página.",
+    "description": "Body text displayed when the extension cannot locate the playlist"
   }
 }

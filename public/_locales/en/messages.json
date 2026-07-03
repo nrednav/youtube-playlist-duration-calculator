@@ -94,5 +94,13 @@
   "sortType_uploadDate_label_desc": {
     "message": "Upload Date (Earliest)",
     "description": "Text to display for the descending 'sort by upload date' option"
+  },
+  "failureIndicator_title": {
+    "message": "Unable to calculate playlist duration.",
+    "description": "Title text displayed when the extension cannot locate the playlist"
+  },
+  "failureIndicator_body": {
+    "message": "This may be due to a YouTube layout change. Try reloading the page.",
+    "description": "Body text displayed when the extension cannot locate the playlist"
   }
 }

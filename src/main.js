@@ -58,15 +58,13 @@ const checkPlaylistReady = () => {
     ) {
       clearInterval(playlistPoll);
 
-      logger.warn("Could not find a playlist.");
-
-      logger.debug("playlist_not_found", () => ({
+      signalFailure(variant, {
         pollCount,
         playlistExists,
         playlistVisible: isElementVisible(playlistElement),
         pathname: window.location.pathname,
         variant: variant.variant,
-      }));
+      });
 
       return;
     }
@@ -305,6 +303,39 @@ const isVideoUnavailable = (video) => {
  */
 const getVideoTitle = (video) => {
   return video.querySelector(elementSelectors.videoTitle)?.title;
+};
+
+const signalFailure = (variant, snapshot) => {
+  // Layer 1: User-visible indicator
+  const summaryEl = getPlaylistSummaryElement();
+  if (summaryEl) {
+    const msg = document.createElement("div");
+    msg.id = "ytpdc-failure-indicator";
+
+    const titleEl = document.createElement("p");
+    titleEl.id = "ytpdc-failure-title";
+    titleEl.textContent = chrome.i18n.getMessage("failureIndicator_title");
+    msg.appendChild(titleEl);
+
+    const bodyEl = document.createElement("p");
+    bodyEl.id = "ytpdc-failure-body";
+    bodyEl.textContent = chrome.i18n.getMessage("failureIndicator_body");
+    msg.appendChild(bodyEl);
+
+    summaryEl.innerHTML = "";
+    summaryEl.appendChild(msg);
+  }
+
+  // Layer 2: Diagnostic logging (visible via ?ytpdc-debug=true)
+  logger.error("extension_failure", () => ({
+    reason: "unknown_layout_variant",
+    variant,
+    snapshot,
+    extensionVersion: chrome.runtime.getManifest().version,
+    userAgent: navigator.userAgent,
+    locale: document.documentElement.lang,
+    timestamp: new Date().toISOString(),
+  }));
 };
 
 const processPlaylist = () => {

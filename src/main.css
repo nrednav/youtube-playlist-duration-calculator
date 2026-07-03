@@ -13,6 +13,18 @@
   row-gap: 4px;
 }
 
+#ytpdc-failure-indicator {
+  padding: 12px;
+  border: 1px solid rgba(252, 165, 165, 0.3);
+  border-radius: 8px;
+  background: rgba(252, 165, 165, 0.1);
+}
+
+#ytpdc-failure-indicator p {
+  margin: 4px 0;
+  color: #fff;
+}
+
 #ytpdc-playlist-summary-new.container,
 #ytpdc-playlist-summary-old.container {
   display: flex;
