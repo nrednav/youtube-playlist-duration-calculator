@@ -169,6 +169,7 @@ const checkPlaylistReady = () => {
     // Viewmodel architecture readiness check
     // The known selectors don't match, but invariant search found elements
     const discoveryResult = window.ytpdc?.discoveryResult;
+
     if (
       !playlistExists &&
       discoveryResult &&
@@ -339,12 +340,18 @@ const getVideos = () => {
   if (window.ytpdc?.discoveryResult?.container) {
     const container = window.ytpdc.discoveryResult.container;
     const videos = container.getElementsByTagName(elementSelectors.video);
-    if (videos.length > 0) return [...videos];
+
+    if (videos.length > 0) {
+      return [...videos];
+    }
   }
 
   // Fallback: use the known renderer selector
   const playlistElement = document.querySelector(elementSelectors.playlist);
-  if (!playlistElement) return [];
+
+  if (!playlistElement) {
+    return [];
+  }
 
   const videos = playlistElement.getElementsByTagName(elementSelectors.video);
   return [...videos];
@@ -957,12 +964,32 @@ const createSortDropdown = (playlistObserver) => {
 
     playlistObserver?.disconnect();
 
-    const playlistElement = document.querySelector(elementSelectors.playlist);
-    const videos = playlistElement.getElementsByTagName(elementSelectors.video);
+    // Determine the playlist container and videos based on current architecture
+    const discoveryResult = window.ytpdc?.discoveryResult;
+    let playlistElement;
+    let videos;
+
+    if (discoveryResult?.videos) {
+      // Viewmodel architecture: lockups are the videos, parent is the container
+      videos = discoveryResult.videos;
+      playlistElement = discoveryResult.videos[0]?.parentElement;
+    } else {
+      // Renderer architecture: use standard selectors
+      playlistElement = document.querySelector(elementSelectors.playlist);
+
+      if (!playlistElement) {
+        return;
+      }
+
+      videos = [
+        ...playlistElement.getElementsByTagName(elementSelectors.video),
+      ];
+    }
+
     const playlistSorter = new PlaylistSorter(
       event.target.getAttribute("value"),
     );
-    const sortedVideos = playlistSorter.sort([...videos].slice(0, 100));
+    const sortedVideos = playlistSorter.sort(videos.slice(0, 100));
 
     playlistElement.replaceChildren(...sortedVideos);
 

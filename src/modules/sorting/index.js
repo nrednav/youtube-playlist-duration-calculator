@@ -1,4 +1,7 @@
-import { elementSelectors } from "src/shared/data/element-selectors";
+import {
+  desyncIndicators,
+  elementSelectors,
+} from "src/shared/data/element-selectors";
 import { SortByChannelNameStrategy } from "./sort-by-channel-name";
 import { SortByDurationStrategy } from "./sort-by-duration";
 import { SortByIndexStrategy } from "./sort-by-index";
@@ -105,13 +108,39 @@ export class PlaylistSorter {
 
 /**
  * Checks whether an element identified by identifier can be found within the
- * first video element rendered in the playlist
+ * first video element rendered in the playlist.
+ * Scales across renderer and viewmodel architectures.
  * @param {string} identifier
  * @returns {boolean}
  */
 const videoHasElement = (identifier) => {
-  const videoElement = document.querySelector(elementSelectors.video);
-  return videoElement?.querySelector(identifier);
+  const variant = desyncIndicators.detectVariant();
+
+  let videoElement;
+  if (variant.variant === "viewmodel") {
+    videoElement = document.querySelector("yt-lockup-view-model");
+  } else {
+    videoElement = document.querySelector(elementSelectors.video);
+  }
+
+  if (!videoElement) return false;
+
+  // For viewmodel pages, check content-based existence
+  if (variant.variant === "viewmodel") {
+    // Duration: check if the lockup text contains a timestamp pattern
+    if (identifier === elementSelectors.timestamp) {
+      return /\d+:\d{2}(:\d{2})?/.test(videoElement.textContent || "");
+    }
+    // Index: available on viewmodel via array position (no DOM element needed)
+    if (identifier === elementSelectors.videoIndex) {
+      return true;
+    }
+    // Other selectors don't exist in viewmodel architecture — not supported yet
+    return false;
+  }
+
+  // Renderer architecture: use the normal selector query
+  return videoElement.querySelector(identifier);
 };
 
 const pageHasNativeSortFeature = () => {
