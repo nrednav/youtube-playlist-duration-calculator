@@ -32,6 +32,18 @@ describe("timestamp module", () => {
     it("should handle large values correctly", () => {
       assert.strictEqual(convertSecondsToTimestamp(86399), "23:59:59"); // 24 hours - 1 second
     });
+
+    it("should guard against negative input", () => {
+      assert.strictEqual(convertSecondsToTimestamp(-100), "00:00:00");
+    });
+
+    it("should guard against non-finite input", () => {
+      assert.strictEqual(convertSecondsToTimestamp(Number.NaN), "00:00:00");
+      assert.strictEqual(
+        convertSecondsToTimestamp(Number.POSITIVE_INFINITY),
+        "00:00:00",
+      );
+    });
   });
 
   describe("convertTimestampToSeconds()", () => {

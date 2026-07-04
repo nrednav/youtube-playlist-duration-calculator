@@ -8,9 +8,16 @@ import { extractTimestampByPattern } from "../../modules/extraction/content-patt
  * @returns {string}
  */
 export const convertSecondsToTimestamp = (seconds) => {
-  const hours = `${Math.floor(seconds / 3600)}`.padStart(2, "0");
-  const minutes = `${Math.floor((seconds % 3600) / 60)}`.padStart(2, "0");
-  const remainingSeconds = `${seconds % 60}`.padStart(2, "0");
+  // Guard against negative or non-finite input that would produce
+  // nonsensical timestamps like "-1:-2:-3" or "NaN:NaN:NaN".
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return "00:00:00";
+  }
+
+  const totalSeconds = Math.floor(seconds);
+  const hours = `${Math.floor(totalSeconds / 3600)}`.padStart(2, "0");
+  const minutes = `${Math.floor((totalSeconds % 3600) / 60)}`.padStart(2, "0");
+  const remainingSeconds = `${totalSeconds % 60}`.padStart(2, "0");
 
   return `${hours}:${minutes}:${remainingSeconds}`;
 };

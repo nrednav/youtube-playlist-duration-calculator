@@ -50,10 +50,13 @@ export const strategy = {
       };
     }
 
-    // Text exists but doesn't match expected format (e.g., "Live")
+    // Timestamp element exists but its text is not a duration
+    // (e.g., "Live", "Upcoming"). These are not durations and must not
+    // contribute to the total or to the estimated error. Return null so the
+    // orchestrator routes them to the unparseable path.
     return {
-      value: "0",
-      confidence: 0.5,
+      value: null,
+      confidence: 0,
       strategyName: "selector-match",
     };
   },

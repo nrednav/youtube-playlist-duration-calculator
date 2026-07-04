@@ -1,4 +1,5 @@
 import { discoverPlaylist } from "./modules/discovery/orchestrator";
+import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { PlaylistSorter } from "./modules/sorting";
 import {
@@ -441,6 +442,7 @@ const processPlaylist = () => {
   // Extract timestamps in a single pass: build the timestamps array and
   // compute all confidence statistics without multiple map/filter passes.
   const timestamps = [];
+  const extractionResults = [];
   let nullTimestamps = 0;
   let highConfidenceCount = 0;
   let lowConfidenceCount = 0;
@@ -450,24 +452,30 @@ const processPlaylist = () => {
     const result = extractTimestamp(video);
 
     timestamps.push(result.seconds);
+    extractionResults.push(result);
 
     if (result.seconds === null) {
       nullTimestamps++;
-    } else {
-      totalDurationInSeconds += result.seconds;
+      continue;
+    }
 
-      if (result.confidence >= 0.8) {
-        highConfidenceCount++;
-      } else {
-        lowConfidenceCount++;
-      }
+    totalDurationInSeconds += result.seconds;
+
+    if (result.confidence >= 0.8) {
+      highConfidenceCount++;
+    } else {
+      lowConfidenceCount++;
     }
   }
 
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
 
-  // Estimated error: each low-confidence video could be off by up to 59:59
-  const maxErrorSeconds = lowConfidenceCount * (59 * 60 + 59);
+  // Estimated error is the sum of per-video worst-case bounds across
+  // low-confidence results. Verified videos contribute zero. Unparseable
+  // videos are excluded entirely (they surface in "Videos not counted").
+  // The bound is derived from duration semantics (token shape) rather
+  // than a flat per-video constant. See error-bound.js.
+  const maxErrorSeconds = computeMaxError(extractionResults);
   const maxErrorFormatted =
     maxErrorSeconds > 0
       ? `±${convertSecondsToTimestamp(maxErrorSeconds)}`

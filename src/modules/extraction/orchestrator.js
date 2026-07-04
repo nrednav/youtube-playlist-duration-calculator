@@ -71,13 +71,26 @@ export const extractTimestamp = (videoElement) => {
     }));
 
     if (result.value && result.confidence >= 0.5) {
+      const rawToken = result.value;
+      const segmentCount = rawToken.split(":").filter(Boolean).length;
+
       return {
-        seconds: convertTimestampToSeconds(result.value),
+        seconds: convertTimestampToSeconds(rawToken),
         confidence: result.confidence,
         strategyName: result.strategyName || strategy.name,
+        // Shape of the parsed token (2 = MM:SS, 3 = HH:MM:SS). The
+        // aggregation layer uses this to derive a per-video worst-case
+        // error bound grounded in duration semantics, rather than a flat
+        // constant. See main.js processPlaylist.
+        segmentCount,
       };
     }
   }
 
-  return { seconds: null, confidence: 0, strategyName: "none" };
+  return {
+    seconds: null,
+    confidence: 0,
+    strategyName: "none",
+    segmentCount: 0,
+  };
 };

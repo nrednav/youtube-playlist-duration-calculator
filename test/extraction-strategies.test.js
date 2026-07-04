@@ -118,4 +118,23 @@ describe("Extraction — All Strategies × All Fixtures", () => {
     assert.strictEqual(result.confidence, 0);
     assert.strictEqual(result.strategyName, "none");
   });
+
+  it("returns null for a Live stream (non-duration timestamp text)", () => {
+    // The timestamp element exists but its text is not a duration (e.g.
+    // "Live"). Previously this returned value:"0", confidence:0.5, which
+    // polluted the total (adding 0) and the error bound (adding a full
+    // worst-case per-video error). It must now return null so the video
+    // is excluded from both.
+    const html = `
+      <ytd-playlist-video-renderer>
+        <ytd-thumbnail-overlay-time-status-renderer>Live</ytd-thumbnail-overlay-time-status-renderer>
+      </ytd-playlist-video-renderer>
+    `;
+    const doc = new JSDOM(html).window.document;
+    const el = doc.querySelector("ytd-playlist-video-renderer");
+
+    const result = extractTimestamp(el);
+    assert.strictEqual(result.seconds, null);
+    assert.strictEqual(result.confidence, 0);
+  });
 });
