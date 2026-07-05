@@ -497,10 +497,6 @@ const processPlaylist = () => {
   // (they surface in "Videos not counted"). The bound is per-token-shape,
   // not a flat per-video constant.
   const maxErrorSeconds = computeMaxError(extractionResults);
-  const maxErrorFormatted =
-    maxErrorSeconds > 0
-      ? `±${convertSecondsToTimestamp(maxErrorSeconds)}`
-      : "±0:00";
 
   logger.debug("playlist_calculated", () => ({
     videoCount: videos.length,
@@ -516,8 +512,6 @@ const processPlaylist = () => {
   addPlaylistSummaryToPage({
     timestamps,
     playlistDuration,
-    maxErrorFormatted,
-    highConfidenceCount,
     lowConfidenceCount,
     playlistObserver,
   });
@@ -764,16 +758,12 @@ const displayMessages = (messages) => {
 const addPlaylistSummaryToPage = ({
   timestamps,
   playlistDuration,
-  maxErrorFormatted,
-  highConfidenceCount,
   lowConfidenceCount,
   playlistObserver,
 }) => {
   const playlistSummaryElement = createPlaylistSummaryElement({
     timestamps,
     playlistDuration,
-    maxErrorFormatted,
-    highConfidenceCount,
     lowConfidenceCount,
     playlistObserver,
   });
@@ -823,8 +813,6 @@ const addPlaylistSummaryToPage = ({
 const createPlaylistSummaryElement = ({
   timestamps,
   playlistDuration,
-  maxErrorFormatted,
-  highConfidenceCount,
   lowConfidenceCount,
   playlistObserver,
 }) => {
@@ -855,35 +843,30 @@ const createPlaylistSummaryElement = ({
     }
   }
 
+  // When any video is estimated (low-confidence), the total is
+  // approximate. We signal with a leading "~" only — a near-universal
+  // "approximately" glyph that needs no jargon. Color stays green in
+  // all cases: the prior amber shift collided with the adjacent
+  // "Videos counted" row, and color should not be the sole signal
+  // for colorblind users anyway. The tilde is the accessible signal.
+  // Severity (how many were estimated) remains in the dev log via
+  // logger.debug("playlist_calculated", ...) for diagnostics.
+  const isApproximate = lowConfidenceCount > 0;
   const totalDuration = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_totalDuration"),
-    `${playlistDuration}`,
+    `${isApproximate ? "~" : ""}${playlistDuration}`,
     "#86efac",
   );
 
   containerElement.appendChild(totalDuration);
 
-  const videosCountedValue =
-    lowConfidenceCount > 0
-      ? `${timestamps.length} (${highConfidenceCount > 0 ? `${highConfidenceCount} ${chrome.i18n.getMessage("playlistSummary_verified")}, ` : ""}${lowConfidenceCount} ${chrome.i18n.getMessage("playlistSummary_estimated")})`
-      : `${timestamps.length}`;
-
   const videosCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosCounted"),
-    videosCountedValue,
+    `${timestamps.length}`,
     "#fdba74",
   );
 
   containerElement.appendChild(videosCounted);
-
-  if (lowConfidenceCount > 0) {
-    const estimatedError = createSummaryItem(
-      chrome.i18n.getMessage("playlistSummary_estimatedError"),
-      maxErrorFormatted,
-      "#fbbf24",
-    );
-    containerElement.appendChild(estimatedError);
-  }
 
   const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(

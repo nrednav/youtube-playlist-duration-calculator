@@ -106,17 +106,5 @@
   "sortDropdown_noOptions": {
     "message": "無可用選項",
     "description": "Text to display in the sort dropdown when no sort options are available"
-  },
-  "playlistSummary_estimatedError": {
-    "message": "估計誤差",
-    "description": "播放清單時長估計誤差範圍的標籤"
-  },
-  "playlistSummary_verified": {
-    "message": "已驗證",
-    "description": "高信賴度時間戳標籤"
-  },
-  "playlistSummary_estimated": {
-    "message": "已估算",
-    "description": "低信賴度時間戳標籤"
   }
 }
