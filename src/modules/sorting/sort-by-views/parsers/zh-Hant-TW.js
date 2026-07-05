@@ -1,8 +1,11 @@
 export class ZhHantTwViewsParser {
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
-    const viewsElement = videoInfo.firstElementChild;
-    const parts = viewsElement.textContent.trim().toLowerCase().split("："); // Note: This is not an ordinary colon character
+  /**
+   * @param {string} rawText — the views text fragment, located upstream
+   *   by structural invariant. Migration 2026-07-05: input changed from
+   *   an element to a raw string. Locale logic unchanged.
+   */
+  parse(rawText) {
+    const parts = rawText.trim().toLowerCase().split("："); // Note: This is not an ordinary colon character
     const baseViews = Number.parseFloat(parts[1]);
 
     if (Number.isNaN(baseViews)) {

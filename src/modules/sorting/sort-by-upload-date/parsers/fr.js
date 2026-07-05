@@ -1,6 +1,10 @@
 export class FrUploadDateParser {
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
+  /**
+   * @param {string} rawText — the upload-date text fragment, located
+   *   upstream by structural invariant. Migration 2026-07-05: input
+   *   changed from an element to a raw string. Locale logic unchanged.
+   */
+  parse(rawText) {
     const secondsByUnit = {
       minute: 60,
       heure: 60 * 60,
@@ -13,12 +17,7 @@ export class FrUploadDateParser {
     const uploadDateRegex =
       /(?:Diffusé )?il y a (\d+) (minutes?|heures?|jours?|semaines?|mois|ans?)/u;
 
-    const uploadDateElement = videoInfo.children[2];
-
-    const [value, unit] = uploadDateElement.textContent
-      .toLowerCase()
-      .match(uploadDateRegex)
-      .slice(1);
+    const [value, unit] = rawText.toLowerCase().match(uploadDateRegex).slice(1);
 
     const seconds =
       secondsByUnit[unit] ?? secondsByUnit[unit.slice(0, -1)] ?? 1;

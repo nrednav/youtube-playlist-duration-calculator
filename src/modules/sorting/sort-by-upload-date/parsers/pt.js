@@ -1,6 +1,10 @@
 export class PtUploadDateParser {
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
+  /**
+   * @param {string} rawText — the upload-date text fragment, located
+   *   upstream by structural invariant. Migration 2026-07-05: input
+   *   changed from an element to a raw string. Locale logic unchanged.
+   */
+  parse(rawText) {
     const secondsByUnit = {
       minuto: 60,
       hora: 60 * 60,
@@ -11,10 +15,9 @@ export class PtUploadDateParser {
       ano: 365 * 86400,
     };
 
-    const uploadDateElement = videoInfo.children[2];
     const uploadDateRegex =
       /(?:transmitido )?há (\d+) (minutos?|horas?|dias?|semanas?|mês|meses|anos?)/u;
-    const [value, unit] = uploadDateElement.textContent
+    const [value, unit] = rawText
       .toLowerCase()
       .replaceAll(/\s/g, " ")
       .match(uploadDateRegex)

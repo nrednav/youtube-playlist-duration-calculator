@@ -1,63 +1,41 @@
-import { elementSelectors } from "src/shared/data/element-selectors";
-import { getSupportedLocales, getViewsParser } from "./parsers";
+import { extractViews } from "src/modules/extraction/views-extraction";
+import { getSupportedLocales } from "./parsers";
 
 export class SortByViewsStrategy {
   static supportedLocales = getSupportedLocales();
 
   /**
-   * Sorts a list of videos by their view count
+   * Sorts a list of videos by their view count.
+   *
+   * BEDROCK MIGRATION 2026-07-05: previously called
+   * `video.querySelector(elementSelectors.videoInfo)` and read
+   * `firstElementChild`, a renderer-territory assumption. On viewmodel
+   * it returned null and crashed. The strategy now consumes the
+   * architecture-agnostic `extractViews` extractor, which locates the
+   * views fragment by structural invariant (the metadata-row fragment
+   * before the delimiter, excluding "watching").
+   *
+   * Videos with no extractable views (live, unavailable) sort as 0 and
+   * hold their relative order via the comparator's stability.
+   *
    * @param {Array<Element>} videos
    * @param {"asc" | "desc"} sortOrder
    * @returns {Array<Element>}
    */
   sort(videos, sortOrder) {
     return [...videos].sort((videoA, videoB) => {
-      const videoInfoA = videoA.querySelector(elementSelectors.videoInfo);
-      const videoInfoB = videoB.querySelector(elementSelectors.videoInfo);
-
-      if (
-        videoInfoA.children.length === 0 ||
-        videoInfoB.children.length === 0
-      ) {
-        return 0;
-      }
-
-      const viewCountA = this.extractViews(videoInfoA);
-      const viewCountB = this.extractViews(videoInfoB);
+      const countA = extractViews(videoA).value ?? 0;
+      const countB = extractViews(videoB).value ?? 0;
 
       if (sortOrder === "asc") {
-        return viewCountA - viewCountB;
+        return countA - countB;
       }
 
       if (sortOrder === "desc") {
-        return viewCountB - viewCountA;
+        return countB - countA;
       }
+
+      return 0;
     });
-  }
-
-  /**
-   * Extracts the view count as a number from a video info element
-   * @param {Element} videoInfo
-   * @returns {number}
-   */
-  extractViews(videoInfo) {
-    const context = new ViewsParserContext(document.documentElement.lang);
-    return context.parse(videoInfo);
-  }
-}
-
-export class ViewsParserContext {
-  /** @param {string} locale */
-  constructor(locale) {
-    const Parser = getViewsParser(locale);
-    this.parser = new Parser();
-  }
-
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
-    if (!this.parser) {
-      throw new Error("No views parser defined");
-    }
-    return this.parser.parse(videoInfo);
   }
 }

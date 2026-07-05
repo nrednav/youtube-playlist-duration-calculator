@@ -1,7 +1,8 @@
-import {
-  desyncIndicators,
-  elementSelectors,
-} from "src/shared/data/element-selectors";
+import { elementSelectors } from "src/shared/data/element-selectors";
+import { extractChannelName } from "../extraction/channel-name-extraction";
+import { extractTimestamp } from "../extraction/orchestrator";
+import { extractUploadDate } from "../extraction/upload-date-extraction";
+import { extractViews } from "../extraction/views-extraction";
 import { SortByChannelNameStrategy } from "./sort-by-channel-name";
 import { SortByDurationStrategy } from "./sort-by-duration";
 import { SortByIndexStrategy } from "./sort-by-index";
@@ -36,7 +37,7 @@ export class PlaylistSorter {
   static getSortTypes() {
     return {
       index: {
-        enabled: videoHasElement(elementSelectors.videoIndex),
+        enabled: videoExposesDatum("index"),
         label: {
           asc: chrome.i18n.getMessage("sortType_index_label_asc"),
           desc: chrome.i18n.getMessage("sortType_index_label_desc"),
@@ -44,7 +45,7 @@ export class PlaylistSorter {
         strategy: SortByIndexStrategy,
       },
       duration: {
-        enabled: videoHasElement(elementSelectors.timestamp),
+        enabled: videoExposesDatum("duration"),
         label: {
           asc: chrome.i18n.getMessage("sortType_duration_label_asc"),
           desc: chrome.i18n.getMessage("sortType_duration_label_desc"),
@@ -52,7 +53,7 @@ export class PlaylistSorter {
         strategy: SortByDurationStrategy,
       },
       channelName: {
-        enabled: videoHasElement(elementSelectors.channelName),
+        enabled: videoExposesDatum("channelName"),
         label: {
           asc: chrome.i18n.getMessage("sortType_channelName_label_asc"),
           desc: chrome.i18n.getMessage("sortType_channelName_label_desc"),
@@ -61,7 +62,7 @@ export class PlaylistSorter {
       },
       views: {
         enabled:
-          videoHasElement(elementSelectors.videoInfo) &&
+          videoExposesDatum("views") &&
           SortByViewsStrategy.supportedLocales.includes(
             document.documentElement.lang,
           ),
@@ -73,7 +74,7 @@ export class PlaylistSorter {
       },
       uploadDate: {
         enabled:
-          videoHasElement(elementSelectors.videoInfo) &&
+          videoExposesDatum("uploadDate") &&
           !pageHasNativeSortFeature() &&
           SortByUploadDateStrategy.supportedLocales.includes(
             document.documentElement.lang,
@@ -107,40 +108,68 @@ export class PlaylistSorter {
 }
 
 /**
- * Checks whether an element identified by identifier can be found within the
- * first video element rendered in the playlist.
- * Scales across renderer and viewmodel architectures.
- * @param {string} identifier
+ * Whether the first video in the playlist exposes a given sort datum.
+ *
+ * BEDROCK MIGRATION 2026-07-05: this replaces the per-architecture
+ * `videoHasElement` gate, which branched on renderer vs viewmodel and
+ * hardcoded `return false` for channelName / videoInfo on viewmodel. The
+ * old gate knew which SELECTOR to query per architecture; when no selector
+ * existed for an architecture, the datum was reported absent regardless of
+ * whether the data was actually in the DOM.
+ *
+ * The replacement keys off structural-invariant EXTRACTORS, which locate
+ * data by what it IS (a /@handle link, digits + "views", a time-ago
+ * phrase, a duration badge) rather than by element name. One code path
+ * runs on both architectures. A datum is "present" when its extractor
+ * returns positive confidence on the first video.
+ *
+ * @param {"index"|"duration"|"channelName"|"views"|"uploadDate"} datum
  * @returns {boolean}
  */
-const videoHasElement = (identifier) => {
-  const variant = desyncIndicators.detectVariant();
-
-  let videoElement;
-  if (variant.variant === "viewmodel") {
-    videoElement = document.querySelector("yt-lockup-view-model");
-  } else {
-    videoElement = document.querySelector(elementSelectors.video);
-  }
-
+const videoExposesDatum = (datum) => {
+  const videoElement = resolveFirstVideo();
   if (!videoElement) return false;
 
-  // For viewmodel pages, check content-based existence
-  if (variant.variant === "viewmodel") {
-    // Duration: check if the lockup text contains a timestamp pattern
-    if (identifier === elementSelectors.timestamp) {
-      return /\d+:\d{2}(:\d{2})?/.test(videoElement.textContent || "");
-    }
-    // Index: available on viewmodel via array position (no DOM element needed)
-    if (identifier === elementSelectors.videoIndex) {
+  switch (datum) {
+    case "index":
+      // Index is always available: on renderer via the DOM index element,
+      // on viewmodel via array position (frozen to an attribute on first
+      // sort). No extraction needed at gate time.
       return true;
+    case "duration": {
+      const result = extractTimestamp(videoElement);
+      return result.confidence > 0;
     }
-    // Other selectors don't exist in viewmodel architecture — not supported yet
-    return false;
+    case "channelName": {
+      const result = extractChannelName(videoElement);
+      return result.confidence > 0;
+    }
+    case "views": {
+      const result = extractViews(videoElement);
+      return result.confidence > 0;
+    }
+    case "uploadDate": {
+      const result = extractUploadDate(videoElement);
+      return result.confidence > 0;
+    }
+    default:
+      return false;
   }
+};
 
-  // Renderer architecture: use the normal selector query
-  return videoElement.querySelector(identifier);
+/**
+ * Resolve the first video element in the playlist, agnostic to the
+ * rendering architecture. The renderer architecture renders
+ * ytd-playlist-video-renderer; the viewmodel architecture renders
+ * yt-lockup-view-model. Both are queried in priority order.
+ *
+ * @returns {Element|null}
+ */
+const resolveFirstVideo = () => {
+  return (
+    document.querySelector(elementSelectors.video) ||
+    document.querySelector("yt-lockup-view-model")
+  );
 };
 
 const pageHasNativeSortFeature = () => {

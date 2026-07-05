@@ -1,11 +1,11 @@
 export class EnInViewsParser {
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
-    const viewsElement = videoInfo.firstElementChild;
-    const parts = viewsElement.textContent
-      .toLowerCase()
-      .replaceAll(/\s/g, " ")
-      .split(" ");
+  /**
+   * @param {string} rawText — the views text fragment, located upstream
+   *   by structural invariant. Migration 2026-07-05: input changed from
+   *   an element to a raw string. Locale logic unchanged.
+   */
+  parse(rawText) {
+    const parts = rawText.toLowerCase().replaceAll(/\s/g, " ").split(" ");
     const baseViews = Number.parseFloat(parts[0]);
 
     if (parts.length === 3 && parts[1] === "lakh") {

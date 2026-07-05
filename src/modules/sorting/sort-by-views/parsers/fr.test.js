@@ -15,13 +15,10 @@ test.describe("views-parser/fr", () => {
 
   for (const testCase of testCases) {
     test(testCase.input, () => {
-      const mockElement = {
-        firstElementChild: {
-          textContent: testCase.input,
-        },
-      };
-
-      const result = parser.parse(mockElement);
+      // Migration 2026-07-05: parser now takes the raw views string, not
+      // a mock element with firstElementChild.textContent. The locale
+      // suffix/word logic is unchanged.
+      const result = parser.parse(testCase.input);
 
       assert.equal(result, testCase.expected);
     });

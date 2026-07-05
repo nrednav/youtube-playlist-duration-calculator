@@ -1,11 +1,12 @@
 export class ZhHansCnViewsParser {
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
-    const viewsElement = videoInfo.firstElementChild;
+  /**
+   * @param {string} rawText — the views text fragment, located upstream
+   *   by structural invariant. Migration 2026-07-05: input changed from
+   *   an element to a raw string. Locale logic unchanged.
+   */
+  parse(rawText) {
     const viewsRegex = /(\d+(\.\d+)?万?)/g;
-    const [viewsString] = viewsElement.textContent
-      .toLowerCase()
-      .match(viewsRegex);
+    const [viewsString] = rawText.toLowerCase().match(viewsRegex);
     const suffix = viewsString.slice(-1);
     const baseViews = Number.parseFloat(viewsString);
 

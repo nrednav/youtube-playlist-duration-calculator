@@ -25,11 +25,10 @@ test.describe("upload-date-parser/fr", () => {
       const variants = [testCase.input, `Diffusé ${testCase.input}`];
 
       for (const variant of variants) {
-        const mockElement = {
-          children: ["", "", { textContent: variant }],
-        };
-
-        const result = parser.parse(mockElement);
+        // Migration 2026-07-05: parser now takes the raw date string,
+        // not a mock element with children[2]. Locale regex/unit logic
+        // is unchanged.
+        const result = parser.parse(variant);
 
         assert.equal(result, testCase.expected);
       }

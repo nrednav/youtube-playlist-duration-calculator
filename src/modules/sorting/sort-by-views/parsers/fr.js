@@ -1,8 +1,12 @@
 export class FrViewsParser {
-  /** @param {Element} videoInfo */
-  parse(videoInfo) {
-    const viewsElement = videoInfo.firstElementChild;
-    const [value, unit] = viewsElement.textContent
+  /**
+   * @param {string} rawText — the views text fragment (e.g. "1,4 M de
+   *   vues"), located upstream by structural invariant. Migration
+   *   2026-07-05: input changed from an element to a raw string,
+   *   deleting the renderer-territory assumption. Locale logic unchanged.
+   */
+  parse(rawText) {
+    const [value, unit] = rawText
       .trim()
       .toLowerCase()
       .replaceAll(/\s/g, " ")
