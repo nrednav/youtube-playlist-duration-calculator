@@ -10,6 +10,7 @@ import {
   elementSelectors,
 } from "./shared/data/element-selectors";
 import { logger } from "./shared/modules/logger";
+import { isOperablePlaylistPage } from "./shared/modules/page-guard";
 import { isSortingEnabledForCount } from "./shared/modules/sort-cap";
 import {
   convertSecondsToTimestamp,
@@ -80,14 +81,17 @@ const checkPlaylistReady = () => {
       return;
     }
 
-    // Stop silently here, even on /feed/playlists where viewmodel lockups
-    // are present, because those are not real playlist pages. Contrast with
-    // the unknown-variant branch above which signals failure.
+    // Non-operable pages (anything other than /playlist) stop silently.
+    // This includes /feed/playlists, /watch, /feed/history, and channel
+    // pages. The structural protection against inserting on a non-playlist
+    // page lives in `isOperablePlaylistPage()` at the processPlaylist /
+    // displayLoader call sites; this branch simply ends polling without
+    // signaling failure (the unknown-variant branch above handles that).
     if (
       pollCount > 15 &&
       !playlistExists &&
       variant.known &&
-      window.location.pathname !== "/playlist"
+      !isOperablePlaylistPage()
     ) {
       clearInterval(activePlaylistInterval);
       return;
@@ -203,6 +207,10 @@ const checkPlaylistReady = () => {
 };
 
 const displayLoader = () => {
+  if (!isOperablePlaylistPage()) {
+    return;
+  }
+
   const playlistSummaryElement = getPlaylistSummaryElement();
 
   if (!playlistSummaryElement) {
@@ -477,6 +485,20 @@ const signalFailure = (variant, snapshot) => {
 };
 
 const processPlaylist = () => {
+  // Defense-in-depth at processPlaylist itself: the discovery branch of
+  // checkPlaylistReady already gates on `pathname === "/playlist"`, but
+  // the renderer branch (line 162) does not. The renderer branch fires
+  // during SPA transition windows where the URL has flipped to a
+  // non-playlist URL but the prior page's playlist DOM has not yet been
+  // torn down — the playlist selector still resolves, so the gate here is
+  // load-bearing, not redundant. See shared/modules/page-guard.js.
+  if (!isOperablePlaylistPage()) {
+    logger.debug("processPlaylist_skipped_non_operable", () => ({
+      pathname: window.location.pathname,
+    }));
+    return;
+  }
+
   logger.debug("processing_playlist");
 
   const playlistObserver = setupPlaylistObserver();
