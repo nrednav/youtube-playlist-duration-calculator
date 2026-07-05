@@ -1,6 +1,7 @@
 import { discoverPlaylist } from "./modules/discovery/orchestrator";
 import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
+import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
 import { PlaylistSorter } from "./modules/sorting";
 import {
   desyncIndicators,
@@ -44,7 +45,6 @@ const checkPlaylistReady = () => {
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const playlistExists = playlistElement !== null;
 
-    // Desynchronization detection: which rendering architecture is active?
     const variant = desyncIndicators.detectVariant();
 
     logger.debug("poll_tick", () => ({
@@ -58,7 +58,6 @@ const checkPlaylistReady = () => {
       variantKnown: variant.known,
     }));
 
-    // If the page isn't a playlist page at all, stop polling
     if (
       pollCount > 15 &&
       !playlistExists &&
@@ -78,8 +77,9 @@ const checkPlaylistReady = () => {
       return;
     }
 
-    // If variant is known but we're not on a playlist page, stop polling silently.
-    // Viewmodel lockups exist on /feed/playlists and other non-playlist pages.
+    // Stop silently here, even on /feed/playlists where viewmodel lockups
+    // are present, because those are not real playlist pages. Contrast with
+    // the unknown-variant branch above which signals failure.
     if (
       pollCount > 15 &&
       !playlistExists &&
@@ -90,8 +90,8 @@ const checkPlaylistReady = () => {
       return;
     }
 
-    // Unknown variant on a playlist page. Desync detected but this is expected
-    // on viewmodel pages. Log it and let polling continue.
+    // Viewmodel desync on a playlist page is expected, not a failure.
+    // Log it and let polling continue rather than signaling failure.
     if (
       pollCount === 15 &&
       !playlistExists &&
@@ -105,9 +105,9 @@ const checkPlaylistReady = () => {
       }));
     }
 
-    // If the known selector didn't find the playlist, try invariant search.
-    // This handles viewmodel architecture and any future variant.
-    // Only run once when discoveryResult hasn't been populated yet.
+    // Invariant search handles viewmodel and any future variant when the
+    // known selector misses. Runs at most once: the guard on
+    // `discoveryResult` prevents re-entry on subsequent ticks.
     if (
       !playlistExists &&
       variant.known &&
@@ -167,8 +167,6 @@ const checkPlaylistReady = () => {
       }
     }
 
-    // Viewmodel architecture readiness check
-    // The known selectors don't match, but invariant search found elements
     const discoveryResult = window.ytpdc?.discoveryResult;
 
     if (
@@ -177,7 +175,6 @@ const checkPlaylistReady = () => {
       discoveryResult.confidence > 0.5 &&
       window.location.pathname === "/playlist"
     ) {
-      // Verify that at least some discovered videos have extractable timestamps
       const sampleVideos = discoveryResult.videos?.slice(0, 3) || [];
       const hasTimestamps = sampleVideos.some((v) => {
         const result = extractTimestamp(v);
@@ -272,9 +269,14 @@ const setupPage = () => {
     );
   };
 
-  document
-    .querySelector(elementSelectors.playlist)
-    ?.addEventListener("click", onPlaylistInteractedWith);
+  // Listen on the live playlist container across both architectures.
+  // On the viewmodel architecture `elementSelectors.playlist` does not
+  // match, so fall back to the discovered insertion container.
+  const interactionTarget =
+    document.querySelector(elementSelectors.playlist) ||
+    window.ytpdc?.discoveryResult?.videos?.[0]?.parentElement;
+
+  interactionTarget?.addEventListener("click", onPlaylistInteractedWith);
 
   window.ytpdc.pageSetupDone = true;
 };
@@ -332,14 +334,37 @@ const countUnavailableTimestamps = () => {
  * @returns {Element[]}
  **/
 const getVideos = () => {
-  // Viewmodel architecture: use directly discovered video elements
-  if (window.ytpdc?.discoveryResult?.videos) {
-    return window.ytpdc.discoveryResult.videos;
+  const discoveryResult = window.ytpdc?.discoveryResult;
+
+  // ViewModel architecture: re-derive the live lockup children from the
+  // insertion container at call time. `discoveryResult.videos` is a frozen
+  // snapshot from discovery and would not include scroll-appended lockups,
+  // so it must not be returned directly. The snapshot's role is to identify
+  // the container and the video selector, not to cache the video list.
+  //
+  // The insertion container is NOT `videos[0].parentElement`: each
+  // lockup is wrapped in its own per-video div that holds exactly one
+  // lockup. The shared container that holds all lockups is reached via
+  // `closest('#contents')` from any snapshot lockup.
+  if (discoveryResult?.videos?.length > 0) {
+    const videoSelector =
+      discoveryResult.videoSelector || "yt-lockup-view-model";
+    const firstSnapshot = discoveryResult.videos[0];
+    const liveContainer =
+      firstSnapshot?.closest("#contents") || firstSnapshot?.parentElement;
+
+    if (liveContainer) {
+      const liveVideos = liveContainer.querySelectorAll(videoSelector);
+
+      if (liveVideos.length > 0) {
+        return [...liveVideos];
+      }
+    }
   }
 
   // Renderer-invariant: use discovered container, extract by tag name
-  if (window.ytpdc?.discoveryResult?.container) {
-    const container = window.ytpdc.discoveryResult.container;
+  if (discoveryResult?.container) {
+    const container = discoveryResult.container;
     const videos = container.getElementsByTagName(elementSelectors.video);
 
     if (videos.length > 0) {
@@ -401,8 +426,8 @@ const getVideoTitle = (video) => {
 };
 
 const signalFailure = (variant, snapshot) => {
-  // Layer 1: User-visible indicator
   const summaryEl = getPlaylistSummaryElement();
+
   if (summaryEl) {
     const msg = document.createElement("div");
     msg.id = "ytpdc-failure-indicator";
@@ -421,7 +446,7 @@ const signalFailure = (variant, snapshot) => {
     summaryEl.appendChild(msg);
   }
 
-  // Layer 2: Diagnostic logging (visible via ?ytpdc-debug=true)
+  // Diagnostic logging surfaced via `?ytpdc-debug=true`.
   logger.error("extension_failure", () => ({
     reason: "unknown_layout_variant",
     variant,
@@ -439,8 +464,6 @@ const processPlaylist = () => {
   const playlistObserver = setupPlaylistObserver();
   const videos = getVideos();
 
-  // Extract timestamps in a single pass: build the timestamps array and
-  // compute all confidence statistics without multiple map/filter passes.
   const timestamps = [];
   const extractionResults = [];
   let nullTimestamps = 0;
@@ -470,11 +493,9 @@ const processPlaylist = () => {
 
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
 
-  // Estimated error is the sum of per-video worst-case bounds across
-  // low-confidence results. Verified videos contribute zero. Unparseable
-  // videos are excluded entirely (they surface in "Videos not counted").
-  // The bound is derived from duration semantics (token shape) rather
-  // than a flat per-video constant. See error-bound.js.
+  // Verified videos contribute zero; unparseable videos are excluded
+  // (they surface in "Videos not counted"). The bound is per-token-shape,
+  // not a flat per-video constant.
   const maxErrorSeconds = computeMaxError(extractionResults);
   const maxErrorFormatted =
     maxErrorSeconds > 0
@@ -503,6 +524,58 @@ const processPlaylist = () => {
 };
 
 /**
+ * Resolves the live DOM element that YouTube inserts new video elements
+ * into, regardless of rendering architecture.
+ *
+ * Priority:
+ *   1. The renderer selector (`ytd-playlist-video-list-renderer #contents`)
+ *      for the renderer architecture.
+ *   2. The direct-insertion parent of the discovered viewmodel lockups
+ *      (`discoveryResult.videos[0].parentElement`), i.e. the `#contents`
+ *      div inside `yt-section-list-renderer` that YouTube appends lockups
+ *      into. This is where `childList` mutations actually fire on scroll.
+ *   3. The discovered container as a fallback.
+ *
+ * Without step 2 the observer is never attached on the viewmodel
+ * architecture, so scroll-triggered appends go undetected.
+ *
+ * @returns {Element | null}
+ */
+const resolveObserverTarget = () => {
+  const rendererElement = document.querySelector(elementSelectors.playlist);
+
+  if (rendererElement) {
+    return rendererElement;
+  }
+
+  const discoveryResult = window.ytpdc?.discoveryResult;
+
+  if (!discoveryResult) {
+    return null;
+  }
+
+  // ViewModel architecture: the live container that YouTube appends
+  // lockups into. Each lockup is wrapped in its own per-video div, so
+  // `videos[0].parentElement` is NOT the insertion container (it holds
+  // exactly one lockup). The shared insertion container is reached via
+  // `closest('#contents')` from any snapshot lockup. Falling back to
+  // `discoveryResult.container` covers any discovered ancestor.
+  if (discoveryResult.videos?.length > 0) {
+    const firstSnapshot = discoveryResult.videos[0];
+    const insertionContainer =
+      firstSnapshot?.closest("#contents") ||
+      firstSnapshot?.parentElement ||
+      discoveryResult.container;
+
+    if (insertionContainer) {
+      return insertionContainer;
+    }
+  }
+
+  return discoveryResult.container || null;
+};
+
+/**
   * Sets up a mutation observer on the playlist to detect when video(s) are
   * added or removed.
   * Upon detection it conditionally triggers a re-processing of the playlist
@@ -517,7 +590,7 @@ const setupPlaylistObserver = () => {
     return window.ytpdc.playlistObserver;
   }
 
-  const playlistElement = document.querySelector(elementSelectors.playlist);
+  const playlistElement = resolveObserverTarget();
 
   if (!playlistElement) {
     logger.debug("playlist_observer_no_element");
@@ -532,6 +605,8 @@ const setupPlaylistObserver = () => {
 
   logger.debug("playlist_observer_created", () => ({
     playlistChildCount: playlistElement.childElementCount,
+    observerTargetTag: playlistElement.tagName,
+    observerTargetId: playlistElement.id || null,
   }));
 
   return {
@@ -542,13 +617,44 @@ const setupPlaylistObserver = () => {
 };
 
 /**
+ * Decide whether a single `childList` mutation is a user-initiated
+ * video removal (possibly after sorting), as opposed to a lazy-load
+ * append or any other shape.
+ *
+ * Delegates to the pure classifier in `mutation-shape.js` so the
+ * indivisible map/territory decision is unit-testable without dragging
+ * in the content-script entry point (which imports CSS).
+ *
+ * @param {MutationRecord} mutation
+ * @returns {boolean}
+ */
+const isUserRemovalMutation = (mutation) =>
+  isRemovalMutation(mutation, {
+    videoTag: elementSelectors.video,
+    lastInteracted: window.ytpdc?.lastVideoInteractedWith,
+  });
+
+/**
  * This function decides when the playlist duration should be recalculated & how
+ *
+ * Mutations are classified by their physical shape, not by their record count:
+ *
+ * 1. Page-reload case (`shouldRequestPageReload`): display the reload prompt,
+ *    disconnect, return. Unchanged.
+ * 2. User-removal case: exactly one removed video renderer and a recorded
+ *    last-interacted video. Re-add the wrong-removed video (post-sort fixup),
+ *    remove the interaction marker, re-arm the observer, recompute.
+ * 3. Append case (`addedNodes.length > 0`, `removedNodes.length === 0`):
+ *    YouTube lazily loaded more videos because the user scrolled. Do not touch
+ *    the DOM. Re-arm the observer on the live playlist container and recompute.
+ * 4. Any other shape: recompute.
+ *
  * @param {MutationRecord[]} mutationList
  * @param {MutationObserver} observer
  * @returns {void | undefined}
  */
 const onPlaylistMutated = (mutationList, observer) => {
-  const playlistElement = document.querySelector(elementSelectors.playlist);
+  const playlistElement = resolveObserverTarget();
 
   logger.debug("playlist_mutated", () => ({
     mutationCount: mutationList.length,
@@ -563,7 +669,6 @@ const onPlaylistMutated = (mutationList, observer) => {
     const mutation = mutationList[0];
 
     if (shouldRequestPageReload(mutation)) {
-      // Problem encountered, request a page reload
       displayMessages([
         chrome.i18n.getMessage("problemEncountered_paragraphOne"),
         chrome.i18n.getMessage("problemEncountered_paragraphTwo"),
@@ -574,29 +679,41 @@ const onPlaylistMutated = (mutationList, observer) => {
       return;
     }
 
-    // No problem encountered, continue processing mutation
-    const removedVideo = mutation.removedNodes[0];
+    // User-initiated removal (possibly post-sort): re-add the wrong-removed
+    // video before recomputing. This branch is only correct when a video was
+    // actually removed AND the user has a recorded last-interacted video;
+    // `isUserRemovalMutation` encodes both so we never dereference a null
+    // `lastVideoInteractedWith` on a lazy-load append mutation.
+    if (isUserRemovalMutation(mutation)) {
+      const removedVideo = mutation.removedNodes[0];
+      const lastInteracted = window.ytpdc.lastVideoInteractedWith;
 
-    // If the playlist was sorted, YouTube removes the wrong video from the
-    // playlist UI (correct video is removed by the server though)
-    // So the following code re-adds that removed video to the playlist
-    if (
-      getVideoTitle(removedVideo) !==
-      getVideoTitle(window.ytpdc.lastVideoInteractedWith)
-    ) {
-      if (mutation.previousSibling) {
-        mutation.previousSibling.after(removedVideo);
-      } else if (mutation.nextSibling) {
-        mutation.nextSibling.before(removedVideo);
+      // If the playlist was sorted, YouTube removes the wrong video from
+      // the playlist UI (the correct video is removed by the server).
+      if (getVideoTitle(removedVideo) !== getVideoTitle(lastInteracted)) {
+        if (mutation.previousSibling) {
+          mutation.previousSibling.after(removedVideo);
+        } else if (mutation.nextSibling) {
+          mutation.nextSibling.before(removedVideo);
+        }
       }
+
+      observer.disconnect();
+
+      lastInteracted.remove();
+
+      observer.observe(playlistElement, { childList: true });
+
+      main();
+
+      return;
     }
 
+    // Lazy-load append (or any other single childList mutation that is
+    // not a page reload and not a user removal). Do not modify the DOM,
+    // in contrast with the removal branch above.
     observer.disconnect();
-
-    window.ytpdc.lastVideoInteractedWith.remove();
-
     observer.observe(playlistElement, { childList: true });
-
     main();
   } else {
     main();
@@ -729,7 +846,6 @@ const createPlaylistSummaryElement = ({
   ].replace("#", "");
   containerElement.classList.add("container");
 
-  // Fallback styles for old design
   if (!newDesign) {
     if (isDarkMode()) {
       containerElement.style.color = "white";
@@ -760,7 +876,6 @@ const createPlaylistSummaryElement = ({
 
   containerElement.appendChild(videosCounted);
 
-  // Estimated error: shown when some timestamps were pattern-extracted
   if (lowConfidenceCount > 0) {
     const estimatedError = createSummaryItem(
       chrome.i18n.getMessage("playlistSummary_estimatedError"),
@@ -972,26 +1087,14 @@ const createSortDropdown = (playlistObserver) => {
 
     playlistObserver?.disconnect();
 
-    // Determine the playlist container and videos based on current architecture
-    const discoveryResult = window.ytpdc?.discoveryResult;
-    let playlistElement;
-    let videos;
+    // `getVideos()` re-derives from the live DOM on both architectures,
+    // so sorting operates on the currently-present elements rather than a
+    // frozen discovery snapshot.
+    const videos = getVideos();
+    const playlistElement = resolveObserverTarget();
 
-    if (discoveryResult?.videos) {
-      // Viewmodel architecture: lockups are the videos, parent is the container
-      videos = discoveryResult.videos;
-      playlistElement = discoveryResult.videos[0]?.parentElement;
-    } else {
-      // Renderer architecture: use standard selectors
-      playlistElement = document.querySelector(elementSelectors.playlist);
-
-      if (!playlistElement) {
-        return;
-      }
-
-      videos = [
-        ...playlistElement.getElementsByTagName(elementSelectors.video),
-      ];
+    if (!playlistElement || videos.length === 0) {
+      return;
     }
 
     const playlistSorter = new PlaylistSorter(
@@ -1025,7 +1128,6 @@ const createSortDropdown = (playlistObserver) => {
   return containerElement;
 };
 
-// Entry-point
 const start = () => {
   logger.info("Loaded.");
   main();

@@ -27,6 +27,10 @@ export const strategy = {
       return {
         element: playlistEl,
         videos: null,
+        // The renderer architecture identifies videos by tag name.
+        // Downstream consumers use this to re-query the live DOM instead of
+        // relying on a frozen snapshot.
+        videoSelector: elementSelectors.video,
         confidence: 0.9,
         strategyName: "selector-match",
       };
@@ -35,6 +39,7 @@ export const strategy = {
     return {
       element: null,
       videos: null,
+      videoSelector: null,
       confidence: 0,
       strategyName: "selector-match",
     };

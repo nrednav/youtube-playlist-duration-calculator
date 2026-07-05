@@ -1,3 +1,4 @@
+import { elementSelectors } from "../../shared/data/element-selectors";
 import { logger } from "../../shared/modules/logger";
 
 const DURATION_PATTERN = /\d+:\d{2}(:\d{2})?/;
@@ -21,7 +22,6 @@ const DURATION_PATTERN = /\d+:\d{2}(:\d{2})?/;
  * @returns {DiscoveryResult}
  */
 const discoverByRendererInvariant = (doc) => {
-  // Find all elements with 3+ children that could be video renderers
   const candidates = [];
 
   const allElements = doc.querySelectorAll("*");
@@ -37,7 +37,6 @@ const discoverByRendererInvariant = (doc) => {
     );
 
     if (videoRenderers.length >= 3) {
-      // Secondary signal: at least some video renderers have duration text
       const withTimestamps = videoRenderers.filter((videoRenderer) =>
         DURATION_PATTERN.test(videoRenderer.textContent || ""),
       );
@@ -55,12 +54,12 @@ const discoverByRendererInvariant = (doc) => {
     return {
       container: null,
       videos: null,
+      videoSelector: null,
       confidence: 0,
       strategy: "renderer-invariant",
     };
   }
 
-  // Pick the candidate with the most video-renderer children
   const best = candidates.reduce((a, b) =>
     a.videoCount > b.videoCount ? a : b,
   );
@@ -71,13 +70,16 @@ const discoverByRendererInvariant = (doc) => {
     bestTimestampRatio: best.timestampRatio,
   }));
 
-  // High confidence if we found lots of video renderers with timestamps
   const confidence =
     best.videoCount >= 10 ? 0.9 : best.videoCount >= 5 ? 0.7 : 0.5;
 
   return {
     container: best.container,
     videos: null,
+    // Renderer-invariant discovery identifies videos by tag-name pattern.
+    // Downstream consumers re-query the live container for these tags instead
+    // of relying on a frozen snapshot.
+    videoSelector: elementSelectors.video,
     confidence,
     strategy: "renderer-invariant",
   };
@@ -101,17 +103,16 @@ const discoverByViewModel = (doc) => {
     return {
       container: null,
       videos: null,
+      videoSelector: null,
       confidence: 0,
       strategy: "viewmodel",
     };
   }
 
-  // Filter lockups to those containing duration text as a secondary check
   const withTimestamps = [...lockups].filter((lockup) =>
     DURATION_PATTERN.test(lockup.textContent || ""),
   );
 
-  // Find the parent container for section-level operations
   const container =
     lockups[0].closest("yt-section-list-renderer") ||
     lockups[0].closest("[id*='contents']") ||
@@ -126,7 +127,6 @@ const discoverByViewModel = (doc) => {
     containerTag: container?.tagName || "none",
   }));
 
-  // High confidence if we found lockups with duration text.
   // Even 1-2 lockups with timestamps is a strong signal on small playlists.
   const confidence =
     usableVideos.length >= 10
@@ -142,6 +142,10 @@ const discoverByViewModel = (doc) => {
   return {
     container,
     videos: usableVideos,
+    // ViewModel videos are yt-lockup-view-model elements. Downstream
+    // consumers use this to re-query the live insertion parent for
+    // scroll-appended lockups instead of the frozen snapshot.
+    videoSelector: "yt-lockup-view-model",
     confidence,
     strategy: "viewmodel",
   };
@@ -175,6 +179,7 @@ export const discoverPlaylist = (doc, variant) => {
   return {
     container: null,
     videos: null,
+    videoSelector: null,
     confidence: 0,
     strategy: "none",
   };

@@ -50,8 +50,13 @@ const sortStrategiesByPriority = (strategies, variant) => {
  * Run all discovery strategies in priority order and return the best result.
  * Strategies are sorted based on the detected YouTube layout variant.
  *
+ * The result includes a `videoSelector` string so downstream consumers
+ * (notably `getVideos()` in main.js) can re-query the live DOM for
+ * currently-present video elements without relying on the frozen
+ * `videos` snapshot captured at discovery time.
+ *
  * @param {Document} doc
- * @returns {{ container: Element|null, videos: Element[]|null, confidence: number, strategyName: string }}
+ * @returns {{ container: Element|null, videos: Element[]|null, videoSelector: string|null, confidence: number, strategyName: string }}
  */
 export const discoverPlaylist = (doc) => {
   const variant = desyncIndicators.detectVariant(doc);
@@ -65,6 +70,7 @@ export const discoverPlaylist = (doc) => {
   let bestResult = {
     container: null,
     videos: null,
+    videoSelector: null,
     confidence: 0,
     strategyName: "none",
   };
@@ -82,13 +88,12 @@ export const discoverPlaylist = (doc) => {
       bestResult = {
         container: result.element,
         videos: result.videos,
+        videoSelector: result.videoSelector ?? null,
         confidence: result.confidence,
         strategyName: result.strategyName || strategy.name,
       };
     }
 
-    // Short-circuit: very high confidence means we found the playlist
-    // with the best strategy for this variant, no need to try more.
     if (result.confidence >= 0.95) {
       break;
     }

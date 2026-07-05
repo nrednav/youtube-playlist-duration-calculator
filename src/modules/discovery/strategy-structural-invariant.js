@@ -20,7 +20,7 @@ export const strategy = {
    * invariants, detecting the architecture automatically.
    *
    * @param {Document} doc
-   * @returns {{ element: Element|null, videos: Element[]|null, confidence: number, strategyName: string }}
+   * @returns {{ element: Element|null, videos: Element[]|null, videoSelector: string|null, confidence: number, strategyName: string }}
    */
   discover(doc) {
     const result = discoverByInvariants(doc, {
@@ -31,6 +31,7 @@ export const strategy = {
     return {
       element: result.container,
       videos: result.videos,
+      videoSelector: result.videoSelector,
       confidence: result.confidence,
       strategyName: "structural-invariant",
     };
