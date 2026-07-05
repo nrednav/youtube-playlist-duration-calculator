@@ -1,6 +1,7 @@
 import { discoverPlaylist } from "./modules/discovery/orchestrator";
 import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
+import { extractPlaylistCount } from "./modules/extraction/playlist-count-extraction";
 import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
 import { PlaylistSorter } from "./modules/sorting";
 import {
@@ -8,6 +9,7 @@ import {
   elementSelectors,
 } from "./shared/data/element-selectors";
 import { logger } from "./shared/modules/logger";
+import { isSortingEnabledForCount } from "./shared/modules/sort-cap";
 import {
   convertSecondsToTimestamp,
   getTimestampFromVideo,
@@ -879,7 +881,13 @@ const createPlaylistSummaryElement = ({
 
   containerElement.appendChild(videosNotCounted);
 
-  if (totalVideosInPlaylist <= 100) {
+  // Sorting is gated by the playlist's total video count, not the visible
+  // subset. A `null` count (stats element absent or not yet rendered, e.g.
+  // on the viewmodel architecture where readiness is decided by discovery
+  // confidence rather than the renderer sidebar) must NOT enable sorting:
+  // `null <= 100` coerces to `0 <= 100` and would falsely show the dropdown.
+  // The defensive predicate returns `false` for unknown counts.
+  if (isSortingEnabledForCount(totalVideosInPlaylist)) {
     if (window.ytpdc.sortDropdown.element) {
       containerElement.appendChild(window.ytpdc.sortDropdown.element);
     } else {
@@ -889,7 +897,13 @@ const createPlaylistSummaryElement = ({
     }
   }
 
-  if (totalVideosInPlaylist >= 100) {
+  // The tooltip (limit explainer) renders only when the count is known and
+  // at/over the cap. An unknown count degrades to no dropdown and no
+  // tooltip, rather than the misleading "sorting disabled" message.
+  if (
+    totalVideosInPlaylist !== null &&
+    !isSortingEnabledForCount(totalVideosInPlaylist)
+  ) {
     const tooltipElement = document.createElement("div");
     tooltipElement.id = "ytpdc-playlist-summary-tooltip";
 
@@ -1009,13 +1023,30 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
 };
 
 const countTotalVideosInPlaylist = () => {
+  // BEDROCK MIGRATION 2026-07-05: the legacy `#stats yt-formatted-string`
+  // and `.metadata-stats yt-formatted-string` selectors no longer resolve
+  // on the current YouTube playlist page. YouTube moved the count into a
+  // page-header `yt-content-metadata-view-model` span ("154 videos") flanked
+  // by delimiter spans. The legacy selectors remain as a priority fallback
+  // for any YouTube variant still rendering the old stats element; the
+  // content-pattern extractor handles the current layout and is
+  // locale-independent (it matches delimiter structure, not the "videos"
+  // word, which is too risky to enumerate across all shipped locales).
+  //
+  // Returns `null` only when BOTH strategies miss so the sort gate can
+  // degrade to the safe default (no dropdown, no tooltip) rather than the
+  // prior `0`-coercion false-positive that enabled sorting on large
+  // playlists before their stats element loaded.
   const statsElement = document.querySelector(
     elementSelectors.stats[isNewDesign() ? "new" : "old"],
   );
 
-  if (!statsElement) return null;
+  if (statsElement) {
+    return Number.parseInt(statsElement.innerText.replace(/\D/g, ""));
+  }
 
-  return Number.parseInt(statsElement.innerText.replace(/\D/g, ""));
+  const result = extractPlaylistCount(document);
+  return result.value;
 };
 
 const createSortDropdown = (playlistObserver) => {
