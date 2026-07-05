@@ -103,6 +103,10 @@
     "message": "This may be due to a YouTube layout change. Try reloading the page.",
     "description": "Body text displayed when the extension cannot locate the playlist"
   },
+  "failureIndicator_reportLink": {
+    "message": "Report this issue",
+    "description": "Link text for reporting the issue"
+  },
   "sortDropdown_noOptions": {
     "message": "No options available",
     "description": "Text to display in the sort dropdown when no sort options are available"

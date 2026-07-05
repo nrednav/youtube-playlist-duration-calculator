@@ -56,9 +56,10 @@ indicator** inside the playlist summary panel. This indicator includes:
 
 - A clear message: "Unable to calculate playlist duration. This may be due to
   a YouTube layout change."
-- A **"Report this issue"** link that opens a pre-populated GitHub issue with
-  the diagnostic snapshot (DOM architecture, element state, extension version,
-  user agent, locale)
+- A **"Report this issue"** link that opens a pre-filled Google Form with the
+  extension version, browser, and locale. The form is anonymous and requires
+  no account, so any user can signal that the extension is broken. (The full
+  diagnostic snapshot remains in the browser console via `?ytpdc-debug=true`.)
 
 To help diagnose issues before they appear as failures, open the playlist page
 with `?ytpdc-debug=true` appended to the URL. The extension will log detailed
@@ -202,6 +203,9 @@ panel located on the left-hand side of the page.
 If you wish to request a new feature or report a bug, please open an issue by
 clicking
 [here](https://github.com/nrednav/youtube-playlist-duration-calculator/issues/new).
+Note that the "Report this issue" link in the extension's failure banner
+points to a no-account Google Form instead, for users who do not have a GitHub
+account.
 
 ## Translations
 

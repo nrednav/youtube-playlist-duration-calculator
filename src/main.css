@@ -35,6 +35,18 @@
   color: #fff;
 }
 
+#ytpdc-failure-report-link {
+  display: inline-block;
+  margin-top: 4px;
+  color: #fca5a5;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#ytpdc-failure-report-link:hover {
+  color: #fecaca;
+}
+
 #ytpdc-playlist-summary-new.container,
 #ytpdc-playlist-summary-old.container {
   display: flex;

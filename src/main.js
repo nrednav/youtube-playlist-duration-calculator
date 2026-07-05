@@ -3,6 +3,7 @@ import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { extractPlaylistCount } from "./modules/extraction/playlist-count-extraction";
 import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
+import { buildReportUrl } from "./modules/reporting/report-url";
 import { PlaylistSorter } from "./modules/sorting";
 import {
   desyncIndicators,
@@ -443,6 +444,21 @@ const signalFailure = (variant, snapshot) => {
     bodyEl.id = "ytpdc-failure-body";
     bodyEl.textContent = chrome.i18n.getMessage("failureIndicator_body");
     msg.appendChild(bodyEl);
+
+    const reportUrl = buildReportUrl({
+      extensionVersion: chrome.runtime.getManifest().version,
+      userAgent: navigator.userAgent,
+      locale: document.documentElement.lang,
+    });
+    const reportLink = document.createElement("a");
+    reportLink.id = "ytpdc-failure-report-link";
+    reportLink.href = reportUrl;
+    reportLink.target = "_blank";
+    reportLink.rel = "noopener noreferrer";
+    reportLink.textContent = chrome.i18n.getMessage(
+      "failureIndicator_reportLink",
+    );
+    msg.appendChild(reportLink);
 
     summaryEl.innerHTML = "";
     summaryEl.appendChild(msg);
