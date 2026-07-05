@@ -1,0 +1,92 @@
+<!--
+  Renderer Architecture — Upcoming / Scheduled Video Item (real DOM, 2026-07-05)
+  Source: Watch Later playlist.
+  Structure: ytd-thumbnail-overlay-time-status-renderer exists with
+  overlay-style="UPCOMING". The #time-status span text is "Upcoming".
+  The badge-shape text is "Upcoming".
+  CRITICAL FALSE-POSITIVE TRAP: The metadata-line span contains
+  "Scheduled for 7/5/26, 4:00 AM". The content-pattern extraction
+  regex /\d{1,2}:\d{2}(:\d{2})?/ matches "4:00" against the ENTIRE
+  video element textContent, silently counting this as a 4-minute
+  duration. Confirmed via node -e probe.
+  Validates: extraction must NOT count "Upcoming" as a duration, and
+  must not match the scheduled time "4:00" either.
+-->
+<ytd-playlist-video-renderer class="style-scope ytd-playlist-video-list-renderer" lockup="true" style-type=""><!--css-build:shady--><!--css_build_scope:ytd-playlist-video-renderer--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.main_desktop.ui.renderers.sections.ytd_playlist_video_renderer.ytd.playlist.video.renderer.transition.css.js--><div id="index-container" class="playlist-drag-handle style-scope ytd-playlist-video-renderer">
+  <yt-icon id="reorder" icon="yt-icons:drag_handle" class="style-scope ytd-playlist-video-renderer"><span class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost"><div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true"><path d="M20 7H4a1 1 0 000 2h16a1 1 0 100-2Zm0 8H4a1 1 0 000 2h16a1 1 0 000-2Z"></path></svg></div></span></yt-icon>
+  <yt-formatted-string id="index" class="style-scope ytd-playlist-video-renderer">2</yt-formatted-string>
+</div>
+<div id="content" class="style-scope ytd-playlist-video-renderer">
+  <div id="container" class="style-scope ytd-playlist-video-renderer">
+    <ytd-thumbnail id="thumbnail" hide-playback-status="" class="style-scope ytd-playlist-video-renderer" size="medium" loaded=""><a id="thumbnail" class="yt-simple-endpoint inline-block style-scope ytd-thumbnail" aria-hidden="true" tabindex="-1" rel="null" href="/watch?v=REDACTED&amp;list=WL&amp;index=2&amp;pp=REDACTED">
+  <yt-image class="style-scope ytd-thumbnail">
+  <img class="ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAspectFill ytCoreImageLoaded" alt="true" style="background-color: transparent;" src="https://i.ytimg.com/vi/REDACTED/hqdefault.jpg?sqp=REDACTED&amp;rs=REDACTED"></yt-image>
+
+  <div id="overlays" class="style-scope ytd-thumbnail"><ytd-thumbnail-overlay-time-status-renderer class="style-scope ytd-thumbnail" hide-time-status="" overlay-style="UPCOMING"><!--css-build:shady--><!--css_build_scope:ytd-thumbnail-overlay-time-status-renderer--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js--><ytd-badge-supported-renderer is-thumbnail-badge="" class="style-scope ytd-thumbnail-overlay-time-status-renderer" system-icons=""><!--css-build:shady--><!--css_build_scope:ytd-badge-supported-renderer--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js--><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer><div class="thumbnail-overlay-badge-shape style-scope ytd-thumbnail-overlay-time-status-renderer"><badge-shape class="ytBadgeShapeHost ytBadgeShapeThumbnailDefault ytBadgeShapeThumbnailBadge ytBadgeShapeTypography" role="img" aria-label="Upcoming"><div class="ytBadgeShapeText">Upcoming</div></badge-shape></div><div id="time-status" class="style-scope ytd-thumbnail-overlay-time-status-renderer" hidden=""><yt-icon class="style-scope ytd-thumbnail-overlay-time-status-renderer" disable-upgrade="" hidden=""></yt-icon><span id="text" class="style-scope ytd-thumbnail-overlay-time-status-renderer" aria-label="Upcoming">
+    Upcoming
+  </span></div></ytd-thumbnail-overlay-time-status-renderer><ytd-thumbnail-overlay-now-playing-renderer class="style-scope ytd-thumbnail"><span id="overlay-text" class="style-scope ytd-thumbnail-overlay-now-playing-renderer">Now playing</span>
+<ytd-thumbnail-overlay-equalizer class="style-scope ytd-thumbnail-overlay-now-playing-renderer"><svg xmlns="http://www.w3.org/2000/svg" id="equalizer" viewBox="0 0 55 95" class="style-scope ytd-thumbnail-overlay-equalizer">
+  <g class="style-scope ytd-thumbnail-overlay-equalizer">
+    <rect class="bar style-scope ytd-thumbnail-overlay-equalizer" x="0"></rect>
+    <rect class="bar style="style-scope ytd-thumbnail-overlay-equalizer" x="20"></rect>
+    <rect class="bar style-scope ytd-thumbnail-overlay-equalizer" x="40"></rect>
+  </g>
+</svg>
+</ytd-thumbnail-overlay-equalizer>
+</ytd-thumbnail-overlay-now-playing-renderer></div>
+  <div id="mouseover-overlay" class="style-scope ytd-thumbnail"></div>
+  <div id="hover-overlays" class="style-scope ytd-thumbnail"></div>
+</a>
+</ytd-thumbnail>
+    <div id="meta" class="style-scope ytd-playlist-video-renderer">
+      <h3 class="style-scope ytd-playlist-video-renderer" aria-label="Tokyo | many many records">
+        <ytd-badge-supported-renderer id="top-standalone-badge" class="style-scope ytd-playlist-video-renderer" system-icons=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+        <a id="video-title" class="yt-simple-endpoint style-scope ytd-playlist-video-renderer" title="Tokyo | many many records" href="/watch?v=REDACTED&amp;list=WL&amp;index=2&amp;pp=REDACTED">
+          Tokyo | many many records
+        </a>
+      </h3>
+      <ytd-video-meta-block class="playlist style-scope ytd-playlist-video-renderer byline-separated">
+<div id="metadata" class="style-scope ytd-video-meta-block">
+  <div id="byline-container" class="style-scope ytd-video-meta-block">
+    <div id="attributed-channel-name" class="style-scope ytd-video-meta-block" hidden=""></div>
+    <ytd-channel-name id="channel-name" class=" style-scope ytd-video-meta-block style-scope ytd-video-meta-block"><div id="container" class="style-scope ytd-channel-name">
+  <div id="text-container" class="style-scope ytd-channel-name">
+    <yt-formatted-string id="text" link-inherit-color="" respect-lang-dir="" title="Robcdee" class="style-scope ytd-channel-name complex-string" ellipsis-truncate="" ellipsis-truncate-styling="" dir="auto" style="text-align: left;" has-link-only_=""><a class="yt-simple-endpoint style-scope yt-formatted-string" spellcheck="false" href="/@Robcdee">Robcdee</a></yt-formatted-string>
+  </div>
+  <tp-yt-paper-tooltip aria-hidden="true" fit-to-visible-bounds="" class="style-scope ytd-channel-name" role="tooltip" tabindex="-1" aria-label="tooltip"><div id="tooltip" class="hidden style-scope tp-yt-paper-tooltip" style-target="tooltip">
+
+    Robcdee
+
+</div>
+</tp-yt-paper-tooltip>
+</div>
+<ytd-badge-supported-renderer class="style-scope ytd-channel-name" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+</ytd-channel-name>
+    <div id="separator" class="style-scope ytd-video-meta-block">•</div>
+    <yt-formatted-string id="video-info" class="style-scope ytd-video-meta-block" aria-label="2 waiting"><span dir="auto" class="style-scope yt-formatted-string">2</span><span dir="auto" class="style-scope yt-formatted-string"> waiting</span></yt-formatted-string>
+  </div>
+  <div id="metadata-line" class="style-scope ytd-video-meta-block">
+
+    <ytd-badge-supported-renderer class="inline-metadata-badge style-scope ytd-video-meta-block" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="ytBadgeSupportedRendererHost"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+    <div id="separator" class="style-scope ytd-video-meta-block" hidden="">•</div>
+
+      <span class="inline-metadata-item style-scope ytd-video-meta-block" style="">Scheduled for 7/5/26, 4:00 AM</span>
+    <dom-repeat strip-whitespace="" class="style-scope ytd-video-meta-block"><template is="dom-repeat"></template></dom-repeat>
+  </div>
+</div>
+<div id="additional-metadata-line" class="style-scope ytd-video-meta-block">
+  <dom-repeat class="style-scope ytd-video-meta-block"><template is="dom-repeat"></template></dom-repeat>
+</div>
+
+</ytd-video-meta-block>
+      <ytd-badge-supported-renderer id="bottom-badges" class="style-scope ytd-playlist-video-renderer" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+      <ytd-badge-supported-renderer id="bottom-standalone-badge" class="style-scope ytd-playlist-video-renderer" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+      <div id="engagement-bar" class="style-scope ytd-playlist-video-renderer"></div>
+    </div>
+  </div>
+  <ytd-badge-supported-renderer id="badges" class="style-scope ytd-playlist-video-renderer" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+  <yt-formatted-string id="contributor" link-inherit-color="" class="style-scope ytd-playlist-video-renderer" is-empty="" hidden=""><yt-attributed-string class="style-scope yt-formatted-string"></yt-attributed-string></yt-formatted-string>
+  <div id="offer-button" class="style-scope ytd-playlist-video-renderer"></div>
+</div>
+<div id="menu" class="style-scope ytd-playlist-video-renderer"><ytd-menu-renderer class="style-scope ytd-playlist-video-renderer" safe-area="" menu-active=""><div id="top-level-buttons-computed" class="top-level-buttons style-scope ytd-menu-renderer"></div><div id="flexible-item-buttons" class="style-scope ytd-menu-renderer"></div><yt-icon-button id="button" class="dropdown-trigger style-scope ytd-menu-renderer" style-target="button"><button id="button" class="style-scope yt-icon-button" aria-label="Action menu"><yt-icon class="style-scope ytd-menu-renderer"><span class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost"><div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true"><path d="M12 4a2 2 0 100 4 2 2 0 000-4Zm0 6a2 2 0 100 4 2 2 0 000-4Zm0 6a2 2 0 100 4 2 2 0 000-4Z"></path></svg></div></span></yt-icon></button><yt-interaction id="interaction" class="circular style-scope yt-icon-button"><div class="stroke style-scope yt-interaction"></div><div class="fill style-scope yt-interaction"></div></yt-interaction></yt-icon-button><yt-button-shape id="button-shape" class="style-scope ytd-menu-renderer" hidden=""></yt-button-shape></ytd-menu-renderer></div>
+</ytd-playlist-video-renderer>

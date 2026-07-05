@@ -1,0 +1,87 @@
+<!--
+  Renderer Architecture — Live Video Item (real DOM, 2026-07-05)
+  Source: Watch Later playlist.
+  Structure: ytd-thumbnail-overlay-time-status-renderer exists with
+  overlay-style="LIVE". The #time-status span text is "LIVE". The
+  badge-shape text is also "LIVE". yt-formatted-string#video-info
+  contains "1.8K watching" (NOT a view count).
+  Validates: extraction must NOT count "LIVE" as a duration. The
+  selector-match strategy keys off ytd-thumbnail-overlay-time-status-renderer
+  and reads its textContent. Currently returns null for "LIVE" — verified.
+-->
+<ytd-playlist-video-renderer class="style-scope ytd-playlist-video-list-renderer" lockup="true" style-type=""><!--css-build:shady--><!--css_build_scope:ytd-playlist-video-renderer--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.main_desktop.ui.renderers.sections.ytd_playlist_video_renderer.ytd.playlist.video.renderer.transition.css.js--><div id="index-container" class="playlist-drag-handle style-scope ytd-playlist-video-renderer">
+  <yt-icon id="reorder" icon="yt-icons:drag_handle" class="style-scope ytd-playlist-video-renderer"><span class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost"><div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true"><path d="M20 7H4a1 1 0 000 2h16a1 1 0 100-2Zm0 8H4a1 1 0 000 2h16a1 1 0 000-2Z"></path></svg></div></span></yt-icon>
+  <yt-formatted-string id="index" class="style-scope ytd-playlist-video-renderer">1</yt-formatted-string>
+</div>
+<div id="content" class="style-scope ytd-playlist-video-renderer">
+  <div id="container" class="style-scope ytd-playlist-video-renderer">
+    <ytd-thumbnail id="thumbnail" hide-playback-status="" class="style-scope ytd-playlist-video-renderer" size="medium" is-live-video="" loaded=""><a id="thumbnail" class="yt-simple-endpoint inline-block style-scope ytd-thumbnail" aria-hidden="true" tabindex="-1" rel="null" href="/watch?v=REDACTED&amp;list=WL&amp;index=1&amp;pp=REDACTED">
+  <yt-image class="style-scope ytd-thumbnail">
+  <img class="ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAspectFill ytCoreImageLoaded" alt="true" style="background-color: transparent;" src="https://i.ytimg.com/vi/REDACTED/hqdefault.jpg?v=REDACTED&amp;sqp=REDACTED&amp;rs=REDACTED"></yt-image>
+
+  <div id="overlays" class="style-scope ytd-thumbnail"><ytd-thumbnail-overlay-time-status-renderer class="style-scope ytd-thumbnail" hide-time-status="" overlay-style="LIVE" has-icon=""><!--css-build:shady--><!--css_build_scope:ytd-thumbnail-overlay-time-status-renderer--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js--><ytd-badge-supported-renderer is-thumbnail-badge="" class="style-scope ytd-thumbnail-overlay-time-status-renderer" system-icons=""><!--css-build:shady--><!--css_build_scope:ytd-badge-supported-renderer--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js--><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer><div class="thumbnail-overlay-badge-shape style-scope ytd-thumbnail-overlay-time-status-renderer"><badge-shape class="ytBadgeShapeHost ytBadgeShapeThumbnailLive ytBadgeShapeThumbnailBadge ytBadgeShapeTypography" role="img" aria-label="LIVE"><div class="ytBadgeShapeIcon"><span class="yt-icon-shape ytSpecIconShapeHost"><div style="width: 12px; height: 12px; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" height="12" viewBox="0 0 12 12" width="12" focusable="false" aria-hidden="true"><path clip-rule="evenodd" d="M2.111 2.111a.5.5 0 11.707.707 4.501 4.501 0 000 6.364.5.5 0 01-.707.707 5.5 5.5 0 010-7.778Zm7.07 0a.5.5 0 01.708 0 5.5 5.5 0 010 7.778.5.5 0 11-.707-.707 4.5 4.5 0 000-6.364.5.5 0 010-.707ZM3.703 3.702a.5.5 0 11.707.707 2.25 2.25 0 000 3.182.5.5 0 01-.707.707 3.25 3.25 0 01-.705-3.542 3.25 3.25 0 01.705-1.054Zm3.889 0a.5.5 0 01.707 0 3.25 3.25 0 010 4.596.5.5 0 01-.707-.707 2.25 2.25 0 000-3.182.5.5 0 010-.707ZM6 5a1 1 0 110 2 1 1 0 010-2Z" fill-rule="evenodd"></path></svg></div></span></div><div class="ytBadgeShapeText">LIVE</div></badge-shape></div><div id="time-status" class="style-scope ytd-thumbnail-overlay-time-status-renderer" hidden=""><yt-icon class="style-scope ytd-thumbnail-overlay-time-status-renderer"><span class="yt-icon-shape ytSpecIconShapeHost"><div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true"><path clip-rule="evenodd" d="M18.364 4.224a1 1 0 011.414 0 11 11 0 010 15.557 1 1 0 01-1.414-1.414 9 9 0 000-12.729 1 1 0 010-1.414ZM4.222 4.222a1 1 0 011.414 1.415 9 9 0 000 12.728 1 1 0 11-1.414 1.414 11.002 11.002 0 010-15.557Zm3.181 3.181a1.002 1.002 0 011.415 1.415 4.503 4.503 0 00-.975 4.904c.226.545.558 1.042.975 1.46a1.001 1.001 0 01-1.415 1.414 6.502 6.502 0 010-9.193Zm7.779 0c.39-.39 1.024-.39 1.415 0a6.5 6.5 0 010 9.193 1.001 1.001 0 01-1.415-1.415 4.5 4.5 0 000-6.363 1.001 1.001 0 010-1.415ZM12 10a2 2 0 110 4 2 2 0 010-4Z" fill-rule="evenodd"></path></svg></div></span></yt-icon><span id="text" class="style-scope ytd-thumbnail-overlay-time-status-renderer" aria-label="LIVE">
+    LIVE
+  </span></div></ytd-thumbnail-overlay-time-status-renderer><ytd-thumbnail-overlay-now-playing-renderer class="style-scope ytd-thumbnail"><span id="overlay-text" class="style-scope ytd-thumbnail-overlay-now-playing-renderer">Now playing</span>
+<ytd-thumbnail-overlay-equalizer class="style-scope ytd-thumbnail-overlay-now-playing-renderer"><svg xmlns="http://www.w3.org/2000/svg" id="equalizer" viewBox="0 0 55 95" class="style-scope ytd-thumbnail-overlay-equalizer">
+  <g class="style-scope ytd-thumbnail-overlay-equalizer">
+    <rect class="bar style-scope ytd-thumbnail-overlay-equalizer" x="0"></rect>
+    <rect class="bar style-scope ytd-thumbnail-overlay-equalizer" x="20"></rect>
+    <rect class="bar style-scope ytd-thumbnail-overlay-equalizer" x="40"></rect>
+  </g>
+</svg>
+</ytd-thumbnail-overlay-equalizer>
+</ytd-thumbnail-overlay-now-playing-renderer></div>
+  <div id="mouseover-overlay" class="style-scope ytd-thumbnail"></div>
+  <div id="hover-overlays" class="style-scope ytd-thumbnail"></div>
+</a>
+</ytd-thumbnail>
+    <div id="meta" class="style-scope ytd-playlist-video-renderer">
+      <h3 class="style-scope ytd-playlist-video-renderer" aria-label="LIVE: Salute to America 250 in Washington D.C. | NEWSMAX2">
+        <ytd-badge-supported-renderer id="top-standalone-badge" class="style-scope ytd-playlist-video-renderer" system-icons=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+        <a id="video-title" class="yt-simple-endpoint style-scope ytd-playlist-video-renderer" title="LIVE: Salute to America 250 in Washington D.C. | NEWSMAX2" href="/watch?v=REDACTED&amp;list=WL&amp;index=1&amp;pp=REDACTED">
+          LIVE: Salute to America 250 in Washington D.C. | NEWSMAX2
+        </a>
+      </h3>
+      <ytd-video-meta-block class="playlist style-scope ytd-playlist-video-renderer byline-separated">
+<div id="metadata" class="style-scope ytd-video-meta-block">
+  <div id="byline-container" class="style-scope ytd-video-meta-block">
+    <div id="attributed-channel-name" class="style-scope ytd-video-meta-block" hidden=""></div>
+    <ytd-channel-name id="channel-name" class=" style-scope ytd-video-meta-block style-scope ytd-video-meta-block"><div id="container" class="style-scope ytd-channel-name">
+  <div id="text-container" class="style-scope ytd-channel-name">
+    <yt-formatted-string id="text" link-inherit-color="" respect-lang-dir="" title="Newsmax" class="style-scope ytd-channel-name complex-string" ellipsis-truncate="" ellipsis-truncate-styling="" dir="auto" style="text-align: left;" has-link-only_=""><a class="yt-simple-endpoint style-scope yt-formatted-string" spellcheck="false" href="/@NewsmaxTV">Newsmax</a></yt-formatted-string>
+  </div>
+  <tp-yt-paper-tooltip aria-hidden="true" fit-to-visible-bounds="" class="style-scope ytd-channel-name" role="tooltip" tabindex="-1" aria-label="tooltip"><div id="tooltip" class="hidden style-scope tp-yt-paper-tooltip" style-target="tooltip">
+
+    Newsmax
+
+</div>
+</tp-yt-paper-tooltip>
+</div>
+<ytd-badge-supported-renderer class="style-scope ytd-channel-name" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+</ytd-channel-name>
+    <div id="separator" class="style-scope ytd-video-meta-block">•</div>
+    <yt-formatted-string id="video-info" class="style-scope ytd-video-meta-block" aria-label="1.8 thousand watching"><span dir="auto" class="style-scope yt-formatted-string">1.8K</span><span dir="auto" class="style-scope yt-formatted-string"> watching</span></yt-formatted-string>
+  </div>
+  <div id="metadata-line" class="style-scope ytd-video-meta-block">
+
+    <ytd-badge-supported-renderer class="inline-metadata-badge style-scope ytd-video-meta-block" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="ytBadgeSupportedRendererHost"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+    <div id="separator" class="style-scope ytd-video-meta-block" hidden="">•</div>
+    <dom-repeat strip-whitespace="" class="style-scope ytd-video-meta-block"><template is="dom-repeat"></template></dom-repeat>
+  </div>
+</div>
+<div id="additional-metadata-line" class="style-scope ytd-video-meta-block">
+  <dom-repeat class="style-scope ytd-video-meta-block"><template is="dom-repeat"></template></dom-repeat>
+</div>
+
+</ytd-video-meta-block>
+      <ytd-badge-supported-renderer id="bottom-badges" class="style-scope ytd-playlist-video-renderer" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+      <ytd-badge-supported-renderer id="bottom-standalone-badge" class="style-scope ytd-playlist-video-renderer" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+      <div id="engagement-bar" class="style-scope ytd-playlist-video-renderer"></div>
+    </div>
+  </div>
+  <ytd-badge-supported-renderer id="badges" class="style-scope ytd-playlist-video-renderer" system-icons="" hidden=""><dom-repeat id="repeat" as="badge" class="style-scope ytd-badge-supported-renderer"><template is="dom-repeat"></template></dom-repeat><yt-badge-supported-renderer class="style-scope ytd-badge-supported-renderer"></yt-badge-supported-renderer></ytd-badge-supported-renderer>
+  <yt-formatted-string id="contributor" link-inherit-color="" class="style-scope ytd-playlist-video-renderer" is-empty="" hidden=""><yt-attributed-string class="style-scope yt-formatted-string"></yt-attributed-string></yt-formatted-string>
+  <div id="offer-button" class="style-scope ytd-playlist-video-renderer"></div>
+</div>
+<div id="menu" class="style-scope ytd-playlist-video-renderer"><ytd-menu-renderer class="style-scope ytd-playlist-video-renderer" safe-area="" menu-active=""><div id="top-level-buttons-computed" class="top-level-buttons style-scope ytd-menu-renderer"></div><div id="flexible-item-buttons" class="style-scope ytd-menu-renderer"></div><yt-icon-button id="button" class="dropdown-trigger style-scope ytd-menu-renderer" style-target="button"><button id="button" class="style-scope yt-icon-button" aria-label="Action menu"><yt-icon class="style-scope ytd-menu-renderer"><span class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost"><div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true"><path d="M12 4a2 2 0 100 4 2 2 0 000-4Zm0 6a2 2 0 100 4 2 2 0 000-4Zm0 6a2 2 0 100 4 2 2 0 000-4Z"></path></svg></div></span></yt-icon></button><yt-interaction id="interaction" class="circular style-scope yt-icon-button"><div class="stroke style-scope yt-interaction"></div><div class="fill style-scope yt-interaction"></div></yt-interaction></yt-icon-button><yt-button-shape id="button-shape" class="style-scope ytd-menu-renderer" hidden=""></yt-button-shape></ytd-menu-renderer></div>
+</ytd-playlist-video-renderer>
