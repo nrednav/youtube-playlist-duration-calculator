@@ -210,3 +210,10 @@ For a list of locales currently supported by the extension, please see
 
 Additional translations are most welcome! Please see
 [docs/translations.md](./docs/translations.md) for more details.
+
+## Support
+
+If you found this extension helpful and would like to help support its
+development:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/vandern)
