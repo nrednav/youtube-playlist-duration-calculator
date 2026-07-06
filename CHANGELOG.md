@@ -231,6 +231,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   - Bug where timestamps were not being summed properly
 - Addressed vulnerabilities reported by pnpm audit and dependabot
 
+[v2.3.0]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.3...v2.3.0
 [v2.2.3]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.2...v2.2.3
 [v2.2.2]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.1...v2.2.2
 [v2.2.1]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.0...v2.2.1
