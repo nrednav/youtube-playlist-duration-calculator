@@ -28,11 +28,9 @@ The extension is available for download at:
 - Calculate & display the total duration of a YouTube playlist
 - **Multi-variant support:** Works across different YouTube rendering
   architectures. These include traditional renderer elements and newer view-model layout.
-- **Confidence-bounded aggregation:** When some timestamps are estimated
-  via pattern matching (not found by exact selector), the summary shows
-  the number of estimated videos and an upper-bound error margin
 - **Failure signaling:** If YouTube's layout changes in an unsupported way,
-  the extension displays a diagnostic report instead of silently failing
+  the extension displays feedback and offers users the ability to report the
+  issue
 - Sort playlists with 100 videos or less, by the following criteria:
   - Duration
   - Channel Name
