@@ -435,10 +435,6 @@ const isNewDesign = () => {
 };
 
 /**
- * Counts the number of invalid timestamps in a list of video elements
- * @returns {number}
- */
-/**
  * Counts videos whose timestamp could not be extracted.
  *
  * This is the BROAD notion of "unavailable" — includes unavailable,
@@ -613,7 +609,8 @@ const signalFailure = (variant, snapshot) => {
 const processPlaylist = () => {
   // Defense-in-depth at processPlaylist itself: the discovery branch of
   // checkPlaylistReady already gates on `pathname === "/playlist"`, but
-  // the renderer branch (line 162) does not. The renderer branch fires
+  // the renderer branch via `isRendererReady(playlistElement)` does not.
+  // The renderer branch fires
   // during SPA transition windows where the URL has flipped to a
   // non-playlist URL but the prior page's playlist DOM has not yet been
   // torn down — the playlist selector still resolves, so the gate here is
@@ -1187,7 +1184,7 @@ const createSummaryItem = (label, value, valueColor = "#facc15") => {
 };
 
 const countTotalVideosInPlaylist = () => {
-  // BEDROCK MIGRATION 2026-07-05: the legacy `#stats yt-formatted-string`
+  // The legacy `#stats yt-formatted-string`
   // and `.metadata-stats yt-formatted-string` selectors no longer resolve
   // on the current YouTube playlist page. YouTube moved the count into a
   // page-header `yt-content-metadata-view-model` span ("154 videos") flanked

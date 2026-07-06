@@ -29,8 +29,8 @@ const withFixtureDocument = (file, lang = "en") => {
   return dom.window.document;
 };
 
-describe("PlaylistSorter.getSortTypes — bedrock integration", () => {
-  // BEDROCK INTEGRATION: the sort gate must report all five sort types as
+describe("PlaylistSorter.getSortTypes — structural-invariant integration", () => {
+  // The sort gate must report all five sort types as
   // enabled on the viewmodel architecture. Pre-fix, only Duration and
   // Index were enabled on viewmodel because videoHasElement hardcodes
   // `return false` for channelName and videoInfo on the viewmodel branch.
@@ -95,7 +95,7 @@ describe("PlaylistSorter.getSortTypes — bedrock integration", () => {
   });
 });
 
-describe("PlaylistSorter — bedrock sort execution on viewmodel", () => {
+describe("PlaylistSorter — structural-invariant sort execution on viewmodel", () => {
   // END-TO-END PROOF: the gate proving options render is necessary but
   // not sufficient. Pre-migration, the strategies called renderer-only
   // selectors (elementSelectors.videoInfo, .ytd-channel-name) directly,

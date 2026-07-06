@@ -110,7 +110,7 @@ export class PlaylistSorter {
 /**
  * Whether the first video in the playlist exposes a given sort datum.
  *
- * BEDROCK MIGRATION 2026-07-05: this replaces the per-architecture
+ * This replaces the per-architecture
  * `videoHasElement` gate, which branched on renderer vs viewmodel and
  * hardcoded `return false` for channelName / videoInfo on viewmodel. The
  * old gate knew which SELECTOR to query per architecture; when no selector

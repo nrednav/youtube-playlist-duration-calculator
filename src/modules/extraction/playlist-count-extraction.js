@@ -12,7 +12,7 @@
  * verify the translation for each, and getting it wrong silently breaks
  * the count. The delimiter flanking is locale-independent because
  * YouTube's own metadata layout uses the "•" separator regardless of
- * language. This is the bedrock-deduced Content-Pattern principle applied
+ * language. This is the Content-Pattern principle applied
  * to a playlist-level field.
  *
  * Strategy contract: { value: number|null, confidence: number, strategyName }

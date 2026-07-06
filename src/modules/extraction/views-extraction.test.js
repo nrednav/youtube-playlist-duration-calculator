@@ -31,7 +31,7 @@ const RENDERER_SELECTOR = "ytd-playlist-video-renderer";
 const VIEWMODEL_SELECTOR = "yt-lockup-view-model";
 
 describe("extractViews — structural-invariant contract (en)", () => {
-  // BEDROCK: the views datum is located by structural invariant — the
+  // The views datum is located by structural invariant — the
   // metadata text fragment containing the substring "views" (and NOT
   // "watching"). YouTube cannot render a view count without a digit
   // sequence and the locale-specific word for "views". The locale

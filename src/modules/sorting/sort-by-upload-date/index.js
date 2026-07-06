@@ -7,7 +7,7 @@ export class SortByUploadDateStrategy {
   /**
    * Sorts a list of videos by their upload date.
    *
-   * BEDROCK MIGRATION 2026-07-05: previously called
+   * Previously called
    * `video.querySelector(elementSelectors.videoInfo)` and read
    * `children[2]`, a renderer-territory assumption. On viewmodel it
    * returned null and crashed. The strategy now consumes the

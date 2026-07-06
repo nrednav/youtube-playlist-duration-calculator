@@ -26,7 +26,7 @@ const RENDERER_SELECTOR = "ytd-playlist-video-renderer";
 const VIEWMODEL_SELECTOR = "yt-lockup-view-model";
 
 describe("extractChannelName — structural-invariant contract", () => {
-  // BEDROCK: the channel name is located by structural invariant, not by
+  // The channel name is located by structural invariant, not by
   // element name. The invariant is: exactly one <a> inside the video item
   // has an href beginning "/@" — that anchor's textContent is the channel
   // name. This holds on both the renderer and viewmodel architectures

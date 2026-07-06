@@ -4,7 +4,7 @@ export class SortByChannelNameStrategy {
   /**
    * Sorts a list of videos by their channel name.
    *
-   * BEDROCK MIGRATION 2026-07-05: previously called
+   * Previously called
    * `video.querySelector(".ytd-channel-name").innerText`, a selector
    * that resolves only on the renderer architecture. On viewmodel it
    * returned null and crashed. The strategy now consumes the
