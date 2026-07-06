@@ -33,7 +33,6 @@ export const elementSelectors = {
   ],
   video: "ytd-playlist-video-renderer",
   playlist: "ytd-playlist-video-list-renderer #contents",
-  channelName: ".ytd-channel-name",
   videoTitle: "#video-title",
   videoIndex: "yt-formatted-string#index",
   videoInfo: "yt-formatted-string#video-info",

@@ -3,7 +3,7 @@ import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { extractPlaylistCount } from "./modules/extraction/playlist-count-extraction";
 import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
-import { buildReportUrl } from "./modules/reporting/report-url";
+import { buildReportUrl, detectBrowser } from "./modules/reporting/report-url";
 import { PlaylistSorter } from "./modules/sorting";
 import {
   desyncIndicators,
@@ -42,13 +42,21 @@ const checkPlaylistReady = () => {
   let pollCount = 0;
 
   activePlaylistInterval = setInterval(() => {
+    // Stop polling once maxPollCount is reached. The first tick at
+    // pollCount === maxPollCount clears the interval; subsequent ticks
+    // short-circuit before doing any work, so the loop neither fires
+    // readiness checks nor queries the DOM after the budget is
+    // exhausted. Without this guard the interval would keep running
+    // every second forever, re-querying selectors on a page that will
+    // never reach readiness.
     if (pollCount >= maxPollCount) {
       clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
+      return;
     }
 
     const playlistElement = document.querySelector(elementSelectors.playlist);
     const playlistExists = playlistElement !== null;
-
     const variant = desyncIndicators.detectVariant();
 
     logger.debug("poll_tick", () => ({
@@ -63,13 +71,14 @@ const checkPlaylistReady = () => {
     }));
 
     if (
-      pollCount > 15 &&
-      !playlistExists &&
-      !variant.known &&
-      window.location.pathname !== "/playlist"
+      shouldSignalFailureForUnknownVariant({
+        pollCount,
+        playlistExists,
+        variant,
+      })
     ) {
       clearInterval(activePlaylistInterval);
-
+      activePlaylistInterval = null;
       signalFailure(variant, {
         pollCount,
         playlistExists,
@@ -77,7 +86,6 @@ const checkPlaylistReady = () => {
         pathname: window.location.pathname,
         variant: variant.variant,
       });
-
       return;
     }
 
@@ -87,24 +95,15 @@ const checkPlaylistReady = () => {
     // page lives in `isOperablePlaylistPage()` at the processPlaylist /
     // displayLoader call sites; this branch simply ends polling without
     // signaling failure (the unknown-variant branch above handles that).
-    if (
-      pollCount > 15 &&
-      !playlistExists &&
-      variant.known &&
-      !isOperablePlaylistPage()
-    ) {
+    if (shouldStopPollingSilently({ pollCount, playlistExists, variant })) {
       clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
       return;
     }
 
     // Viewmodel desync on a playlist page is expected, not a failure.
     // Log it and let polling continue rather than signaling failure.
-    if (
-      pollCount === 15 &&
-      !playlistExists &&
-      variant.known &&
-      variant.variant === "viewmodel"
-    ) {
+    if (isViewmodelDesyncCheckpoint({ pollCount, playlistExists, variant })) {
       logger.info("desync_viewmodel_detected", () => ({
         pollCount,
         variant: variant.variant,
@@ -112,52 +111,29 @@ const checkPlaylistReady = () => {
       }));
     }
 
-    // Invariant search handles viewmodel and any future variant when the
-    // known selector misses. Runs at most once: the guard on
-    // `discoveryResult` prevents re-entry on subsequent ticks.
-    if (
-      !playlistExists &&
-      variant.known &&
-      window.location.pathname === "/playlist" &&
-      pollCount >= (variant.variant === "viewmodel" ? 2 : 10) &&
-      !window.ytpdc?.discoveryResult
-    ) {
-      const discoveryResult = discoverPlaylist(document, variant);
+    const discoveryResult = maybeRunInvariantSearch({
+      pollCount,
+      playlistExists,
+      variant,
+    });
 
-      logger.debug("invariant_search", () => ({
-        pollCount,
-        variant: variant.variant,
-        confidence: discoveryResult.confidence,
-        strategy: discoveryResult.strategy,
-        hasContainer: !!discoveryResult.container,
-        videoCount: discoveryResult.videos?.length || 0,
-      }));
-
-      if (discoveryResult.confidence > 0) {
-        window.ytpdc.discoveryResult = discoveryResult;
-      }
-    }
-
-    const timestampElement = document.querySelector(elementSelectors.timestamp);
-    const timestampExists = timestampElement !== null;
-    const unavailableTimestampsCount = countUnavailableTimestamps();
-    const unavailableVideosCount = countUnavailableVideos();
-
-    if (
-      playlistExists &&
-      timestampExists &&
-      unavailableTimestampsCount === unavailableVideosCount
-    ) {
+    // Renderer-architecture readiness: the playlist element exists, the
+    // timestamp element resolves, and the unavailable counts agree. The
+    // visibility check applies here because `playlistElement` is a real
+    // DOM element that could be rendered hidden (e.g., during a SPA
+    // transition where the selector still resolves but the container
+    // is being torn down).
+    if (playlistExists && isRendererReady(playlistElement)) {
       clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
 
       const playlistVisible = isElementVisible(playlistElement);
 
       logger.debug("playlist_ready_check", () => ({
         pollCount,
         playlistVisible,
-        timestampExists,
-        unavailableTimestampsCount,
-        unavailableVideosCount,
+        unavailableTimestampsCount: countVideosWithoutExtractableTimestamp(),
+        unavailableVideosCount: countVideosFlaggedUnavailable(),
         playlistOffsetHeight: playlistElement?.offsetHeight,
         playlistOffsetWidth: playlistElement?.offsetWidth,
       }));
@@ -168,42 +144,170 @@ const checkPlaylistReady = () => {
         logger.debug("playlist_not_visible_skipping", () => ({
           pollCount,
           offsetParent: playlistElement?.offsetParent?.tagName,
-          display: getComputedStyle(playlistElement).display,
-          visibility: getComputedStyle(playlistElement).visibility,
+          display: playlistElement
+            ? getComputedStyle(playlistElement).display
+            : null,
+          visibility: playlistElement
+            ? getComputedStyle(playlistElement).visibility
+            : null,
         }));
       }
     }
 
-    const discoveryResult = window.ytpdc?.discoveryResult;
+    // ViewModel-architecture readiness: discovery produced a confident
+    // result and a sample of the discovered videos yields extractable
+    // timestamps. There is no `playlistElement` on this architecture,
+    // so the renderer-branch visibility check does not apply — call
+    // processPlaylist directly. The `!playlistExists` guard preserves
+    // the mutual exclusivity of the two readiness paths: if the renderer
+    // selector resolved but readiness failed (e.g., counts disagree
+    // mid-render), we keep polling rather than falling through to the
+    // viewmodel path on a potentially stale discoveryResult.
+    else if (!playlistExists && isViewmodelReady(variant)) {
+      clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
 
-    if (
-      !playlistExists &&
-      discoveryResult &&
-      discoveryResult.confidence > 0.5 &&
-      window.location.pathname === "/playlist"
-    ) {
-      const sampleVideos = discoveryResult.videos?.slice(0, 3) || [];
-      const hasTimestamps = sampleVideos.some((v) => {
-        const result = extractTimestamp(v);
-        return result.seconds !== null && result.confidence > 0;
-      });
+      logger.debug("viewmodel_ready_check", () => ({
+        pollCount,
+        videoCount: discoveryResult?.videos?.length || 0,
+        confidence: discoveryResult?.confidence,
+        hasTimestamps: true,
+      }));
 
-      if (hasTimestamps) {
-        clearInterval(activePlaylistInterval);
-
-        logger.debug("viewmodel_ready_check", () => ({
-          pollCount,
-          videoCount: discoveryResult.videos?.length || 0,
-          confidence: discoveryResult.confidence,
-          hasTimestamps,
-        }));
-
-        processPlaylist();
-      }
+      processPlaylist();
     }
 
     pollCount++;
   }, 1000);
+};
+
+/**
+ * Whether the readiness loop should signal user-visible failure.
+ *
+ * Fires when the variant is unknown, no playlist element has appeared,
+ * and we are not on a /playlist URL. After ~15s of ambivalence this
+ * branch triggers the failure indicator with diagnostics.
+ */
+const shouldSignalFailureForUnknownVariant = ({
+  pollCount,
+  playlistExists,
+  variant,
+}) => {
+  return (
+    pollCount > 15 &&
+    !playlistExists &&
+    !variant.known &&
+    !isOperablePlaylistPage()
+  );
+};
+
+/**
+ * Whether the readiness loop should stop polling silently (no failure UI).
+ *
+ * Fires when the variant is known but the page is not operable (e.g.,
+ * /feed/playlists, /watch). The unknown-variant branch above handles
+ * failure signaling; this branch simply ends the loop.
+ */
+const shouldStopPollingSilently = ({ pollCount, playlistExists, variant }) => {
+  return (
+    pollCount > 15 &&
+    !playlistExists &&
+    variant.known &&
+    !isOperablePlaylistPage()
+  );
+};
+
+/**
+ * Whether this tick is the viewmodel desync checkpoint (pollCount === 15).
+ *
+ * Used to emit a one-time informational log when the known selector has
+ * not matched but the viewmodel variant is detected. Polling continues.
+ */
+const isViewmodelDesyncCheckpoint = ({
+  pollCount,
+  playlistExists,
+  variant,
+}) => {
+  return (
+    pollCount === 15 &&
+    !playlistExists &&
+    variant.known &&
+    variant.variant === "viewmodel"
+  );
+};
+
+/**
+ * Run the structural-invariant discovery search if applicable on this tick.
+ *
+ * Invariant search handles viewmodel and any future variant when the
+ * known selector misses. Runs at most once: the guard on
+ * `window.ytpdc.discoveryResult` prevents re-entry on subsequent ticks.
+ * Returns the live `discoveryResult` (existing or newly assigned).
+ */
+const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
+  if (
+    !playlistExists &&
+    variant.known &&
+    isOperablePlaylistPage() &&
+    pollCount >= (variant.variant === "viewmodel" ? 2 : 10) &&
+    !window.ytpdc?.discoveryResult
+  ) {
+    const discoveryResult = discoverPlaylist(document, variant);
+
+    logger.debug("invariant_search", () => ({
+      pollCount,
+      variant: variant.variant,
+      confidence: discoveryResult.confidence,
+      strategy: discoveryResult.strategy,
+      hasContainer: !!discoveryResult.container,
+      videoCount: discoveryResult.videos?.length || 0,
+    }));
+
+    if (discoveryResult.confidence > 0) {
+      window.ytpdc.discoveryResult = discoveryResult;
+    }
+  }
+
+  return window.ytpdc?.discoveryResult;
+};
+
+/**
+ * Renderer-architecture readiness: playlist element exists, timestamp
+ * selector resolves, and the "no extractable timestamp" count agrees
+ * with the "flagged unavailable" count.
+ */
+const isRendererReady = (playlistElement) => {
+  const timestampElement = document.querySelector(elementSelectors.timestamp);
+  const timestampExists = timestampElement !== null;
+  if (!timestampExists) return false;
+
+  const unavailableTimestampsCount = countVideosWithoutExtractableTimestamp();
+  const unavailableVideosCount = countVideosFlaggedUnavailable();
+  return unavailableTimestampsCount === unavailableVideosCount;
+};
+
+/**
+ * ViewModel-architecture readiness: discovery produced a confident
+ * result and a sample of the discovered videos yields at least one
+ * extractable timestamp. Excludes the renderer case where the playlist
+ * selector already matches.
+ */
+const isViewmodelReady = (variant) => {
+  const discoveryResult = window.ytpdc?.discoveryResult;
+
+  if (!discoveryResult || discoveryResult.confidence <= 0.5) {
+    return false;
+  }
+
+  if (!isOperablePlaylistPage()) {
+    return false;
+  }
+
+  const sampleVideos = discoveryResult.videos?.slice(0, 3) || [];
+  return sampleVideos.some((v) => {
+    const result = extractTimestamp(v);
+    return result.seconds !== null && result.confidence > 0;
+  });
 };
 
 const displayLoader = () => {
@@ -334,7 +438,18 @@ const isNewDesign = () => {
  * Counts the number of invalid timestamps in a list of video elements
  * @returns {number}
  */
-const countUnavailableTimestamps = () => {
+/**
+ * Counts videos whose timestamp could not be extracted.
+ *
+ * This is the BROAD notion of "unavailable" — includes unavailable,
+ * live, upcoming, and badge-absent videos. Distinct from
+ * `countVideosFlaggedUnavailable`, which is the narrow title-based
+ * predicate. The readiness invariant `countWithout === countFlagged`
+ * means: every video without an extractable timestamp is also flagged
+ * unavailable (no "extraction-failed-but-not-flagged-unavailable"
+ * stragglers indicating the page is mid-render).
+ */
+const countVideosWithoutExtractableTimestamp = () => {
   return getVideos()
     .map(getTimestampFromVideo)
     .filter((timestamp) => timestamp === null).length;
@@ -394,7 +509,16 @@ const getVideos = () => {
   return [...videos];
 };
 
-const countUnavailableVideos = () => {
+/**
+ * Counts videos flagged unavailable by the narrow predicate
+ * (no extractable timestamp OR unavailable title).
+ *
+ * Distinct from `countVideosWithoutExtractableTimestamp` (the broad
+ * count). The readiness invariant `countWithout === countFlagged` means:
+ * every video without an extractable timestamp is also flagged
+ * unavailable.
+ */
+const countVideosFlaggedUnavailable = () => {
   return getVideos().filter(isVideoUnavailable).length;
 };
 
@@ -403,14 +527,16 @@ const countUnavailableVideos = () => {
  * "unavailable"
  *
  * Criteria:
- * - Has no timestamp
+ * - Has no extractable timestamp (architecture-agnostic check; works on
+ *   both renderer `ytd-*-renderer` and viewmodel `yt-lockup-view-model`
+ *   via the shared `getTimestampFromVideo` helper, which has both the
+ *   known-selector path and the content-pattern fallback)
  * - Title is unavailable
  *
  * @param {Element} video
  */
 const isVideoUnavailable = (video) => {
-  const hasNoTimestamp =
-    video.querySelector(elementSelectors.timestamp)?.innerText.trim() === "";
+  const hasNoTimestamp = getTimestampFromVideo(video) === null;
 
   if (hasNoTimestamp) return true;
 
@@ -478,7 +604,7 @@ const signalFailure = (variant, snapshot) => {
     variant,
     snapshot,
     extensionVersion: chrome.runtime.getManifest().version,
-    userAgent: navigator.userAgent,
+    browser: detectBrowser(navigator.userAgent),
     locale: document.documentElement.lang,
     timestamp: new Date().toISOString(),
   }));
