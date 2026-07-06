@@ -23,7 +23,7 @@ const CHANNEL_HANDLE_HREF_PREFIX = "/@";
  *
  * Degrades gracefully: null input, no matching anchor, or an empty-text
  * anchor all return { value: null, confidence: 0 }. The extractor never
- * throws, so unavailable videos (private/deleted, which have no channel
+ * throws, so unavailable videos (private or deleted, which have no channel
  * link) surface as "data absent" rather than crashing downstream sorting.
  *
  * @param {Element|null} videoElement

@@ -18,8 +18,8 @@ const { extractTimestamp } = await import(
 const FIXTURES_DIR = path.join(import.meta.dirname, "fixtures");
 
 /**
- * Load an HTML fixture file and return a list of video elements
- * (video renderers for renderer fixture, lockups for viewmodel fixture).
+ * Load an HTML fixture file and return a list of video elements.
+ * Video renderers for the renderer fixture, lockups for the viewmodel fixture.
  *
  * @param {string} name - Filename in test/fixtures/
  * @param {string} selector - CSS selector for video elements
@@ -31,7 +31,7 @@ const getVideosFromFixture = (name, selector) => {
   return [...doc.querySelectorAll(selector)];
 };
 
-describe("Extraction — All Strategies × All Fixtures", () => {
+describe("Extraction, All Strategies × All Fixtures", () => {
   it("extracts all timestamps from renderer fixture via selector-match", () => {
     const videos = getVideosFromFixture(
       "playlist-renderer.html",

@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import { JSDOM } from "jsdom";
 
 // Mock chrome before importing any module that may touch chrome.i18n.
-// The views extractor delegates to locale parsers; on a non-en locale
+// The views extractor delegates to locale parsers. On a non-en locale
 // chrome.i18n is not consulted by the parser itself, but importing
 // sort-by-views/parsers/index.js does not require it. Set lang on the
 // fixture document to drive locale selection.
@@ -30,12 +30,12 @@ const loadVideo = (file, selector, lang = "en") => {
 const RENDERER_SELECTOR = "ytd-playlist-video-renderer";
 const VIEWMODEL_SELECTOR = "yt-lockup-view-model";
 
-describe("extractViews — structural-invariant contract (en)", () => {
-  // The views datum is located by structural invariant — the
+describe("extractViews, structural-invariant contract (en)", () => {
+  // The views datum is located by structural invariant. The
   // metadata text fragment containing the substring "views" (and NOT
   // "watching"). YouTube cannot render a view count without a digit
   // sequence and the locale-specific word for "views". The locale
-  // parsers already encode the suffix/word logic; the migration changes
+  // parsers already encode the suffix and word logic. The migration changes
   // only the input shape (element -> string), preserving the locale
   // contract that the existing renderer-only code relied on.
 

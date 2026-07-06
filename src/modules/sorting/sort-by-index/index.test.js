@@ -12,7 +12,7 @@ const { SortByIndexStrategy } = await import("./index.js");
  * touches: querySelector, getAttribute, setAttribute.
  *
  * The strategy only ever queries for the videoIndex selector inside the
- * video element and reads/sets the `data-ytpdc-original-index` attribute.
+ * video element and reads or sets the `data-ytpdc-original-index` attribute.
  */
 const mkVideo = ({ indexText = null, tag = "video" } = {}) => {
   const attrs = new Map();
@@ -134,7 +134,7 @@ describe("SortByIndexStrategy", () => {
     // Regression: pre-fix, ascending was a visual no-op against an already
     // ascending page. The fix must still produce a stable ascending order
     // even when the input is already ascending AND was previously sorted
-    // descending (i.e. the input arrives in reversed order).
+    // descending. That is, the input arrives in reversed order.
     it("ascending converges to the natural order regardless of input order (regression)", () => {
       const a = mkVideo(); // original index 0
       const b = mkVideo(); // original index 1

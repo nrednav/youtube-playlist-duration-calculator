@@ -113,7 +113,7 @@ export class PlaylistSorter {
  * This replaces the per-architecture
  * `videoHasElement` gate, which branched on renderer vs viewmodel and
  * hardcoded `return false` for channelName / videoInfo on viewmodel. The
- * old gate knew which SELECTOR to query per architecture; when no selector
+ * old gate knew which SELECTOR to query per architecture. When no selector
  * existed for an architecture, the datum was reported absent regardless of
  * whether the data was actually in the DOM.
  *
@@ -160,7 +160,7 @@ const videoExposesDatum = (datum) => {
 /**
  * Resolve the first video element in the playlist, agnostic to the
  * rendering architecture. The renderer architecture renders
- * ytd-playlist-video-renderer; the viewmodel architecture renders
+ * ytd-playlist-video-renderer. The viewmodel architecture renders
  * yt-lockup-view-model. Both are queried in priority order.
  *
  * @returns {Element|null}

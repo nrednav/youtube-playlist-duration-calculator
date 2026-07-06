@@ -9,12 +9,12 @@
  * On the renderer architecture this fragment is the first child of
  * yt-formatted-string#video-info. On the viewmodel architecture it is a
  * span inside yt-content-metadata-view-model's metadata row. Both are the
- * SAME datum, and the locale parser handles suffix/word logic identically
+ * SAME datum, and the locale parser handles suffix and word logic identically
  * regardless of which DOM node carried it.
  *
  * YouTube cannot render a view count without digits and the locale views
- * word; live videos render "watching" instead of "views" — a different
- * datum; upload dates render a time-ago phrase. These constraints are
+ * word. Live videos render "watching" instead of "views". A different
+ * datum. Upload dates render a time-ago phrase. These constraints are
  * forced by what each datum IS, not by element names, so the extractor
  * survives element renames that would break a selector-based reader.
  *
@@ -86,7 +86,7 @@ const DELIMITER_TEXT = "•";
  * The upload-date exclusion is structural: relative-time phrases end
  * in a time unit word, while views fragments end in the locale views
  * word or a numeric suffix. We exclude by the "ago"-style marker only
- * for en; for other locales the delimiter-separated position is the
+ * for en. For other locales the delimiter-separated position is the
  * discriminator (views is the fragment BEFORE the delimiter, date is
  * the fragment AFTER). This is the same structural fact the renderer
  * parser relied on when it took firstElementChild.
@@ -113,7 +113,7 @@ const locateViewsFragment = (videoElement) => {
   }
 
   // Fallback: any metadata fragment that parses as views and is not the
-  // watching count or a relative-time phrase. Covers locales/layouts
+  // watching count or a relative-time phrase. Covers locales or layouts
   // where no delimiter is present.
   for (const text of candidates) {
     const trimmed = text.trim();

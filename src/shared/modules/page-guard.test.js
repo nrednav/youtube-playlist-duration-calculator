@@ -19,7 +19,7 @@ describe("page-guard module", () => {
       // Regression lock: the playlist summary was injected under the
       // "Playlists" title on /feed/playlists during the SPA transition
       // window from /playlist -> /feed/playlists. The pathname had
-      // already flipped; the playlist renderer DOM had not yet been
+      // already flipped. The playlist renderer DOM had not yet been
       // torn down. This must remain false.
       assert.strictEqual(isOperablePlaylistPage("/feed/playlists"), false);
     });

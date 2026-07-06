@@ -21,8 +21,8 @@ const loadVideo = (file, selector, lang = "en") => {
 const RENDERER_SELECTOR = "ytd-playlist-video-renderer";
 const VIEWMODEL_SELECTOR = "yt-lockup-view-model";
 
-describe("extractUploadDate — structural-invariant contract (en)", () => {
-  // The upload-date datum is located by structural invariant —
+describe("extractUploadDate, structural-invariant contract (en)", () => {
+  // The upload-date datum is located by structural invariant.
   // the metadata-row text fragment IMMEDIATELY AFTER the "•" delimiter.
   // On renderer: [#video-info children] = [views, "•", date]. On
   // viewmodel: [metadata-row spans] = [..., views, "•", date]. In both,

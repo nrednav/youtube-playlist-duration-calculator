@@ -29,7 +29,7 @@ const buildHeader = (texts) => {
 const docFrom = (innerHtml) =>
   new JSDOM(`<body>${innerHtml}</body>`).window.document;
 
-describe("extractPlaylistCount — structural-invariant contract", () => {
+describe("extractPlaylistCount, structural-invariant contract", () => {
   it("extracts the count from the viewmodel playlist metadata (exact user DOM)", () => {
     const html =
       '<yt-content-metadata-view-model class="ytPageHeaderViewModelContentMetadata ytPageHeaderViewModelContentMetadataOverlay ytContentMetadataViewModelHost">' +
@@ -67,7 +67,7 @@ describe("extractPlaylistCount — structural-invariant contract", () => {
 
   it("returns null when a digit-bearing span has only a leading delimiter (not flanked)", () => {
     // YouTube always renders the playlist count flanked by BOTH a leading
-    // and trailing delimiter (the trailing one precedes the views span).
+    // and trailing delimiter. The trailing one precedes the views span.
     // A span with only a leading delimiter is therefore NOT the count by
     // the structural rule, and must not be extracted.
     const html = buildHeader(["Playlist", "78 videos"]);

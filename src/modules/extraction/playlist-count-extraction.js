@@ -67,7 +67,7 @@ const locatePageHeaderMetadata = (doc) => {
  * document order. The count span is the first digit-bearing text node that
  * has a delimiter sibling immediately before AND after it. This excludes:
  *   - "Playlist"/"Private" labels (no digits)
- *   - the trailing view-count span (no delimiter after it; it's last)
+ *   - the trailing view-count span (no delimiter after it. It's last)
  *
  * Returns the parsed integer, or `null` if no flanked digit span is found.
  *
@@ -104,7 +104,7 @@ const isMetadataText = (node) => {
 };
 
 /**
- * Parse a leading digit run (with optional thousands/grouping separators)
+ * Parse a leading digit run with optional thousands and grouping separators
  * into an integer. Returns `null` if the text has no leading digits, so a
  * non-count metadata span is never mistaken for the count.
  *
@@ -120,7 +120,7 @@ const parseCount = (text) => {
 
   // Anchor at the start: the count span's text BEGINS with the digit run.
   // The adjacent view-count span ("858,009 views") also begins with digits,
-  // so digit-presence alone is not the discriminator — the flanking is.
+  // so digit-presence alone is not the discriminator. The flanking is.
   const match = text.trim().match(/^(\d[\d.,\s]*)/);
   if (!match) return null;
 

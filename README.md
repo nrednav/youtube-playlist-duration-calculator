@@ -27,7 +27,7 @@ The extension is available for download at:
 
 - Calculate & display the total duration of a YouTube playlist
 - **Multi-variant support:** Works across different YouTube rendering
-  architectures (traditional renderer elements and newer view-model layout)
+  architectures. These include traditional renderer elements and newer view-model layout.
 - **Confidence-bounded aggregation:** When some timestamps are estimated
   via pattern matching (not found by exact selector), the summary shows
   the number of estimated videos and an upper-bound error margin
@@ -38,8 +38,8 @@ The extension is available for download at:
   - Channel Name
   - Index
   - Views (only for some locales)
-  - Upload Date (only for public playlists & some locales)
-- Translations for several locales (en, es, fr, pt, zh, pt_BR, pt_PT, zh_CN, zh_TW)
+  - Upload Date, only for public playlists and some locales
+- Translations for several locales: en, es, fr, pt, zh, pt_BR, pt_PT, zh_CN, zh_TW
 
 > [!NOTE]  
 > The sorting feature is only enabled for playlists containing 100
@@ -69,15 +69,15 @@ strategy information to the browser console.
 
 The extension uses a layered strategy system to survive YouTube DOM changes:
 
-1. **Desynchronization Detection** — Identifies which rendering architecture
+1. **Desynchronization Detection**: Identifies which rendering architecture
    YouTube is using ("renderer", "viewmodel", or "unknown")
-2. **Discovery Strategies** — Find the playlist container using either known
+2. **Discovery Strategies**: Find the playlist container using either known
    CSS selectors or structural invariants (looking for video-card-like elements
    by their structure, not their tag names)
-3. **Extraction Strategies** — Extract timestamps using either known element
+3. **Extraction Strategies**: Extract timestamps using either known element
    selectors or content pattern matching (scanning text for MM:SS / HH:MM:SS
    patterns)
-4. **Confidence Aggregation** — Tracks which extraction strategy succeeded for
+4. **Confidence Aggregation**: Tracks which extraction strategy succeeded for
    each video and reports an estimated error margin when pattern matching was
    used
 

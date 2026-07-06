@@ -78,7 +78,7 @@ const REAL_FIXTURES = {
   ],
 };
 
-describe("Real-World Fixture Corpus — Extraction Fidelity", () => {
+describe("Real-World Fixture Corpus, Extraction Fidelity", () => {
   for (const [arch, fixtures] of Object.entries(REAL_FIXTURES)) {
     const selector =
       arch === "renderer" ? RENDERER_SELECTOR : VIEWMODEL_SELECTOR;
@@ -121,7 +121,7 @@ describe("Real-World Fixture Corpus — Extraction Fidelity", () => {
   }
 });
 
-describe("Real-World Fixture Corpus — Content-Pattern False-Positive Probe", () => {
+describe("Real-World Fixture Corpus, Content-Pattern False-Positive Probe", () => {
   // The content-pattern strategy scans the entire video element
   // textContent for /\d{1,2}:\d{2}(:\d{2})?/. Real DOM contains
   // "Scheduled for 7/5/26, 4:00 AM" and "Scheduled for 05/07/2026,
@@ -161,7 +161,7 @@ describe("Real-World Fixture Corpus — Content-Pattern False-Positive Probe", (
     );
     const result = extractTimestampByPattern(video);
 
-    // The lockup's textContent includes "1.7k watching" — no HH:MM:SS,
+    // The lockup's textContent includes "1.7k watching". No HH:MM:SS,
     // so this should be null. If it ever matches, that is a regression.
     assert.strictEqual(
       result.value,
@@ -182,7 +182,7 @@ describe("Real-World Fixture Corpus — Content-Pattern False-Positive Probe", (
   });
 });
 
-describe("Real-World Fixture Corpus — Sort Selector Validation", () => {
+describe("Real-World Fixture Corpus, Sort Selector Validation", () => {
   // Sort selectors are validated against real DOM. If YouTube changes
   // these element shapes, these tests break before they ship.
   it("renderer normal: channel name selector resolves", () => {
@@ -262,11 +262,11 @@ describe("Real-World Fixture Corpus — Sort Selector Validation", () => {
   });
 });
 
-describe("Real-World Fixture Corpus — Discovery Strategy Sanity", () => {
+describe("Real-World Fixture Corpus, Discovery Strategy Sanity", () => {
   // Discovery orchestrator runs against a single isolated video item.
   // The structural-invariant strategy should find the lockup on
   // viewmodel fixtures. On renderer fixtures isolated outside their
-  // container, discovery of the *container* cannot be tested — but
+  // container, discovery of the *container* cannot be tested. But
   // the strategy must not crash or return negative confidence.
   it("viewmodel normal: structural-invariant finds the lockup", () => {
     const doc = loadRealFixture("viewmodel-video-item-normal.html");

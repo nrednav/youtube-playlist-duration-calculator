@@ -1,6 +1,6 @@
 export class FrViewsParser {
   /**
-   * @param {string} rawText — the views text fragment (e.g. "1,4 M de
+   * @param {string} rawText. The views text fragment (e.g. "1,4 M de
    *   vues"), located upstream by structural invariant. Migration
    *   2026-07-05: input changed from an element to a raw string,
    *   deleting the renderer-territory assumption. Locale logic unchanged.

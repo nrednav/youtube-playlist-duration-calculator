@@ -16,7 +16,7 @@ export const SORT_VIDEO_CAP = 100;
  * Whether sorting should be offered for a playlist of the given total size.
  *
  * Returns `false` when the size is unknown (`null`/`undefined`/`NaN`) or when
- * it meets/exceeds the cap. Returns `true` only for a known size strictly
+ * it meets or exceeds the cap. Returns `true` only for a known size strictly
  * below the cap. Strict, defensive, deterministic: the boolean answer maps
  * one-to-one to "the dropdown should render."
  *

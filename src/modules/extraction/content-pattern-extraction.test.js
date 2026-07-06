@@ -58,7 +58,7 @@ describe("extractTimestampByPattern", () => {
   });
 });
 
-describe("extractTimestampByPattern — badge-first regression (Bug 1)", () => {
+describe("extractTimestampByPattern, badge-first regression (Bug 1)", () => {
   // Regression tests for the Upcoming scheduled-time false positive.
   // Real Upcoming video items embed a scheduled-time string (e.g.
   // "Scheduled for 7/5/26, 4:00 AM") in adjacent metadata text. The
@@ -122,7 +122,7 @@ describe("extractTimestampByPattern — badge-first regression (Bug 1)", () => {
   it("falls back to text scan when no badge element exists", () => {
     // Unavailable videos have neither badge-shape nor
     // ytd-thumbnail-overlay-time-status-renderer. The fallback path is
-    // safe in real DOM because real Upcoming/Live videos always have a
+    // safe in real DOM because real Upcoming or Live videos always have a
     // badge present, so the false-positive trap is unreachable here.
     const el = createMockElement("div", {
       textContent: "12:34",

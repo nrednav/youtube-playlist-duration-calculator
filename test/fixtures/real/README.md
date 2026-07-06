@@ -16,34 +16,34 @@ since they encode per-requestor info, but the DOM structure is intact.
 
 ### Renderer architecture (`ytd-playlist-video-renderer`)
 
-- `renderer-video-item-normal.html` — A normal public video with
+- `renderer-video-item-normal.html`: A normal public video with
   duration, channel name, views, and upload date. Validates the
   selector-match extraction strategy and all sort selectors.
-- `renderer-video-item-unavailable-private.html` — A `[Private video]`
+- `renderer-video-item-unavailable-private.html`: A `[Private video]`
   item. No timestamp element at all.
-- `renderer-video-item-unavailable-deleted.html` — A `[Deleted video]`
+- `renderer-video-item-unavailable-deleted.html`: A `[Deleted video]`
   item. No timestamp element at all.
-- `renderer-video-item-live.html` — A live stream. Timestamp element
+- `renderer-video-item-live.html`: A live stream. Timestamp element
   exists but reads "LIVE". Must not contribute to the duration total.
-- `renderer-video-item-upcoming.html` — A scheduled/premiere video.
+- `renderer-video-item-upcoming.html`: A scheduled or premiere video.
   Timestamp element reads "Upcoming". The metadata line contains
   "Scheduled for 7/5/26, 4:00 AM" which is the false-positive trap
   for content-pattern extraction.
-- `renderer-video-list-container.html` — The containing
+- `renderer-video-list-container.html`: The containing
   `ytd-playlist-video-list-renderer > #contents` wrapper that holds
   the above items.
 
 ### ViewModel architecture (`yt-lockup-view-model`)
 
-- `viewmodel-video-item-normal.html` — A normal lockup with a
+- `viewmodel-video-item-normal.html`: A normal lockup with a
   `badge-shape > div.ytBadgeShapeText` duration, channel name, views,
   and upload date in `yt-content-metadata-view-model` rows. Validates
   the content-pattern extraction strategy against real metadata noise.
-- `viewmodel-video-item-unavailable.html` — An unavailable lockup.
+- `viewmodel-video-item-unavailable.html`: An unavailable lockup.
   No title text, no duration badge, only "No views" metadata.
-- `viewmodel-video-item-live.html` — A live lockup. Duration badge
+- `viewmodel-video-item-live.html`: A live lockup. Duration badge
   contains "LIVE" text. Metadata row contains "1.7k watching".
-- `viewmodel-video-item-upcoming.html` — A scheduled lockup.
+- `viewmodel-video-item-upcoming.html`: A scheduled lockup.
   Duration badge contains "Upcoming". Metadata row contains
   "Scheduled for 05/07/2026, 04:00" which is the false-positive trap
   for content-pattern extraction on this architecture.

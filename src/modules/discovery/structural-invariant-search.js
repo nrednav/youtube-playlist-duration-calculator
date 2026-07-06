@@ -152,7 +152,7 @@ const discoverByViewModel = (doc) => {
 };
 
 /**
- * Discover the playlist container and/or video elements using structural
+ * Discover the playlist container or video elements using structural
  * invariants, based on the detected rendering architecture.
  *
  * @param {Document} doc

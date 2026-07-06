@@ -25,10 +25,10 @@ const loadVideo = (file, selector) => {
 const RENDERER_SELECTOR = "ytd-playlist-video-renderer";
 const VIEWMODEL_SELECTOR = "yt-lockup-view-model";
 
-describe("extractChannelName — structural-invariant contract", () => {
+describe("extractChannelName, structural-invariant contract", () => {
   // The channel name is located by structural invariant, not by
   // element name. The invariant is: exactly one <a> inside the video item
-  // has an href beginning "/@" — that anchor's textContent is the channel
+  // has an href beginning "/@". That anchor's textContent is the channel
   // name. This holds on both the renderer and viewmodel architectures
   // because a channel link is forced by what a channel IS, not by what
   // YouTube calls its wrapper element this quarter.

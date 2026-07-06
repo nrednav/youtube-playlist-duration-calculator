@@ -1,6 +1,6 @@
 export class EnUploadDateParser {
   /**
-   * @param {string} rawText — the upload-date text fragment (e.g.
+   * @param {string} rawText. The upload-date text fragment (e.g.
    *   "8 years ago"), located upstream by structural invariant.
    *   Migration 2026-07-05: input changed from an element (whose
    *   children[2] held the date span) to a raw string, deleting the

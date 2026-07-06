@@ -1,6 +1,6 @@
 export class EnViewsParser {
   /**
-   * @param {string} rawText — the views text fragment (e.g. "5.7M views"),
+   * @param {string} rawText. The views text fragment (e.g. "5.7M views"),
    *   located upstream by structural invariant. Migration 2026-07-05:
    *   input changed from an element (whose firstElementChild held the
    *   views span) to a raw string, deleting the renderer-territory

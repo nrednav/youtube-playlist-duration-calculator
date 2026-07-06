@@ -25,7 +25,7 @@ const SHAPE_MAX_SECONDS = {
  * Compute the worst-case error (in seconds) for a single estimated
  * timestamp, given its parsed seconds value and token segment count.
  *
- * Verified videos (confidence >= 0.8) should not call this; they
+ * Verified videos (confidence >= 0.8) should not call this. They
  * contribute zero error by definition.
  *
  * @param {number} seconds - Parsed duration in seconds

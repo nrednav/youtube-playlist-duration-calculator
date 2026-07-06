@@ -16,7 +16,7 @@ export const strategy = {
   designedFor: "any",
 
   /**
-   * Find the playlist container and/or video elements using structural
+   * Find the playlist container or video elements using structural
    * invariants, detecting the architecture automatically.
    *
    * @param {Document} doc

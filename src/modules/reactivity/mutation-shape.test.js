@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 // Mock chrome.runtime before importing the module under test, since
 // mutation-shape.js imports element-selectors transitively-free but logger
 // is pulled in by sibling orchestrators. The classifier itself has no
-// chrome dependency; this mock guards the import graph.
+// chrome dependency. This mock guards the import graph.
 globalThis.chrome = {
   runtime: { getManifest: () => ({ version: "0.0.0" }) },
 };
@@ -89,7 +89,7 @@ describe("isRemovalMutation", () => {
 
   it("does NOT match a removal when lastInteracted is null", () => {
     // Pre-interaction state on a long playlist. A stray single removal here
-    // must not be treated as the sort/remove fixup.
+    // must not be treated as the sort or remove fixup.
     const m = mutation({ added: [], removed: [mkVideo()] });
 
     assert.strictEqual(

@@ -29,7 +29,7 @@ const loadFixture = (name) => {
 
 const FIXTURES = ["playlist-renderer.html", "playlist-viewmodel.html"];
 
-describe("Discovery — All Strategies × All Fixtures", () => {
+describe("Discovery, All Strategies × All Fixtures", () => {
   for (const fixtureName of FIXTURES) {
     it(`finds playlist in ${fixtureName}`, () => {
       const doc = loadFixture(fixtureName);
@@ -87,7 +87,7 @@ describe("Discovery — All Strategies × All Fixtures", () => {
   });
 });
 
-describe("Discovery result contract — videoSelector for live re-derivation", () => {
+describe("Discovery result contract, videoSelector for live re-derivation", () => {
   // The reactivity fix depends on the discovery result carrying a
   // `videoSelector` so downstream consumers can re-query the live DOM for
   // scroll-appended videos instead of the frozen snapshot.

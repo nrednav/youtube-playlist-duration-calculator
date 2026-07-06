@@ -43,7 +43,7 @@ const checkPlaylistReady = () => {
 
   activePlaylistInterval = setInterval(() => {
     // Stop polling once maxPollCount is reached. The first tick at
-    // pollCount === maxPollCount clears the interval; subsequent ticks
+    // pollCount === maxPollCount clears the interval. Subsequent ticks
     // short-circuit before doing any work, so the loop neither fires
     // readiness checks nor queries the DOM after the budget is
     // exhausted. Without this guard the interval would keep running
@@ -93,8 +93,8 @@ const checkPlaylistReady = () => {
     // This includes /feed/playlists, /watch, /feed/history, and channel
     // pages. The structural protection against inserting on a non-playlist
     // page lives in `isOperablePlaylistPage()` at the processPlaylist /
-    // displayLoader call sites; this branch simply ends polling without
-    // signaling failure (the unknown-variant branch above handles that).
+    // displayLoader call sites. This branch simply ends polling without
+    // signaling failure. The unknown-variant branch above handles that.
     if (shouldStopPollingSilently({ pollCount, playlistExists, variant })) {
       clearInterval(activePlaylistInterval);
       activePlaylistInterval = null;
@@ -157,7 +157,7 @@ const checkPlaylistReady = () => {
     // ViewModel-architecture readiness: discovery produced a confident
     // result and a sample of the discovered videos yields extractable
     // timestamps. There is no `playlistElement` on this architecture,
-    // so the renderer-branch visibility check does not apply — call
+    // so the renderer-branch visibility check does not apply. Call
     // processPlaylist directly. The `!playlistExists` guard preserves
     // the mutual exclusivity of the two readiness paths: if the renderer
     // selector resolved but readiness failed (e.g., counts disagree
@@ -206,7 +206,7 @@ const shouldSignalFailureForUnknownVariant = ({
  *
  * Fires when the variant is known but the page is not operable (e.g.,
  * /feed/playlists, /watch). The unknown-variant branch above handles
- * failure signaling; this branch simply ends the loop.
+ * failure signaling. This branch simply ends the loop.
  */
 const shouldStopPollingSilently = ({ pollCount, playlistExists, variant }) => {
   return (
@@ -437,7 +437,7 @@ const isNewDesign = () => {
 /**
  * Counts videos whose timestamp could not be extracted.
  *
- * This is the BROAD notion of "unavailable" — includes unavailable,
+ * This is the BROAD notion of "unavailable", includes unavailable,
  * live, upcoming, and badge-absent videos. Distinct from
  * `countVideosFlaggedUnavailable`, which is the narrow title-based
  * predicate. The readiness invariant `countWithout === countFlagged`
@@ -506,8 +506,8 @@ const getVideos = () => {
 };
 
 /**
- * Counts videos flagged unavailable by the narrow predicate
- * (no extractable timestamp OR unavailable title).
+ * Counts videos flagged unavailable by the narrow predicate:
+ * no extractable timestamp OR unavailable title.
  *
  * Distinct from `countVideosWithoutExtractableTimestamp` (the broad
  * count). The readiness invariant `countWithout === countFlagged` means:
@@ -523,7 +523,7 @@ const countVideosFlaggedUnavailable = () => {
  * "unavailable"
  *
  * Criteria:
- * - Has no extractable timestamp (architecture-agnostic check; works on
+ * - Has no extractable timestamp (architecture-agnostic check. Works on
  *   both renderer `ytd-*-renderer` and viewmodel `yt-lockup-view-model`
  *   via the shared `getTimestampFromVideo` helper, which has both the
  *   known-selector path and the content-pattern fallback)
@@ -613,7 +613,7 @@ const processPlaylist = () => {
   // The renderer branch fires
   // during SPA transition windows where the URL has flipped to a
   // non-playlist URL but the prior page's playlist DOM has not yet been
-  // torn down — the playlist selector still resolves, so the gate here is
+  // torn down. The playlist selector still resolves, so the gate here is
   // load-bearing, not redundant. See shared/modules/page-guard.js.
   if (!isOperablePlaylistPage()) {
     logger.debug("processPlaylist_skipped_non_operable", () => ({
@@ -656,7 +656,7 @@ const processPlaylist = () => {
 
   const playlistDuration = convertSecondsToTimestamp(totalDurationInSeconds);
 
-  // Verified videos contribute zero; unparseable videos are excluded
+  // Verified videos contribute zero. Unparseable videos are excluded
   // (they surface in "Videos not counted"). The bound is per-token-shape,
   // not a flat per-video constant.
   const maxErrorSeconds = computeMaxError(extractionResults);
@@ -846,7 +846,7 @@ const onPlaylistMutated = (mutationList, observer) => {
       const lastInteracted = window.ytpdc.lastVideoInteractedWith;
 
       // If the playlist was sorted, YouTube removes the wrong video from
-      // the playlist UI (the correct video is removed by the server).
+      // the playlist UI. The correct video is removed by the server.
       if (getVideoTitle(removedVideo) !== getVideoTitle(lastInteracted)) {
         if (mutation.previousSibling) {
           mutation.previousSibling.after(removedVideo);
@@ -1007,7 +1007,7 @@ const createPlaylistSummaryElement = ({
   }
 
   // When any video is estimated (low-confidence), the total is
-  // approximate. We signal with a leading "~" only — a near-universal
+  // approximate. We signal with a leading "~" only. A near-universal
   // "approximately" glyph that needs no jargon. Color stays green in
   // all cases: the prior amber shift collided with the adjacent
   // "Videos counted" row, and color should not be the sole signal
@@ -1059,7 +1059,7 @@ const createPlaylistSummaryElement = ({
   }
 
   // The tooltip (limit explainer) renders only when the count is known and
-  // at/over the cap. An unknown count degrades to no dropdown and no
+  // at or over the cap. An unknown count degrades to no dropdown and no
   // tooltip, rather than the misleading "sorting disabled" message.
   if (
     totalVideosInPlaylist !== null &&
@@ -1189,7 +1189,7 @@ const countTotalVideosInPlaylist = () => {
   // on the current YouTube playlist page. YouTube moved the count into a
   // page-header `yt-content-metadata-view-model` span ("154 videos") flanked
   // by delimiter spans. The legacy selectors remain as a priority fallback
-  // for any YouTube variant still rendering the old stats element; the
+  // for any YouTube variant still rendering the old stats element. The
   // content-pattern extractor handles the current layout and is
   // locale-independent (it matches delimiter structure, not the "videos"
   // word, which is too risky to enumerate across all shipped locales).

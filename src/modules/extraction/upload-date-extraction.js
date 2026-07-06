@@ -97,7 +97,7 @@ const locateDateFragment = (videoElement) => {
   }
 
   // Fallback: scan metadata fragments for one that parses as a relative
-  // time phrase. Covers locales/layouts where no delimiter is present.
+  // time phrase. Covers locales or layouts where no delimiter is present.
   for (const text of candidates) {
     const trimmed = text.trim();
     if (isDateFragment(trimmed)) {
@@ -113,7 +113,7 @@ const locateDateFragment = (videoElement) => {
  *
  * A date fragment contains a digit, is not the delimiter, is not the
  * live "watching" count. The locale parser is the final arbiter of
- * whether the text actually parses as a relative-time phrase; this gate
+ * whether the text actually parses as a relative-time phrase. This gate
  * only selects fragments that plausibly are dates so the parser is not
  * fed arbitrary text.
  */

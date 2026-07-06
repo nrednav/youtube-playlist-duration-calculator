@@ -7,12 +7,12 @@
  * The handler previously branched on `mutationList.length === 1` alone,
  * which conflated two physically different events:
  *
- *   - a user-initiated video removal (exactly one removed video, no added
- *     nodes, a recorded last-interacted video); and
- *   - a lazy-load append (added nodes, no removed nodes, no interaction).
+ *   - a user-initiated video removal. Exactly one removed video, no added
+ *     nodes, and a recorded last-interacted video.
+ *   - a lazy-load append. Added nodes, no removed nodes, and no interaction.
  *
- * The misclassification dereferenced `window.ytpdc.lastVideoInteractedWith`
- * (null on long playlists before any interaction) and silently aborted the
+ * The misclassification dereferenced `window.ytpdc.lastVideoInteractedWith`,
+ * which is null on long playlists before any interaction, and silently aborted the
  * only recalculation call on that branch. On playlists with >100 videos the
  * dominant mutation is the append, so the symptom was: no recalculation when
  * YouTube lazily loads more videos.

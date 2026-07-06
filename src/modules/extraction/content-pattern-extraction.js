@@ -36,14 +36,14 @@ const resolveDurationBadge = (videoElement) => {
  * duration badge element, the duration lives in its textContent and we
  * MUST NOT scan the whole video element's textContent for a duration
  * pattern. Real Upcoming video items contain a scheduled-time string
- * (e.g. "Scheduled for 7/5/26, 4:00 AM") in adjacent metadata; the
+ * (e.g. "Scheduled for 7/5/26, 4:00 AM") in adjacent metadata. The
  * loose `\d{1,2}:\d{2}` regex matches "4:00" from that metadata and
  * silently counts the Upcoming video as a 4-minute duration.
  *
  * The badge is the authoritative signal. If it exists and matches the
  * duration pattern, return it at high confidence. If it exists but
  * does NOT match (LIVE, Upcoming, empty), return null definitively
- * and refuse to fall through to text scanning — only when no badge is
+ * and refuse to fall through to text scanning. Only when no badge is
  * present at all do we fall back to the legacy whole-text scan.
  *
  * @param {Element} videoElement
@@ -80,10 +80,10 @@ export const extractTimestampByPattern = (videoElement) => {
   }
 
   // No badge element present (e.g. unavailable videos have neither
-  // badge-shape nor ytd-thumbnail-overlay-time-status-renderer; some
+  // badge-shape nor ytd-thumbnail-overlay-time-status-renderer. Some
   // test mocks have no querySelector at all). Fall back to scanning
   // the element's textContent for a duration pattern. This path is
-  // only safe because a real Upcoming/Live video always has a badge
+  // only safe because a real Upcoming or Live video always has a badge
   // present, so the false-positive trap is unreachable here.
   const text = videoElement.textContent || "";
   const matches = text.match(DURATION_PATTERN_LOOSE);

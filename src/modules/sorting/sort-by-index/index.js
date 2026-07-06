@@ -6,7 +6,7 @@ const ORIGINAL_INDEX_ATTR = "data-ytpdc-original-index";
  * Sort strategy that orders playlist videos by their position in the list.
  *
  * Exported because `PlaylistSorter` instantiates it by reference from
- * `src/modules/sorting/index.js`; the class is part of the public sort
+ * `src/modules/sorting/index.js`. The class is part of the public sort
  * contract and may be referenced by name in other sort orchestrators.
  */
 export class SortByIndexStrategy {
@@ -33,7 +33,7 @@ export class SortByIndexStrategy {
    * `data-ytpdc-original-index` attribute on that video element (the input
    * DOM node) recording its position at first sort. Consumers that re-sort
    * the same nodes across multiple calls rely on this mutation for stable
-   * ordering; treat the input array as owned by the strategy for the
+   * ordering. Treat the input array as owned by the strategy for the
    * attribute's lifetime.
    *
    * @param {Array<Element>} videos

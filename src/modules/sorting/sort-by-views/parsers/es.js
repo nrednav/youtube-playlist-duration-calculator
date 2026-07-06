@@ -1,6 +1,6 @@
 export class EsViewsParser {
   /**
-   * @param {string} rawText — the views text fragment, located upstream
+   * @param {string} rawText. The views text fragment, located upstream
    *   by structural invariant. Migration 2026-07-05: input changed from
    *   an element to a raw string. Locale logic unchanged.
    */

@@ -3,7 +3,7 @@
  *
  * Runs all discovery strategies in priority order based on the detected
  * YouTube layout variant. Strategies designed for the detected variant
- * run first; variant-agnostic strategies run second; strategies designed
+ * run first. Variant-agnostic strategies run second. Strategies designed
  * for other variants run last. This avoids wasting cycles on strategies
  * that cannot succeed in the current architecture.
  *
@@ -20,8 +20,8 @@ const DISCOVERY_STRATEGIES = [selectorMatch, structuralInvariant];
 
 /**
  * Sort strategies by how well they match the current layout variant.
- * Variant-specific strategies get highest priority; variant-agnostic
- * strategies get medium priority; strategies for other variants get
+ * Variant-specific strategies get highest priority. Variant-agnostic
+ * strategies get medium priority. Strategies for other variants get
  * lowest priority (tried only when nothing else works).
  *
  * @param {Array} strategies
