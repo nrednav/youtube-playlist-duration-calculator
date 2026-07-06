@@ -123,7 +123,7 @@ const checkPlaylistReady = () => {
     // DOM element that could be rendered hidden (e.g., during a SPA
     // transition where the selector still resolves but the container
     // is being torn down).
-    if (playlistExists && isRendererReady(playlistElement)) {
+    if (playlistExists && isRendererReady()) {
       clearInterval(activePlaylistInterval);
       activePlaylistInterval = null;
 
@@ -163,7 +163,7 @@ const checkPlaylistReady = () => {
     // selector resolved but readiness failed (e.g., counts disagree
     // mid-render), we keep polling rather than falling through to the
     // viewmodel path on a potentially stale discoveryResult.
-    else if (!playlistExists && isViewmodelReady(variant)) {
+    else if (!playlistExists && isViewmodelReady()) {
       clearInterval(activePlaylistInterval);
       activePlaylistInterval = null;
 
@@ -276,13 +276,17 @@ const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
  * selector resolves, and the "no extractable timestamp" count agrees
  * with the "flagged unavailable" count.
  */
-const isRendererReady = (playlistElement) => {
+const isRendererReady = () => {
   const timestampElement = document.querySelector(elementSelectors.timestamp);
   const timestampExists = timestampElement !== null;
-  if (!timestampExists) return false;
+
+  if (!timestampExists) {
+    return false;
+  }
 
   const unavailableTimestampsCount = countVideosWithoutExtractableTimestamp();
   const unavailableVideosCount = countVideosFlaggedUnavailable();
+
   return unavailableTimestampsCount === unavailableVideosCount;
 };
 
@@ -292,7 +296,7 @@ const isRendererReady = (playlistElement) => {
  * extractable timestamp. Excludes the renderer case where the playlist
  * selector already matches.
  */
-const isViewmodelReady = (variant) => {
+const isViewmodelReady = () => {
   const discoveryResult = window.ytpdc?.discoveryResult;
 
   if (!discoveryResult || discoveryResult.confidence <= 0.5) {
@@ -304,6 +308,7 @@ const isViewmodelReady = (variant) => {
   }
 
   const sampleVideos = discoveryResult.videos?.slice(0, 3) || [];
+
   return sampleVideos.some((v) => {
     const result = extractTimestamp(v);
     return result.seconds !== null && result.confidence > 0;
@@ -609,9 +614,9 @@ const signalFailure = (variant, snapshot) => {
 const processPlaylist = () => {
   // Defense-in-depth at processPlaylist itself: the discovery branch of
   // checkPlaylistReady already gates on `pathname === "/playlist"`, but
-  // the renderer branch via `isRendererReady(playlistElement)` does not.
-  // The renderer branch fires
-  // during SPA transition windows where the URL has flipped to a
+  // the renderer branch via `isRendererReady()` does not. The renderer
+  // branch fires during SPA transition windows where the URL has flipped
+  // to a
   // non-playlist URL but the prior page's playlist DOM has not yet been
   // torn down. The playlist selector still resolves, so the gate here is
   // load-bearing, not redundant. See shared/modules/page-guard.js.

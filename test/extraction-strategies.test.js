@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
-import { before, describe, it } from "node:test";
+import { describe, it } from "node:test";
 import { JSDOM } from "jsdom";
 
 // Mock chrome.runtime before importing strategies
