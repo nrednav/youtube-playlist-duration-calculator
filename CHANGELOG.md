@@ -8,7 +8,83 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [v2.3.0] - 2026-07-03
 
-TBD
+### Added
+
+- Support for the `yt-lockup-view-model` (view-model) rendering architecture
+  alongside the existing `ytd-*-renderer` architecture. The extension now
+  detects the active variant and runs discovery, extraction, reactivity, and
+  readiness logic against either layout.
+- Structural-invariant discovery strategy that locates the playlist container
+  by structure (duration-bearing lockups, video-renderer children) rather
+  than by YouTube's chosen element names, used as a fallback when the known
+  selectors miss.
+- Content-pattern extraction strategy for timestamps, channel names, upload
+  dates, and views. Locates data by what it is (`/@handle` anchors,
+  digits plus "views", time-ago phrases, duration badges) rather than by
+  element name, so extraction survives single-architecture selector breakage.
+- Confidence-bounded duration aggregation. When timestamps are recovered via
+  pattern matching rather than an exact selector, the summary reports the
+  count of estimated videos and a per-token-shape worst-case error bound
+  rather than presenting the total as exact.
+- User-visible failure indicator (red-bordered panel) shown inside the
+  playlist summary when no discovery strategy can locate the playlist,
+  with a localized message and a pre-filled, account-free report link
+  capturing extension version, browser, and locale.
+- "No options available" placeholder in the sort dropdown when no sort
+  strategies report positive confidence on the first video.
+- `?ytpdc-debug=true` diagnostic logging of variant detection, strategy
+  prioritization, discovery results, and the failure snapshot.
+- Failure-indicator and sort-dropdown placeholder strings to all locales
+  (`en`, `es`, `fr`, `pt`, `pt_BR`, `pt_PT`, `zh`, `zh_CN`, `zh_TW`).
+
+### Changed
+
+- Refactored the sort-gate predicate from `videoHasElement` (per-architecture
+  selector query that hard-disabled `channelName` and `videoInfo` on
+  view-model) to `videoExposesDatum`, which reports a datum as present when
+  its extractor returns positive confidence. One code path runs on both
+  architectures.
+- Refactored the readiness loop in `main.js` into named predicates
+  (`shouldSignalFailureForUnknownVariant`, `shouldStopPollingSilently`,
+  `isViewmodelDesyncCheckpoint`, `maybeRunInvariantSearch`, `isRendererReady`,
+  `isViewmodelReady`) and split the failure path into a `signalFailure` helper.
+- Split unavailable-video accounting into the broad
+  `countVideosWithoutExtractableTimestamp` and the narrow
+  `countVideosFlaggedUnavailable`, with the readiness invariant that the two
+  counts agree.
+- Observer target resolution now falls back to the discovered view-model
+  insertion container when the known renderer selector does not match, so
+  scroll-triggered appends are detected on both architectures.
+- `convertSecondsToTimestamp` now guards negative and non-finite input,
+  returning `00:00:00` instead of producing `NaN` or negative-segment output.
+- Polling interval is now tracked in a module-level handle and cleared on
+  stop to prevent the readiness loop from running indefinitely after exit.
+- Bumped dependency audit state via `npm audit fix`.
+
+### Fixed
+
+- Fixed the playlist summary being injected on non-playlist pages
+  (e.g. `/feed/playlists`, `/feed/history`, `/watch`, channel pages) during
+  SPA transition windows where `window.location.pathname` had already
+  flipped while the prior page's playlist DOM had not yet been torn down.
+  Insertion is now gated on a single positive predicate,
+  `isOperablePlaylistPage`, at the `processPlaylist` and loader call sites.
+- Fixed the sort dropdown enabling itself on unknown or oversized playlists.
+  An unknown video count previously coerced to `0` and passed a `<=` cap
+  check, enabling sorting on playlists the extension cannot sort in full.
+  Sorting is now disabled when the total count is unknown, `NaN`, or meets
+  the cap of 100.
+- Fixed `SortByIndexStrategy` being a function of its own output on
+  architectures without a DOM index element. Because the strategy reordered
+  the live DOM via `replaceChildren`, the input array arrived pre-sorted on
+  the next call, making ascending a no-op and descending alternate between
+  directions on repeated clicks. The strategy now freezes each video's
+  original position to a `data-ytpdc-original-index` attribute on first sort.
+- Fixed `SortByChannelNameStrategy` crashing on the view-model architecture
+  where the `.ytd-channel-name` selector does not resolve. The strategy now
+  consumes the architecture-agnostic `extractChannelName` extractor.
+- Fixed scheduled-time (upcoming) videos being miscounted in the unavailable
+  timestamp tally during duration parse.
 
 ## [v2.2.3] - 2026-04-12
 
