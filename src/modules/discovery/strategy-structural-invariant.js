@@ -8,6 +8,7 @@
  * Strategy contract: { name, priority, designedFor, discover(doc) }
  */
 
+import { desyncIndicators } from "../../shared/data/element-selectors";
 import { discoverPlaylist as discoverByInvariants } from "./structural-invariant-search";
 
 export const strategy = {
@@ -23,10 +24,14 @@ export const strategy = {
    * @returns {{ element: Element|null, videos: Element[]|null, videoSelector: string|null, confidence: number, strategyName: string }}
    */
   discover(doc) {
-    const result = discoverByInvariants(doc, {
-      known: true,
-      variant: "unknown",
-    });
+    // Detect the actual rendering architecture from the live DOM.
+    // Passing "unknown" would cause discoverByRendererInvariant to
+    // run first and short-circuit if ANY -video-renderer elements exist
+    // on the page (e.g. from stale sidebar content during SPA
+    // transition), preventing discoverByViewModel from ever running.
+    const variant = desyncIndicators.detectVariant(doc);
+
+    const result = discoverByInvariants(doc, variant);
 
     return {
       element: result.container,
