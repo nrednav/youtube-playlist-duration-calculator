@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.3.1] - 2026-07-07
+
+### Fixed
+
+- Fixed duration extraction returning null during playlist SPA navigation.
+  Stale lockup cards from the previous page (badge text is a video count,
+  not a duration) are no longer used to derive the insertion container or
+  sampled for readiness checks.
+- Fixed `resolveDurationBadge` selecting the wrong badge when a lockup
+  contains multiple `badge-shape` elements. It now scans all such elements
+  and returns the first whose text matches a duration pattern, falling
+  back to a bounded descendant scan only when no badge contains duration
+  text.
+- Fixed upload date parsers (en, es, fr, pt, zh-Hans-CN, zh-Hant-TW)
+  throwing on input that does not match the expected date regex. Each
+  parser now returns `null` instead of dereferencing a `null` match array.
+
 ## [v2.3.0] - 2026-07-03
 
 ### Added
@@ -231,6 +248,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   - Bug where timestamps were not being summed properly
 - Addressed vulnerabilities reported by pnpm audit and dependabot
 
+[v2.3.1]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.3.0...v2.3.1
 [v2.3.0]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.3...v2.3.0
 [v2.2.3]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.2...v2.2.3
 [v2.2.2]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.1...v2.2.2
