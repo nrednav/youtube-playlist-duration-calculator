@@ -109,21 +109,49 @@ const discoverByViewModel = (doc) => {
     };
   }
 
+  // Separate lockups into actual video items (have a badge-shape whose
+  // text matches a duration pattern) and other cards (e.g., stale playlist
+  // recommendation cards from a previous SPA navigation page, which have
+  // count text like "20 videos" instead of a duration).
+  //
+  // On SPA navigation to a playlist, YouTube does not always remove all
+  // lockup elements from the previous page. The first lockups in DOM order
+  // may be stale recommendation cards whose badge-shape shows a video count
+  // rather than a duration. These must be excluded from both the container
+  // derivation and the readiness sampling.
+  const videoLockups = [...lockups].filter((lockup) => {
+    const badges = lockup.querySelectorAll("badge-shape");
+
+    return [...badges].some((b) =>
+      DURATION_PATTERN.test((b.textContent || "").trim()),
+    );
+  });
+
+  // Use the first VIDEO lockup to derive the insertion container (the
+  // section-list-renderer that wraps the actual playlist video items).
+  // Using a stale card's container would point to the wrong page section,
+  // causing getVideos() to re-derive from stale DOM.
+  const firstVideo = videoLockups.length > 0 ? videoLockups[0] : lockups[0];
+
+  const container =
+    firstVideo?.closest("yt-section-list-renderer") ||
+    firstVideo?.closest("[id*='contents']") ||
+    firstVideo?.parentElement ||
+    null;
+
   const withTimestamps = [...lockups].filter((lockup) =>
     DURATION_PATTERN.test(lockup.textContent || ""),
   );
 
-  const container =
-    lockups[0].closest("yt-section-list-renderer") ||
-    lockups[0].closest("[id*='contents']") ||
-    lockups[0].parentElement;
-
-  const usableVideos =
-    withTimestamps.length > 0 ? withTimestamps : [...lockups];
+  // Use video lockups for readiness sampling. This ensures
+  // isViewmodelReady() samples actual video items (with duration badges)
+  // rather than stale cards whose extraction always fails.
+  const usableVideos = videoLockups.length > 0 ? videoLockups : [...lockups];
 
   logger.debug("discovery_viewmodel", () => ({
     totalLockups: lockups.length,
     withTimestamps: withTimestamps.length,
+    videoLockups: videoLockups.length,
     containerTag: container?.tagName || "none",
   }));
 

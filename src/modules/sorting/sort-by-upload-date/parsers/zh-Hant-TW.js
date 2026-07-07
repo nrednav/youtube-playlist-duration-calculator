@@ -15,12 +15,17 @@ export class ZhHantTwUploadDateParser {
     };
 
     const uploadDateRegex = /(\d+)(.*)前/;
-    const [value, unit] = rawText
+    const match = rawText
       .toLowerCase()
       .replaceAll(/\s/g, " ")
-      .match(uploadDateRegex)
-      .slice(1)
-      .map((x) => x.trim());
+      .match(uploadDateRegex);
+
+    if (!match) {
+      return null;
+    }
+
+    const [value, unit] = match.slice(1).map((x) => x.trim());
+
     return Number.parseFloat(value) * secondsByUnit[unit];
   }
 }

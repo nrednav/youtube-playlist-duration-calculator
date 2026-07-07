@@ -17,8 +17,13 @@ export class EsUploadDateParser {
 
     const uploadDateRegex =
       /(?:emitido )?hace (\d+) (minutos?|horas?|días?|semanas?|mes|meses|años?)/u;
-    const [value, unit] = rawText.toLowerCase().match(uploadDateRegex).slice(1);
+    const match = rawText.toLowerCase().match(uploadDateRegex);
 
+    if (!match) {
+      return null;
+    }
+
+    const [value, unit] = match.slice(1);
     const seconds =
       secondsByUnit[unit] ?? secondsByUnit[unit.slice(0, -1)] ?? 1;
 

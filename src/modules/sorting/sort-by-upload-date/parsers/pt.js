@@ -17,11 +17,16 @@ export class PtUploadDateParser {
 
     const uploadDateRegex =
       /(?:transmitido )?há (\d+) (minutos?|horas?|dias?|semanas?|mês|meses|anos?)/u;
-    const [value, unit] = rawText
+    const match = rawText
       .toLowerCase()
       .replaceAll(/\s/g, " ")
-      .match(uploadDateRegex)
-      .slice(1);
+      .match(uploadDateRegex);
+
+    if (!match) {
+      return null;
+    }
+
+    const [value, unit] = match.slice(1);
 
     const seconds =
       secondsByUnit[unit] ?? secondsByUnit[unit.slice(0, -1)] ?? 1;

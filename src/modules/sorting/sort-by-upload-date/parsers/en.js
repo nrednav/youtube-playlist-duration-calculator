@@ -17,8 +17,15 @@ export class EnUploadDateParser {
     };
 
     const uploadDateRegex = /(?:streamed )?(\d+) (\w+) ago/;
-    const [value, unit] = rawText.toLowerCase().match(uploadDateRegex).slice(1);
+    const match = rawText.toLowerCase().match(uploadDateRegex);
+
+    if (!match) {
+      return null;
+    }
+
+    const [value, unit] = match.slice(1);
     const normalizedUnit = unit.endsWith("s") ? unit.slice(0, -1) : unit;
+
     return Number.parseFloat(value) * secondsByUnit[normalizedUnit];
   }
 }

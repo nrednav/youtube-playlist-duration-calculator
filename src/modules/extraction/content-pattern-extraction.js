@@ -12,21 +12,64 @@ const DURATION_PATTERN_LOOSE = /\d{1,2}:\d{2}(:\d{2})?/;
  * Resolve the dedicated YouTube duration-badge element inside a video
  * item, if any.
  *
- * Both architectures ship a badge element whose textContent is either
- * the duration (e.g. "15:31") or a non-duration marker ("LIVE",
- * "Upcoming"). Prefer `badge-shape` because its textContent is clean
- * (just the duration string), while the legacy
- * `ytd-thumbnail-overlay-time-status-renderer` element concatenates
- * the badge text with the duplicate `#time-status > span#text` text.
+ * Each video element has one badge-shape inside the thumbnail overlay
+ * that holds either the duration text (e.g. "4:30") or a non-duration
+ * marker ("LIVE", "Upcoming"). This function scans ALL badge-shape
+ * elements and returns the one whose text matches a duration pattern.
+ * If no badge-shape has duration text, it falls back to the first
+ * badge-shape (for known non-duration markers like LIVE), then to the
+ * legacy renderer element, and finally scans all descendants for a
+ * standalone duration string.
  *
  * @param {Element} videoElement
  * @returns {Element|null}
  */
 const resolveDurationBadge = (videoElement) => {
-  return (
-    videoElement.querySelector("badge-shape") ||
-    videoElement.querySelector("ytd-thumbnail-overlay-time-status-renderer")
+  // Scan all badge-shape elements. Return the first one whose text
+  // matches a duration pattern. Falls through to legacy renderer
+  // element or descendant scan if no badge-shape has duration text.
+  const allBadges = videoElement.querySelectorAll("badge-shape");
+
+  for (const badge of allBadges) {
+    const text = (badge.textContent || "").trim();
+
+    if (DURATION_PATTERN_LOOSE.test(text)) {
+      return badge;
+    }
+  }
+
+  if (allBadges.length > 0) {
+    return allBadges[0];
+  }
+
+  // Legacy renderer architecture: ytd-thumbnail-overlay-time-status-renderer
+  const legacyBadge = videoElement.querySelector(
+    "ytd-thumbnail-overlay-time-status-renderer",
   );
+
+  if (legacyBadge) {
+    return legacyBadge;
+  }
+
+  // Viewmodel architecture fallback: scan all descendants for an element
+  // whose entire textContent is a short duration string. This catches
+  // durations rendered in non-badge elements on the viewmodel architecture
+  // (e.g. a span whose textContent is just "4:30"), while excluding false
+  // positives from elements with longer textContent (e.g. "Scheduled for
+  // 05/07/2026, 04:00" at length 35 or "46:13 Chapter Name" at length 18).
+  // The < 10 character threshold is safe because all standard duration
+  // formats (MM:SS at 5 chars, HH:MM:SS at 8 chars) are well under it.
+  const allDescendants = videoElement.querySelectorAll("*");
+
+  for (const descendant of allDescendants) {
+    const text = (descendant.textContent || "").trim();
+
+    if (text && text.length < 10 && DURATION_PATTERN_LOOSE.test(text)) {
+      return descendant;
+    }
+  }
+
+  return null;
 };
 
 /**
@@ -66,7 +109,7 @@ export const extractTimestampByPattern = (videoElement) => {
 
       // The badge is YouTube's dedicated duration element, so a match
       // there is high confidence regardless of whether the badge text
-      // contains extra markup text (it doesn't, but defense in depth).
+      // contains extra markup text.
       if (parts === 3 || parts === 2) {
         return { value: raw, confidence: 0.9 };
       }
@@ -93,7 +136,6 @@ export const extractTimestampByPattern = (videoElement) => {
     const parts = raw.split(":").length;
 
     if (parts === 3 || parts === 2) {
-      // Higher confidence when the match is standalone (not part of larger text)
       const confidence =
         text.trim() === raw || text.includes(`  ${raw}`) ? 0.9 : 0.6;
 

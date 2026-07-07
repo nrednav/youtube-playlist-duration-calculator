@@ -15,7 +15,14 @@ export class ZhHansCnUploadDateParser {
     };
 
     const uploadDateRegex = /(\d+)([\u4e00-\u9fa5]+)前/;
-    const [value, unit] = rawText.toLowerCase().match(uploadDateRegex).slice(1); // This removes the 3rd match 前
+    const match = rawText.toLowerCase().match(uploadDateRegex);
+
+    if (!match) {
+      return null;
+    }
+
+    const [value, unit] = match.slice(1); // This removes the 3rd match 前
+
     return Number.parseFloat(value) * secondsByUnit[unit];
   }
 }
