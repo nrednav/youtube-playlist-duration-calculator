@@ -93,14 +93,21 @@ export class PlaylistSorter {
    */
   static getSortOptions() {
     const sortTypes = PlaylistSorter.getSortTypes();
+
     return Object.keys(sortTypes).flatMap((sortType) => {
       const { enabled, label } = sortTypes[sortType];
-      if (!enabled) return [];
+
+      if (!enabled) {
+        return [];
+      }
+
       return Object.keys(label).map((sortOrder) => {
         const optionElement = document.createElement("div");
+
         optionElement.classList.add("ytpdc-sort-control-dropdown-option");
         optionElement.setAttribute("value", `${sortType}:${sortOrder}`);
         optionElement.textContent = label[sortOrder];
+
         return optionElement;
       });
     });
@@ -128,7 +135,10 @@ export class PlaylistSorter {
  */
 const videoExposesDatum = (datum) => {
   const videoElement = resolveFirstVideo();
-  if (!videoElement) return false;
+
+  if (!videoElement) {
+    return false;
+  }
 
   switch (datum) {
     case "index":
@@ -161,15 +171,44 @@ const videoExposesDatum = (datum) => {
  * Resolve the first video element in the playlist, agnostic to the
  * rendering architecture. The renderer architecture renders
  * ytd-playlist-video-renderer. The viewmodel architecture renders
- * yt-lockup-view-model. Both are queried in priority order.
+ * yt-lockup-view-model.
+ *
+ * On the viewmodel architecture after SPA navigation, stale playlist
+ * recommendation cards (with badge-shape text like "20 videos") may
+ * precede actual video items in DOM order. document.querySelector
+ * returns the FIRST match, which would be a stale card whose
+ * badge-shape text is not a duration. This function finds a lockup
+ * whose badge-shape contains an actual duration pattern instead.
  *
  * @returns {Element|null}
  */
 const resolveFirstVideo = () => {
-  return (
-    document.querySelector(elementSelectors.video) ||
-    document.querySelector("yt-lockup-view-model")
-  );
+  // Renderer architecture: known selector
+  const rendererVideo = document.querySelector(elementSelectors.video);
+
+  if (rendererVideo) {
+    return rendererVideo;
+  }
+
+  // ViewModel architecture: find a lockup with a duration badge-shape.
+  // The first lockup in DOM order may be a stale card from SPA nav.
+  const allLockups = document.querySelectorAll("yt-lockup-view-model");
+
+  for (const lockup of allLockups) {
+    const badges = lockup.querySelectorAll("badge-shape");
+
+    const hasDurationBadge = [...badges].some((badge) =>
+      /\d+:\d{2}(:\d{2})?/.test((badge.textContent || "").trim()),
+    );
+
+    if (hasDurationBadge) {
+      return lockup;
+    }
+  }
+
+  // Fallback: no lockup with a duration badge. Use the first lockup
+  // so callers can determine what data IS available.
+  return allLockups[0] || null;
 };
 
 const pageHasNativeSortFeature = () => {
