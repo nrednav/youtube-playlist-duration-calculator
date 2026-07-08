@@ -10,18 +10,34 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Fixed duration extraction returning null during playlist SPA navigation.
-  Stale lockup cards from the previous page (badge text is a video count,
-  not a duration) are no longer used to derive the insertion container or
-  sampled for readiness checks.
-- Fixed `resolveDurationBadge` selecting the wrong badge when a lockup
-  contains multiple `badge-shape` elements. It now scans all such elements
-  and returns the first whose text matches a duration pattern, falling
-  back to a bounded descendant scan only when no badge contains duration
-  text.
-- Fixed upload date parsers (en, es, fr, pt, zh-Hans-CN, zh-Hant-TW)
-  throwing on input that does not match the expected date regex. Each
-  parser now returns `null` instead of dereferencing a `null` match array.
+- Fixed `discoverByViewModel` using stale playlist recommendation cards
+  from a previous SPA page as the insertion container and readiness
+  sample. Lockups whose `badge-shape` text is a video count ("20 videos")
+  are now excluded. Only lockups whose `badge-shape` text matches a
+  duration pattern ("1:28:08") are used for container derivation and
+  readiness checks.
+- Fixed the structural-invariant discovery strategy passing a hardcoded
+  `"unknown"` variant to the search function. When renderer-like elements
+  from adjacent page sections were present during an SPA transition, the
+  renderer-invariant branch could short-circuit before the viewmodel
+  branch ran. The strategy now passes the actual variant detected from
+  the live DOM.
+- Fixed `resolveDurationBadge` returning the first `badge-shape` in DOM
+  order regardless of its text content. It now scans all `badge-shape`
+  elements for one whose text matches a duration pattern, then attempts
+  a bounded descendant-element scan (length < 10 characters, excluding
+  false positives from metadata strings), then falls back to the legacy
+  renderer selector.
+- Fixed sort-type detection after SPA navigation. `resolveFirstVideo`
+  no longer returns the first `yt-lockup-view-model` in DOM order (which
+  may be a stale card), but scans for a lockup whose `badge-shape`
+  contains a real duration pattern. Only index sorting was shown when
+  a stale card was selected.
+- Fixed upload date locale parsers (en, es, fr, pt, zh-Hans-CN,
+  zh-Hant-TW) throwing `TypeError: Cannot read properties of null` on
+  metadata fragments that pass the date-fragment gate (contain a digit)
+  but do not match the locale's date regex. Each parser now guards the
+  `.match()` return value and returns `null` on mismatch.
 
 ## [v2.3.0] - 2026-07-03
 
