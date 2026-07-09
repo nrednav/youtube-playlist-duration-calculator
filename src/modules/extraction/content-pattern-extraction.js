@@ -6,7 +6,10 @@
  * tag names that can change across YouTube layout variants.
  */
 
-const DURATION_PATTERN_LOOSE = /\d{1,2}:\d{2}(:\d{2})?/;
+import {
+  extractDuration,
+  isDurationText,
+} from "../../shared/modules/duration-pattern";
 
 /**
  * Resolve the dedicated YouTube duration-badge element inside a video
@@ -33,7 +36,7 @@ const resolveDurationBadge = (videoElement) => {
   for (const badge of allBadges) {
     const text = (badge.textContent || "").trim();
 
-    if (DURATION_PATTERN_LOOSE.test(text)) {
+    if (isDurationText(text)) {
       return badge;
     }
   }
@@ -64,7 +67,7 @@ const resolveDurationBadge = (videoElement) => {
   for (const descendant of allDescendants) {
     const text = (descendant.textContent || "").trim();
 
-    if (text && text.length < 10 && DURATION_PATTERN_LOOSE.test(text)) {
+    if (text && text.length < 10 && isDurationText(text)) {
       return descendant;
     }
   }
@@ -80,8 +83,8 @@ const resolveDurationBadge = (videoElement) => {
  * MUST NOT scan the whole video element's textContent for a duration
  * pattern. Real Upcoming video items contain a scheduled-time string
  * (e.g. "Scheduled for 7/5/26, 4:00 AM") in adjacent metadata. The
- * loose `\d{1,2}:\d{2}` regex matches "4:00" from that metadata and
- * silently counts the Upcoming video as a 4-minute duration.
+ * Durations are matched via the shared extractDuration / isDurationText
+ * validator, which rejects invalid clock values (seconds >= 60).
  *
  * The badge is the authoritative signal. If it exists and matches the
  * duration pattern, return it at high confidence. If it exists but
@@ -101,18 +104,10 @@ export const extractTimestampByPattern = (videoElement) => {
 
   if (badge) {
     const badgeText = (badge.textContent || "").trim();
-    const match = badgeText.match(DURATION_PATTERN_LOOSE);
+    const raw = extractDuration(badgeText);
 
-    if (match) {
-      const raw = match[0];
-      const parts = raw.split(":").length;
-
-      // The badge is YouTube's dedicated duration element, so a match
-      // there is high confidence regardless of whether the badge text
-      // contains extra markup text.
-      if (parts === 3 || parts === 2) {
-        return { value: raw, confidence: 0.9 };
-      }
+    if (raw) {
+      return { value: raw, confidence: 0.9 };
     }
 
     // Badge exists but its text is NOT a duration ("LIVE", "Upcoming",
@@ -129,18 +124,13 @@ export const extractTimestampByPattern = (videoElement) => {
   // only safe because a real Upcoming or Live video always has a badge
   // present, so the false-positive trap is unreachable here.
   const text = videoElement.textContent || "";
-  const matches = text.match(DURATION_PATTERN_LOOSE);
+  const raw = extractDuration(text);
 
-  if (matches) {
-    const raw = matches[0];
-    const parts = raw.split(":").length;
+  if (raw) {
+    const confidence =
+      text.trim() === raw || text.includes(`  ${raw}`) ? 0.9 : 0.6;
 
-    if (parts === 3 || parts === 2) {
-      const confidence =
-        text.trim() === raw || text.includes(`  ${raw}`) ? 0.9 : 0.6;
-
-      return { value: raw, confidence };
-    }
+    return { value: raw, confidence };
   }
 
   return { value: null, confidence: 0 };

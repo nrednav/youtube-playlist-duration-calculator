@@ -186,6 +186,19 @@ describe("extractTimestampByPattern, badge-first regression (Bug 1)", () => {
     assert.strictEqual(result.value, "12:34");
     assert.ok(result.confidence >= 0.6);
   });
+
+  it("rejects an invalid-seconds badge (9:99) as no duration", () => {
+    const badge = createMockElement("badge-shape", { textContent: "9:99" });
+    const el = createMockElement("yt-lockup-view-model", {
+      textContent: "Title 9:99 Channel",
+      querySelector: (sel) =>
+        sel === "ytd-thumbnail-overlay-time-status-renderer" ? null : badge,
+      querySelectorAll: (sel) => (sel === "badge-shape" ? [badge] : []),
+    });
+    const result = extractTimestampByPattern(el);
+    assert.strictEqual(result.value, null);
+    assert.strictEqual(result.confidence, 0);
+  });
 });
 
 describe("extractTitleByPattern", () => {
