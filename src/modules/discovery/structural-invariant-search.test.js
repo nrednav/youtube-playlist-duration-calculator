@@ -28,6 +28,9 @@ const createMockElement = (tagName, opts = {}) => ({
     return opts.closest || null;
   },
   parentElement: opts.parentElement || null,
+  querySelectorAll(sel) {
+    return opts.querySelectorAll?.(sel) || [];
+  },
 });
 
 describe("discoverPlaylist", () => {
@@ -76,14 +79,20 @@ describe("discoverPlaylist", () => {
   });
 
   it("finds viewmodel lockups by yt-lockup-view-model presence", () => {
-    const lockups = Array.from({ length: 8 }, (_, i) =>
-      createMockElement("yt-lockup-view-model", {
+    const lockups = Array.from({ length: 8 }, (_, i) => {
+      const duration = i % 2 === 0 ? "12:34" : "5:00";
+      const badge = createMockElement("badge-shape", {
+        textContent: duration,
+      });
+
+      return createMockElement("yt-lockup-view-model", {
         childCount: 1,
-        textContent: i % 2 === 0 ? "12:34" : "5:00",
+        textContent: duration,
         children: [],
         closest: createMockElement("yt-section-list-renderer", {}),
-      }),
-    );
+        querySelectorAll: (sel) => (sel === "badge-shape" ? [badge] : []),
+      });
+    });
 
     const doc = createMockDoc({
       querySelectorAll: (sel) => {

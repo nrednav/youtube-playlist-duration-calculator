@@ -83,6 +83,7 @@ describe("timestamp module", () => {
 
         return null;
       },
+      querySelectorAll: () => [],
     });
 
     it("should return null if no video element is provided", () => {
@@ -90,7 +91,10 @@ describe("timestamp module", () => {
     });
 
     it("should return null if the timestamp element is not found", () => {
-      const mockVideo = { querySelector: () => null };
+      const mockVideo = {
+        querySelector: () => null,
+        querySelectorAll: () => [],
+      };
       assert.strictEqual(getTimestampFromVideo(mockVideo), null);
     });
 
