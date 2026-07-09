@@ -1,4 +1,5 @@
 import { elementSelectors } from "src/shared/data/element-selectors";
+import { isDurationText } from "../../shared/modules/duration-pattern";
 import { extractChannelName } from "../extraction/channel-name-extraction";
 import { extractTimestamp } from "../extraction/orchestrator";
 import { extractUploadDate } from "../extraction/upload-date-extraction";
@@ -198,7 +199,7 @@ const resolveFirstVideo = () => {
     const badges = lockup.querySelectorAll("badge-shape");
 
     const hasDurationBadge = [...badges].some((badge) =>
-      /\d+:\d{2}(:\d{2})?/.test((badge.textContent || "").trim()),
+      isDurationText((badge.textContent || "").trim()),
     );
 
     if (hasDurationBadge) {
