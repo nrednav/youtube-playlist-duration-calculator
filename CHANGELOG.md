@@ -49,6 +49,13 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   metadata fragments that pass the date-fragment gate (contain a digit)
   but do not match the locale's date regex. Each parser now guards the
   `.match()` return value and returns `null` on mismatch.
+- Fixed SPA transition race where a poll tick detects a pathname change
+  to /playlist before YouTube's DOM finishes rendering, causing
+  discovery to run on a transition-state page, derive the wrong
+  insertion container, and process only 1 video. The polling loop now
+  skips the tick and resets the poll counter when the pathname differs
+  from the previous tick, giving YouTube's renderer one full interval
+  to stabilise before running discovery.
 
 ## [v2.3.0] - 2026-07-03
 

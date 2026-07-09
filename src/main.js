@@ -40,8 +40,19 @@ const checkPlaylistReady = () => {
 
   const maxPollCount = 60;
   let pollCount = 0;
+  let lastPathname = window.location.pathname;
 
   activePlaylistInterval = setInterval(() => {
+    // When the pathname changes between ticks (SPA transition), the DOM
+    // is still transitioning. Skip this tick to give YouTube's renderer
+    // time to stabilise. The next tick runs against the fully-loaded page.
+    const currentPathname = window.location.pathname;
+
+    if (currentPathname !== lastPathname) {
+      lastPathname = currentPathname;
+      pollCount = 0;
+      return;
+    }
     // Stop polling once maxPollCount is reached. The first tick at
     // pollCount === maxPollCount clears the interval. Subsequent ticks
     // short-circuit before doing any work, so the loop neither fires
