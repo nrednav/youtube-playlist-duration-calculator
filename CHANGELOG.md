@@ -16,6 +16,13 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   are now excluded. Only lockups whose `badge-shape` text matches a
   duration pattern ("1:28:08") are used for container derivation and
   readiness checks.
+- Fixed duration validation to reject invalid clock values where
+  seconds are 60 or greater (e.g. "9:99"). Previously, each module
+  (discovery, extraction, sorting) duplicated a loose regex that
+  matched any digit-colon-digit sequence regardless of clock validity.
+  A shared `duration-pattern` module now provides `isDurationText` and
+  `extractDuration` with seconds-bounds checking, so bad inputs like
+  "9:99" are rejected everywhere.
 - Fixed the structural-invariant discovery strategy passing a hardcoded
   `"unknown"` variant to the search function. When renderer-like elements
   from adjacent page sections were present during an SPA transition, the
@@ -33,6 +40,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   may be a stale card), but scans for a lockup whose `badge-shape`
   contains a real duration pattern. Only index sorting was shown when
   a stale card was selected.
+- Fixed `resolveFirstVideo` returning the first lockup as a fallback
+  when no lockup has a duration badge. It now returns null in that case,
+  causing the sort dropdown to show "No options available" rather than
+  probing a stale or non-playable card.
 - Fixed upload date locale parsers (en, es, fr, pt, zh-Hans-CN,
   zh-Hant-TW) throwing `TypeError: Cannot read properties of null` on
   metadata fragments that pass the date-fragment gate (contain a digit)
