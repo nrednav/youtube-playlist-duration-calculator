@@ -144,7 +144,7 @@ describe("extractTimestampByPattern, badge-first regression (Bug 1)", () => {
     });
     const el = createMockElement("yt-lockup-view-model", {
       textContent: "My Jazz Playlist 45:30 Jazz Artist 1.2M views 3",
-      querySelector: (sel) => null,
+      querySelector: (_sel) => null,
       querySelectorAll: (sel) =>
         sel === "badge-shape" ? [indexBadge, durationBadge] : [],
     });
