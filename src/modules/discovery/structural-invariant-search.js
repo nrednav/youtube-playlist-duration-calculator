@@ -121,7 +121,6 @@ const discoverByViewModel = (doc) => {
   // derivation and the readiness sampling.
   const videoLockups = [...lockups].filter((lockup) => {
     const badges = lockup.querySelectorAll("badge-shape");
-
     return [...badges].some((b) =>
       DURATION_PATTERN.test((b.textContent || "").trim()),
     );
@@ -139,18 +138,14 @@ const discoverByViewModel = (doc) => {
     firstVideo?.parentElement ||
     null;
 
-  const withTimestamps = [...lockups].filter((lockup) =>
-    DURATION_PATTERN.test(lockup.textContent || ""),
-  );
-
-  // Use video lockups for readiness sampling. This ensures
-  // isViewmodelReady() samples actual video items (with duration badges)
-  // rather than stale cards whose extraction always fails.
+  // Confidence is gated by badge-bearing video lockups, NOT by whole-textContent
+  // pattern matches, so a stale card whose textContent contains a duration
+  // pattern cannot elevate confidence when videoLockups is empty.
   const usableVideos = videoLockups.length > 0 ? videoLockups : [...lockups];
+  const hasVideo = videoLockups.length >= 1;
 
   logger.debug("discovery_viewmodel", () => ({
     totalLockups: lockups.length,
-    withTimestamps: withTimestamps.length,
     videoLockups: videoLockups.length,
     containerTag: container?.tagName || "none",
   }));
@@ -163,7 +158,7 @@ const discoverByViewModel = (doc) => {
         ? 0.85
         : usableVideos.length >= 3
           ? 0.7
-          : usableVideos.length >= 1 && withTimestamps.length > 0
+          : hasVideo
             ? 0.6
             : 0.3;
 

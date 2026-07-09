@@ -134,4 +134,87 @@ describe("discoverPlaylist", () => {
     assert.ok(result.confidence > 0, "Expected some confidence for 2 lockups");
     assert.strictEqual(result.videos.length, 2);
   });
+
+  it("rejects stale-card-only pages with low confidence", () => {
+    // Two lockups whose badge-shape textContent is NOT a duration
+    // ("20 videos", "1.2M views"), but whose whole textContent contains
+    // a duration pattern ("1:28:08") as a stale recommendation-card
+    // rendering. Without the fix, the withTimestamps filter (which matched
+    // whole textContent) would elevate confidence to 0.6 against a stale
+    // container. After the fix, confidence keys off videoLockups (badge
+    // matches) only, so an all-stale-card page falls to 0.3.
+    const lockups = [
+      createMockElement("yt-lockup-view-model", {
+        textContent: "Playlist X 1:28:08",
+        children: [],
+        closest: createMockElement("yt-section-list-renderer", {}),
+        querySelectorAll: (sel) =>
+          sel === "badge-shape"
+            ? [createMockElement("badge-shape", { textContent: "20 videos" })]
+            : [],
+      }),
+      createMockElement("yt-lockup-view-model", {
+        textContent: "Other card 1:28:08 asdf",
+        children: [],
+        closest: createMockElement("yt-section-list-renderer", {}),
+        querySelectorAll: (sel) =>
+          sel === "badge-shape"
+            ? [
+                createMockElement("badge-shape", {
+                  textContent: "1.2M views",
+                }),
+              ]
+            : [],
+      }),
+    ];
+
+    const doc = createMockDoc({
+      querySelectorAll: (sel) => {
+        if (sel === "yt-lockup-view-model") return lockups;
+        return [];
+      },
+    });
+
+    const result = discoverPlaylist(doc, {
+      known: true,
+      variant: "viewmodel",
+    });
+
+    assert.ok(
+      result.confidence <= 0.3,
+      `Expected confidence <= 0.3 for stale-card-only page, got ${result.confidence}`,
+    );
+  });
+
+  it("real viewmodel playlist regression", () => {
+    // Three lockups each with a clean duration badge.
+    const lockups = ["4:30", "10:00", "2:15"].map((duration) => {
+      const badge = createMockElement("badge-shape", {
+        textContent: duration,
+      });
+      const sectionList = createMockElement("yt-section-list-renderer", {});
+      return createMockElement("yt-lockup-view-model", {
+        textContent: `Title ${duration} Channel 1.2M views`,
+        children: [],
+        closest: sectionList,
+        querySelectorAll: (sel) => (sel === "badge-shape" ? [badge] : []),
+      });
+    });
+
+    const doc = createMockDoc({
+      querySelectorAll: (sel) => {
+        if (sel === "yt-lockup-view-model") return lockups;
+        return [];
+      },
+    });
+
+    const result = discoverPlaylist(doc, {
+      known: true,
+      variant: "viewmodel",
+    });
+
+    assert.ok(result.confidence >= 0.6, "Expected confidence >= 0.6");
+    assert.ok(result.videos.length > 0, "Expected non-empty videos");
+    assert.strictEqual(result.container, lockups[0].closest());
+  });
 });
