@@ -1,7 +1,6 @@
 import { elementSelectors } from "../../shared/data/element-selectors";
+import { isDurationText } from "../../shared/modules/duration-pattern";
 import { logger } from "../../shared/modules/logger";
-
-const DURATION_PATTERN = /\d+:\d{2}(:\d{2})?/;
 
 /**
  * Result of a discovery attempt.
@@ -38,7 +37,7 @@ const discoverByRendererInvariant = (doc) => {
 
     if (videoRenderers.length >= 3) {
       const withTimestamps = videoRenderers.filter((videoRenderer) =>
-        DURATION_PATTERN.test(videoRenderer.textContent || ""),
+        isDurationText(videoRenderer.textContent || ""),
       );
 
       candidates.push({
@@ -122,7 +121,7 @@ const discoverByViewModel = (doc) => {
   const videoLockups = [...lockups].filter((lockup) => {
     const badges = lockup.querySelectorAll("badge-shape");
     return [...badges].some((b) =>
-      DURATION_PATTERN.test((b.textContent || "").trim()),
+      isDurationText((b.textContent || "").trim()),
     );
   });
 
