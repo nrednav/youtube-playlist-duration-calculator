@@ -284,15 +284,28 @@ const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
 
 /**
  * Renderer-architecture readiness: playlist element exists, timestamp
- * selector resolves, and the "no extractable timestamp" count agrees
- * with the "flagged unavailable" count.
+ * selector resolves, there is no available videos with null timestamp, and the
+ * "no extractable timestamp" count agrees with the "flagged unavailable" count.
  */
 const isRendererReady = () => {
   const timestampElement = document.querySelector(elementSelectors.timestamp);
-  const timestampExists = timestampElement !== null;
-
-  if (!timestampExists) {
+  if (!timestampElement) {
     return false;
+  }
+
+  const videos = getVideos();
+  if (videos.length === 0) {
+    return false;
+  }
+
+  // Check if ANY non-unavailable video still lacks a timestamp (i.e., still loading)
+  const hasUnloadedTimestamps = videos.some(
+    (video) =>
+      !isVideoUnavailable(video) && getTimestampFromVideo(video) === null,
+  );
+
+  if (hasUnloadedTimestamps) {
+    return false; // Keep polling until YouTube populates the text nodes
   }
 
   const unavailableTimestampsCount = countVideosWithoutExtractableTimestamp();
@@ -539,19 +552,11 @@ const countVideosFlaggedUnavailable = () => {
  * "unavailable"
  *
  * Criteria:
- * - Has no extractable timestamp (architecture-agnostic check. Works on
- *   both renderer `ytd-*-renderer` and viewmodel `yt-lockup-view-model`
- *   via the shared `getTimestampFromVideo` helper, which has both the
- *   known-selector path and the content-pattern fallback)
  * - Title is unavailable
  *
  * @param {Element} video
  */
 const isVideoUnavailable = (video) => {
-  const hasNoTimestamp = getTimestampFromVideo(video) === null;
-
-  if (hasNoTimestamp) return true;
-
   const hasUnavailableTitle = [
     chrome.i18n.getMessage("videoTitle_private"),
     chrome.i18n.getMessage("videoTitle_deleted"),
