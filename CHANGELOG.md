@@ -15,7 +15,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   if the durations still have not rendered after about a minute, the
   extension reports the videos it could read and lists the rest as not
   counted. It then keeps watching for about half a minute and updates
-  the total if the remaining durations appear.
+  the total when the remaining durations appear, including videos that
+  YouTube reveals only after Show unavailable videos is used.
 
 ### Fixed
 

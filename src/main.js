@@ -58,18 +58,22 @@ const checkPlaylistReady = () => {
   const availableDurationCount = () =>
     countAvailableDurations(getVideos(), { getTimestampFromVideo });
 
-  // Drives the two stages that follow the readiness budget: the one-time
-  // computation from available durations, then the watch that recomputes when
-  // a duration that was missing becomes readable. The watch is bounded so the
-  // interval still stops on a playlist that never renders its durations.
-  const handleLateDurations = () => {
-    const availableCount = availableDurationCount();
+  // Starts the bounded watch that recomputes when a duration that was missing
+  // becomes readable. It runs after every computation, not only the fallback
+  // one: the playlist observer watches direct children only, so a badge
+  // changing text inside a video element never reaches it. Without the watch a
+  // row that renders before its duration keeps that duration uncounted until
+  // the user navigates or scrolls, which is exactly what a revealed batch of
+  // videos looks like.
+  const beginLateDurationWatch = () => {
+    lateDurationWatch = {
+      lastComputedCount: availableDurationCount(),
+      watchTicks: 0,
+    };
+  };
 
-    if (!lateDurationWatch) {
-      computeFromAvailableVideos("readiness_budget_exhausted");
-      lateDurationWatch = { lastComputedCount: availableCount, watchTicks: 0 };
-      return;
-    }
+  const watchLateDurations = () => {
+    const availableCount = availableDurationCount();
 
     const decision = decideLateDurationWatch({
       watchTicks: lateDurationWatch.watchTicks,
@@ -108,14 +112,20 @@ const checkPlaylistReady = () => {
       pollCount = 0;
       return;
     }
-    // Stop polling for readiness once maxPollCount is reached. The first tick
-    // at pollCount === maxPollCount computes once from whichever durations did
-    // render, then a bounded watch looks for durations that arrive afterwards.
-    // Nothing else would notice them: the playlist observer watches direct
-    // children only, so a badge changing text deep inside a video renderer is
-    // invisible to it, and a stale total would sit on screen until a reload.
+
+    // A computation already happened. Every tick from here watches for
+    // durations that became readable instead of re-running readiness.
+    if (lateDurationWatch) {
+      watchLateDurations();
+      return;
+    }
+
+    // Stop polling for readiness once maxPollCount is reached. Compute once
+    // from whichever durations did render, then let the watch look for the
+    // rest.
     if (pollCount >= maxPollCount) {
-      handleLateDurations();
+      computeFromAvailableVideos("readiness_budget_exhausted");
+      beginLateDurationWatch();
       return;
     }
 
@@ -187,9 +197,6 @@ const checkPlaylistReady = () => {
     // be rendered hidden (e.g., during a SPA transition where the selector
     // still resolves but the container is being torn down).
     if (playlistExists && isRendererReady()) {
-      clearInterval(activePlaylistInterval);
-      activePlaylistInterval = null;
-
       const playlistVisible = isElementVisible(playlistElement);
 
       logger.debug("playlist_ready_check", () => {
@@ -209,7 +216,11 @@ const checkPlaylistReady = () => {
 
       if (playlistVisible) {
         processPlaylist();
+        beginLateDurationWatch();
       } else {
+        clearInterval(activePlaylistInterval);
+        activePlaylistInterval = null;
+
         logger.debug("playlist_not_visible_skipping", () => ({
           pollCount,
           offsetParent: playlistElement?.offsetParent?.tagName,
@@ -233,9 +244,6 @@ const checkPlaylistReady = () => {
     // mid-render), we keep polling rather than falling through to the
     // viewmodel path on a potentially stale discoveryResult.
     else if (!playlistExists && isViewmodelReady()) {
-      clearInterval(activePlaylistInterval);
-      activePlaylistInterval = null;
-
       logger.debug("viewmodel_ready_check", () => ({
         pollCount,
         videoCount: discoveryResult?.videos?.length || 0,
@@ -244,6 +252,7 @@ const checkPlaylistReady = () => {
       }));
 
       processPlaylist();
+      beginLateDurationWatch();
     }
 
     pollCount++;
