@@ -14,7 +14,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   computes the total. On a slow browser this takes a little longer, and
   if the durations still have not rendered after about a minute, the
   extension reports the videos it could read and lists the rest as not
-  counted.
+  counted. It then keeps watching for about half a minute and updates
+  the total if the remaining durations appear.
 
 ### Fixed
 

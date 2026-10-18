@@ -208,6 +208,69 @@ describe("playlist readiness and summary accounting", () => {
       playlistSummary_videosNotCounted: "153",
     });
   });
+
+  it("recomputes when durations arrive after the budget runs out", () => {
+    startSession(
+      playlistPage([
+        videoRenderer({ title: "A", duration: "1:00" }),
+        videoRenderer({ title: "B" }),
+        videoRenderer({ title: "C" }),
+      ]),
+    );
+
+    poll(61);
+
+    assert.deepStrictEqual(summaryValues(), {
+      playlistSummary_totalDuration: "00:01:00",
+      playlistSummary_videosCounted: "1",
+      playlistSummary_videosNotCounted: "153",
+    });
+
+    const [, second, third] = durationElements();
+    second.textContent = "2:00";
+    third.textContent = "3:00";
+
+    poll(1);
+
+    assert.deepStrictEqual(
+      summaryValues(),
+      {
+        playlistSummary_totalDuration: "00:06:00",
+        playlistSummary_videosCounted: "3",
+        playlistSummary_videosNotCounted: "151",
+      },
+      "a duration that renders after the fallback must be summed",
+    );
+  });
+
+  it("stops watching after the window closes", () => {
+    startSession(
+      playlistPage([
+        videoRenderer({ title: "A", duration: "1:00" }),
+        videoRenderer({ title: "B" }),
+        videoRenderer({ title: "C" }),
+      ]),
+    );
+
+    poll(61);
+    poll(31);
+
+    const [, second, third] = durationElements();
+    second.textContent = "2:00";
+    third.textContent = "3:00";
+
+    poll(2);
+
+    assert.deepStrictEqual(
+      summaryValues(),
+      {
+        playlistSummary_totalDuration: "00:01:00",
+        playlistSummary_videosCounted: "1",
+        playlistSummary_videosNotCounted: "153",
+      },
+      "the interval must stop rather than poll a playlist forever",
+    );
+  });
 });
 
 after(() => {

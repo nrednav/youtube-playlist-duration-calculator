@@ -2,6 +2,11 @@ import { discoverPlaylist } from "./modules/discovery/orchestrator";
 import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { extractPlaylistCount } from "./modules/extraction/playlist-count-extraction";
+import {
+  countAvailableDurations,
+  decideLateDurationWatch,
+  LateDurationWatch,
+} from "./modules/reactivity/late-duration-watch";
 import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
 import { hasLoadingVideo } from "./modules/reactivity/readiness";
 import { deriveSummaryCounts } from "./modules/reactivity/summary-accounting";
@@ -45,8 +50,52 @@ const checkPlaylistReady = () => {
   displayLoader();
 
   const maxPollCount = 60;
+  const maxLateDurationWatchTicks = 30;
   let pollCount = 0;
+  let lateDurationWatch = null;
   let lastPathname = window.location.pathname;
+
+  const availableDurationCount = () =>
+    countAvailableDurations(getVideos(), { getTimestampFromVideo });
+
+  // Drives the two stages that follow the readiness budget: the one-time
+  // computation from available durations, then the watch that recomputes when
+  // a duration that was missing becomes readable. The watch is bounded so the
+  // interval still stops on a playlist that never renders its durations.
+  const handleLateDurations = () => {
+    const availableCount = availableDurationCount();
+
+    if (!lateDurationWatch) {
+      computeFromAvailableVideos("readiness_budget_exhausted");
+      lateDurationWatch = { lastComputedCount: availableCount, watchTicks: 0 };
+      return;
+    }
+
+    const decision = decideLateDurationWatch({
+      watchTicks: lateDurationWatch.watchTicks,
+      availableCount,
+      lastComputedCount: lateDurationWatch.lastComputedCount,
+      maxWatchTicks: maxLateDurationWatchTicks,
+    });
+
+    if (decision === LateDurationWatch.RECOMPUTE) {
+      lateDurationWatch.lastComputedCount = availableCount;
+      computeFromAvailableVideos("late_durations_recompute");
+    }
+
+    if (decision === LateDurationWatch.STOP) {
+      logger.debug("late_duration_watch_stopped", () => ({
+        watchTicks: lateDurationWatch.watchTicks,
+      }));
+
+      lateDurationWatch = null;
+      clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
+      return;
+    }
+
+    lateDurationWatch.watchTicks += 1;
+  };
 
   activePlaylistInterval = setInterval(() => {
     // When the pathname changes between ticks (SPA transition), the DOM
@@ -59,17 +108,14 @@ const checkPlaylistReady = () => {
       pollCount = 0;
       return;
     }
-    // Stop polling once maxPollCount is reached. The first tick at
-    // pollCount === maxPollCount clears the interval and computes once from
-    // whichever durations did render. Subsequent ticks short-circuit before
-    // doing any work, so the loop neither fires readiness checks nor queries
-    // the DOM after the budget is exhausted. Without this guard the interval
-    // would keep running every second forever, re-querying selectors on a
-    // page that will never reach readiness.
+    // Stop polling for readiness once maxPollCount is reached. The first tick
+    // at pollCount === maxPollCount computes once from whichever durations did
+    // render, then a bounded watch looks for durations that arrive afterwards.
+    // Nothing else would notice them: the playlist observer watches direct
+    // children only, so a badge changing text deep inside a video renderer is
+    // invisible to it, and a stale total would sit on screen until a reload.
     if (pollCount >= maxPollCount) {
-      clearInterval(activePlaylistInterval);
-      activePlaylistInterval = null;
-      computeFromAvailableVideos("readiness_budget_exhausted");
+      handleLateDurations();
       return;
     }
 
