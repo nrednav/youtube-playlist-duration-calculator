@@ -341,6 +341,33 @@ describe("playlist readiness and summary accounting", () => {
     );
   });
 
+  it("treats a digit-free playlist count as unknown", () => {
+    startSession(`
+      <ytd-playlist-sidebar-renderer>
+        <div id="items"><div class="header"></div></div>
+        <div id="stats"><yt-formatted-string>videos</yt-formatted-string></div>
+      </ytd-playlist-sidebar-renderer>
+      <ytd-playlist-video-list-renderer>
+        <div id="contents">
+          ${videoRenderer({ title: "A", duration: "1:00" })}
+        </div>
+      </ytd-playlist-video-list-renderer>`);
+
+    poll(2);
+
+    assert.deepStrictEqual(summaryValues(), {
+      playlistSummary_totalDuration: "00:01:00",
+      playlistSummary_videosCounted: "1",
+      playlistSummary_videosNotCounted: "N/A",
+    });
+
+    assert.strictEqual(
+      document.querySelector("#ytpdc-playlist-summary-tooltip"),
+      null,
+      "an unknown count must not be reported as an oversized playlist",
+    );
+  });
+
   it("stops watching after the window closes", () => {
     startSession(
       playlistPage([

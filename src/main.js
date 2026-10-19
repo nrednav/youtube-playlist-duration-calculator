@@ -1288,7 +1288,12 @@ const countTotalVideosInPlaylist = () => {
   );
 
   if (statsElement) {
-    return Number.parseInt(statsElement.innerText.replace(/\D/g, ""));
+    const parsed = Number.parseInt(
+      statsElement.innerText.replace(/\D/g, ""),
+      10,
+    );
+
+    return Number.isNaN(parsed) ? null : parsed;
   }
 
   const result = extractPlaylistCount(document);
