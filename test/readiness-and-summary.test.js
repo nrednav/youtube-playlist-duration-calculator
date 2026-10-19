@@ -13,12 +13,20 @@ registerHooks({
   },
 });
 
-const { JSDOM } = await import("jsdom");
+const { JSDOM, VirtualConsole } = await import("jsdom");
 
 const PLAYLIST_TOTAL = 154;
 
+const jsdomErrors = [];
+const virtualConsole = new VirtualConsole();
+
+virtualConsole.on("jsdomError", (error) => {
+  jsdomErrors.push(error);
+});
+
 const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
   url: "https://www.youtube.com/playlist?list=PLintegration",
+  virtualConsole,
 });
 
 const { window } = dom;
@@ -289,6 +297,47 @@ describe("playlist readiness and summary accounting", () => {
       summaryValues(),
       null,
       "a failed interval must be stopped, not retried every second",
+    );
+  });
+
+  it("survives a throwing mutation callback", async () => {
+    startSession(
+      playlistPage([
+        videoRenderer({ title: "A", duration: "1:00" }),
+        videoRenderer({ title: "B", duration: "2:00" }),
+      ]),
+    );
+
+    poll(2);
+
+    jsdomErrors.length = 0;
+    window.ytpdc.lastVideoInteractedWith = {};
+    document.querySelector("ytd-playlist-video-renderer").remove();
+
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.deepStrictEqual(
+      jsdomErrors.map((error) => error.message),
+      [],
+      "a throwing mutation must be contained",
+    );
+
+    window.ytpdc.lastVideoInteractedWith = null;
+
+    startSession(
+      playlistPage([videoRenderer({ title: "C", duration: "3:00" })]),
+    );
+
+    poll(2);
+
+    assert.deepStrictEqual(
+      summaryValues(),
+      {
+        playlistSummary_totalDuration: "00:03:00",
+        playlistSummary_videosCounted: "1",
+        playlistSummary_videosNotCounted: "153",
+      },
+      "a throwing mutation must not wedge the extension",
     );
   });
 

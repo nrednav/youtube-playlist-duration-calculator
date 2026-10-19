@@ -818,7 +818,13 @@ const setupPlaylistObserver = () => {
     return null;
   }
 
-  const playlistObserver = new MutationObserver(onPlaylistMutated);
+  const playlistObserver = new MutationObserver((mutationList, observer) => {
+    try {
+      onPlaylistMutated(mutationList, observer);
+    } catch (error) {
+      logger.error("playlist_mutation_failed", error.message);
+    }
+  });
 
   playlistObserver.observe(playlistElement, { childList: true });
 
@@ -885,6 +891,12 @@ const onPlaylistMutated = (mutationList, observer) => {
     sortDropdownUsed: window.ytpdc.sortDropdown.used,
     lastVideoInteracted: !!window.ytpdc.lastVideoInteractedWith,
   }));
+
+  if (!playlistElement) {
+    observer.disconnect();
+    main();
+    return;
+  }
 
   if (mutationList.length === 1 && mutationList[0].type === "childList") {
     const mutation = mutationList[0];
