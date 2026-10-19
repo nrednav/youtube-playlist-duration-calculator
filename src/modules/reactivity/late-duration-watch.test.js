@@ -4,6 +4,7 @@ import {
   countAvailableDurations,
   decideLateDurationWatch,
   LateDurationWatch,
+  selectPendingVideos,
 } from "./late-duration-watch.js";
 
 const DURATION = "duration";
@@ -36,6 +37,28 @@ describe("countAvailableDurations", () => {
     const { readDuration } = readingsFor(videos, [NO_DURATION, DURATION]);
 
     assert.strictEqual(countAvailableDurations(videos, { readDuration }), 1);
+  });
+});
+
+describe("selectPendingVideos", () => {
+  it("keeps only the videos that are still waiting", () => {
+    const videos = ["video-a", "video-b", "video-c"];
+    const { readDuration } = readingsFor(videos, [
+      DURATION,
+      PENDING,
+      NO_DURATION,
+    ]);
+
+    assert.deepStrictEqual(selectPendingVideos(videos, { readDuration }), [
+      "video-b",
+    ]);
+  });
+
+  it("is empty when every video has reported a state", () => {
+    const videos = ["video-a", "video-b"];
+    const { readDuration } = readingsFor(videos, [DURATION, NO_DURATION]);
+
+    assert.deepStrictEqual(selectPendingVideos(videos, { readDuration }), []);
   });
 });
 

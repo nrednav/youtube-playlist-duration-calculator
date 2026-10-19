@@ -10,6 +10,7 @@ import {
   countAvailableDurations,
   decideLateDurationWatch,
   LateDurationWatch,
+  selectPendingVideos,
 } from "./modules/reactivity/late-duration-watch";
 import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
 import { hasLoadingVideo } from "./modules/reactivity/readiness";
@@ -56,9 +57,6 @@ const checkPlaylistReady = () => {
   let lateDurationWatch = null;
   let lastPathname = window.location.pathname;
 
-  const availableDurationCount = () =>
-    countAvailableDurations(getVideos(), { readDuration });
-
   // Starts the bounded watch that recomputes when a duration that was missing
   // becomes readable. It runs after every computation, not only the fallback
   // one: the playlist observer watches direct children only, so a badge
@@ -68,13 +66,16 @@ const checkPlaylistReady = () => {
   // videos looks like.
   const beginLateDurationWatch = () => {
     lateDurationWatch = {
-      lastComputedCount: availableDurationCount(),
+      pending: selectPendingVideos(getVideos(), { readDuration }),
+      lastComputedCount: 0,
       watchTicks: 0,
     };
   };
 
   const watchLateDurations = () => {
-    const availableCount = availableDurationCount();
+    const availableCount = countAvailableDurations(lateDurationWatch.pending, {
+      readDuration,
+    });
 
     const decision = decideLateDurationWatch({
       watchTicks: lateDurationWatch.watchTicks,

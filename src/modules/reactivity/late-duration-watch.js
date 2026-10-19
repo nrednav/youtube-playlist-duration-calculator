@@ -27,6 +27,20 @@ export const LateDurationWatch = Object.freeze({
 });
 
 /**
+ * The videos that are still waiting for a duration. A video that already has
+ * one cannot gain another, and a video that never will cannot gain one at
+ * all, so the watch only has to re-read these.
+ *
+ * @param {Element[]} videos
+ * @param {{ readDuration: (video: Element) => { kind: string } }} dependencies
+ * @returns {Element[]}
+ */
+export const selectPendingVideos = (videos, { readDuration }) =>
+  videos.filter(
+    (video) => readDuration(video).kind === DurationReading.PENDING,
+  );
+
+/**
  * Count the videos whose duration can be read right now.
  *
  * @param {Element[]} videos
@@ -47,6 +61,10 @@ export const countAvailableDurations = (videos, { readDuration }) =>
  * duration that arrived just before the window closed. The window is a total
  * budget, not a since-last-change timer, so a page that keeps rewriting its
  * badges cannot keep the watch alive indefinitely.
+ *
+ * `availableCount` counts the watched, previously-missing videos that are
+ * readable now. `lastComputedCount` is that same count at the previous check,
+ * so the first readable duration always differs from it.
  *
  * @param {{ watchTicks: number, availableCount: number, lastComputedCount: number, maxWatchTicks: number }} state
  * @returns {string} one of the `LateDurationWatch` outcomes
