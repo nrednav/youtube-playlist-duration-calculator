@@ -17,6 +17,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   counted. It then keeps watching for about half a minute and updates
   the total when the remaining durations appear, including videos that
   YouTube reveals only after Show unavailable videos is used.
+- A live or upcoming video is now listed under "Videos not counted"
+  instead of being counted as a zero-second video. The total is
+  unchanged, because a zero added nothing to it.
 
 ### Fixed
 
@@ -32,6 +35,17 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed availability being decided by the presence of a duration.
   Availability is now decided by the video's title, so a missing
   duration means the video is still loading rather than unavailable.
+- Fixed a removed video holding the summary back for a minute. A video
+  YouTube renders without a title, or with a placeholder from a language
+  this build has not seen, is now recognised as unavailable on both
+  layouts instead of waiting for the poll budget to run out.
+- Fixed a summary that stopped following the page after an in-place
+  navigation. Moving between playlists without a full reload now starts
+  the wait again instead of comparing against the previous page.
+- Fixed the extension stopping after an unexpected page shape. A failure
+  while reading or inserting the summary is now logged and contained,
+  instead of leaving the loader on screen and repeating the failure every
+  second.
 
 ## [v2.3.1] - 2026-07-07
 
