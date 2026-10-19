@@ -183,6 +183,40 @@ describe("playlist readiness and summary accounting", () => {
     });
   });
 
+  it("does not wait for an unavailable item with an unseen title", () => {
+    startSession(
+      playlistPage([
+        videoRenderer({ title: "A", duration: "1:00" }),
+        videoRenderer({ title: "[Vidéo privée]" }),
+      ]),
+    );
+
+    poll(2);
+
+    assert.deepStrictEqual(summaryValues(), {
+      playlistSummary_totalDuration: "00:01:00",
+      playlistSummary_videosCounted: "1",
+      playlistSummary_videosNotCounted: "153",
+    });
+  });
+
+  it("does not wait for a described item that has no title", () => {
+    startSession(
+      playlistPage([
+        videoRenderer({ title: "A", duration: "1:00" }),
+        "<ytd-playlist-video-renderer><span>No views</span></ytd-playlist-video-renderer>",
+      ]),
+    );
+
+    poll(2);
+
+    assert.deepStrictEqual(summaryValues(), {
+      playlistSummary_totalDuration: "00:01:00",
+      playlistSummary_videosCounted: "1",
+      playlistSummary_videosNotCounted: "153",
+    });
+  });
+
   it("computes once from available durations when the budget runs out", () => {
     startSession(
       playlistPage([

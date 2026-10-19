@@ -13,7 +13,13 @@ const UNAVAILABLE_TITLES = [
 ];
 
 const videoWithTitle = (title) => ({
+  textContent: "",
   querySelector: () => (title === undefined ? null : { title }),
+});
+
+const videoWithoutTitleButDescribed = () => ({
+  textContent: "No views",
+  querySelector: () => null,
 });
 
 describe("getVideoTitle()", () => {
@@ -51,7 +57,7 @@ describe("isVideoUnavailable()", () => {
     );
   });
 
-  it("does not flag a video whose title is absent", () => {
+  it("does not flag a video that has not rendered anything yet", () => {
     assert.strictEqual(
       isVideoUnavailable(videoWithTitle(undefined), {
         unavailableTitles: UNAVAILABLE_TITLES,
@@ -60,13 +66,34 @@ describe("isVideoUnavailable()", () => {
     );
   });
 
-  it("decides from the title alone", () => {
+  it("flags a bracketed placeholder from a locale this build never saw", () => {
+    assert.strictEqual(
+      isVideoUnavailable(videoWithTitle("[Vidéo privée]"), {
+        unavailableTitles: UNAVAILABLE_TITLES,
+      }),
+      true,
+    );
+  });
+
+  it("flags a described item that has no title at all", () => {
+    assert.strictEqual(
+      isVideoUnavailable(videoWithoutTitleButDescribed(), {
+        unavailableTitles: UNAVAILABLE_TITLES,
+      }),
+      true,
+    );
+  });
+
+  it("does not read the duration to decide", () => {
     const video = {
+      textContent: "",
       querySelector(selector) {
-        if (selector !== elementSelectors.videoTitle) {
-          throw new Error(`unexpected read: ${selector}`);
+        if (selector === elementSelectors.timestamp) {
+          throw new Error(`unexpected duration read: ${selector}`);
         }
-        return { title: "[Private video]" };
+        return selector === elementSelectors.videoTitle
+          ? { title: "[Private video]" }
+          : null;
       },
     };
 

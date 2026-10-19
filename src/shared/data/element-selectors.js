@@ -34,6 +34,11 @@ export const elementSelectors = {
   video: "ytd-playlist-video-renderer",
   playlist: "ytd-playlist-video-list-renderer #contents",
   videoTitle: "#video-title",
+  videoTitleCandidates: [
+    "#video-title",
+    ".ytLockupMetadataViewModelTitle",
+    "h3.ytLockupMetadataViewModelHeadingReset",
+  ],
   videoIndex: "yt-formatted-string#index",
   videoInfo: "yt-formatted-string#video-info",
   stats: {
