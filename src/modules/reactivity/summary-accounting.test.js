@@ -55,6 +55,16 @@ describe("deriveSummaryCounts()", () => {
     assert.deepStrictEqual(result, { counted: 90, notCounted: 0 });
   });
 
+  it("never reports a negative not-counted row", () => {
+    const result = deriveSummaryCounts({
+      timestamps: timestampsOf({ valid: 5, missing: 0 }),
+      nullTimestamps: 0,
+      totalVideosInPlaylist: 3,
+    });
+
+    assert.deepStrictEqual(result, { counted: 5, notCounted: 0 });
+  });
+
   it("reports an unknown playlist total as null", () => {
     for (const total of [null, undefined, Number.NaN, 0]) {
       const result = deriveSummaryCounts({

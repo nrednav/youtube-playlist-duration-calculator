@@ -20,6 +20,8 @@ export const deriveSummaryCounts = ({
 
   return {
     counted,
-    notCounted: totalIsKnown ? totalVideosInPlaylist - counted : null,
+    notCounted: totalIsKnown
+      ? Math.max(0, totalVideosInPlaylist - counted)
+      : null,
   };
 };
