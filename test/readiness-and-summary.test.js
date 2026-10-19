@@ -404,6 +404,39 @@ describe("playlist readiness and summary accounting", () => {
     );
   });
 
+  it("attempts discovery once per page load", () => {
+    startSession(`
+      <ytd-playlist-sidebar-renderer>
+        <div id="items"><div class="header"></div></div>
+      </ytd-playlist-sidebar-renderer>
+      <ytd-playlist-video-list-renderer>
+        ${videoRenderer({ title: "A", duration: "1:00" })}
+      </ytd-playlist-video-list-renderer>`);
+
+    const originalQuerySelectorAll = document.querySelectorAll.bind(document);
+    let searches = 0;
+
+    document.querySelectorAll = (selector) => {
+      if (selector === "yt-section-list-renderer") {
+        searches += 1;
+      }
+
+      return originalQuerySelectorAll(selector);
+    };
+
+    try {
+      poll(15);
+    } finally {
+      document.querySelectorAll = originalQuerySelectorAll;
+    }
+
+    assert.strictEqual(
+      searches,
+      1,
+      "a search that found nothing must not be re-run every tick",
+    );
+  });
+
   it("stops watching after the window closes", () => {
     startSession(
       playlistPage([

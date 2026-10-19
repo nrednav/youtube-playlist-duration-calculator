@@ -330,9 +330,10 @@ const isViewmodelDesyncCheckpoint = ({
  * Run the structural-invariant discovery search if applicable on this tick.
  *
  * Invariant search handles viewmodel and any future variant when the
- * known selector misses. Runs at most once: the guard on
- * `window.ytpdc.discoveryResult` prevents re-entry on subsequent ticks.
- * Returns the live `discoveryResult` (existing or newly assigned).
+ * known selector misses. Runs at most once per page load: the guard on
+ * `window.ytpdc.discoveryAttempted` latches the attempt even when it finds
+ * nothing, so a page that never yields a container is not re-scanned every
+ * second. Returns the live `discoveryResult` (existing or newly assigned).
  */
 const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
   if (
@@ -340,8 +341,10 @@ const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
     variant.known &&
     isOperablePlaylistPage() &&
     pollCount >= (variant.variant === "viewmodel" ? 2 : 10) &&
-    !window.ytpdc?.discoveryResult
+    !window.ytpdc?.discoveryAttempted
   ) {
+    window.ytpdc.discoveryAttempted = true;
+
     const discoveryResult = discoverPlaylist(document, variant);
 
     logger.debug("invariant_search", () => ({
@@ -471,6 +474,7 @@ const setupPage = () => {
   window.ytpdc = {
     pageSetupDone: false,
     playlistObserver: null,
+    discoveryAttempted: false,
     sortDropdown: {
       used: false,
       element: null,
@@ -497,6 +501,7 @@ const setupPage = () => {
     window.ytpdc = {
       pageSetupDone: false,
       playlistObserver: null,
+      discoveryAttempted: false,
       sortDropdown: {
         used: false,
         element: null,
