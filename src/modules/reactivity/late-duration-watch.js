@@ -1,3 +1,5 @@
+import { DurationReading } from "../extraction/duration-reading";
+
 /**
  * Late-Duration Watch
  *
@@ -28,12 +30,13 @@ export const LateDurationWatch = Object.freeze({
  * Count the videos whose duration can be read right now.
  *
  * @param {Element[]} videos
- * @param {{ getTimestampFromVideo: (video: Element) => string|null }} dependencies
+ * @param {{ readDuration: (video: Element) => { kind: string } }} dependencies
  * @returns {number}
  */
-export const countAvailableDurations = (videos, { getTimestampFromVideo }) =>
+export const countAvailableDurations = (videos, { readDuration }) =>
   videos.reduce(
-    (count, video) => count + (getTimestampFromVideo(video) === null ? 0 : 1),
+    (count, video) =>
+      count + (readDuration(video).kind === DurationReading.DURATION ? 1 : 0),
     0,
   );
 

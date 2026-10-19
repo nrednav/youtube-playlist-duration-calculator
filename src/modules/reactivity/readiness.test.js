@@ -2,27 +2,31 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 import { hasLoadingVideo } from "./readiness.js";
 
-const video = ({ unavailable = false, seconds = 60 } = {}) => ({
+const DURATION = "duration";
+const NO_DURATION = "no-duration";
+const PENDING = "pending";
+
+const video = ({ unavailable = false, kind = DURATION } = {}) => ({
   unavailable,
-  seconds,
+  kind,
 });
 
 const dependencies = {
-  getTimestampFromVideo: (item) => item.seconds,
+  readDuration: (item) => ({ kind: item.kind }),
   isVideoUnavailable: (item) => item.unavailable,
 };
 
 describe("hasLoadingVideo()", () => {
   it("is true when a normal video has no duration yet", () => {
     assert.strictEqual(
-      hasLoadingVideo([video(), video({ seconds: null })], dependencies),
+      hasLoadingVideo([video(), video({ kind: PENDING })], dependencies),
       true,
     );
   });
 
   it("is false once every normal video has a duration", () => {
     assert.strictEqual(
-      hasLoadingVideo([video(), video({ seconds: 0 })], dependencies),
+      hasLoadingVideo([video(), video({ kind: DURATION })], dependencies),
       false,
     );
   });
@@ -32,8 +36,8 @@ describe("hasLoadingVideo()", () => {
       hasLoadingVideo(
         [
           video(),
-          video({ unavailable: true, seconds: null }),
-          video({ unavailable: true, seconds: null }),
+          video({ unavailable: true, kind: PENDING }),
+          video({ unavailable: true, kind: PENDING }),
         ],
         dependencies,
       ),
@@ -45,9 +49,9 @@ describe("hasLoadingVideo()", () => {
     assert.strictEqual(
       hasLoadingVideo(
         [
-          video({ unavailable: true, seconds: null }),
-          video({ seconds: null }),
-          video({ unavailable: true, seconds: null }),
+          video({ unavailable: true, kind: PENDING }),
+          video({ kind: PENDING }),
+          video({ unavailable: true, kind: PENDING }),
         ],
         dependencies,
       ),
@@ -59,9 +63,9 @@ describe("hasLoadingVideo()", () => {
     assert.strictEqual(hasLoadingVideo([], dependencies), false);
   });
 
-  it("treats a zero-second duration as loaded", () => {
+  it("is false for a video that carries a non-duration marker", () => {
     assert.strictEqual(
-      hasLoadingVideo([video({ seconds: 0 })], dependencies),
+      hasLoadingVideo([video({ kind: NO_DURATION })], dependencies),
       false,
     );
   });

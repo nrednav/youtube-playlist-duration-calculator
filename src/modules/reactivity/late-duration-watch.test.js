@@ -6,35 +6,36 @@ import {
   LateDurationWatch,
 } from "./late-duration-watch.js";
 
-const timestampFor = (videos, values) => {
+const DURATION = "duration";
+const NO_DURATION = "no-duration";
+const PENDING = "pending";
+
+const readingsFor = (videos, values) => {
   const map = new Map(videos.map((video, index) => [video, values[index]]));
 
-  return { getTimestampFromVideo: (video) => map.get(video) };
+  return { readDuration: (video) => ({ kind: map.get(video) }) };
 };
 
 describe("countAvailableDurations", () => {
   it("counts only videos with a readable duration", () => {
     const videos = ["video-a", "video-b", "video-c"];
-    const { getTimestampFromVideo } = timestampFor(videos, [
-      "1:00",
-      null,
-      "3:00",
-    ]);
+    const { readDuration } = readingsFor(videos, [DURATION, PENDING, DURATION]);
 
-    assert.strictEqual(
-      countAvailableDurations(videos, { getTimestampFromVideo }),
-      2,
-    );
+    assert.strictEqual(countAvailableDurations(videos, { readDuration }), 2);
   });
 
   it("counts nothing when no duration renders", () => {
     const videos = ["video-a", "video-b"];
-    const { getTimestampFromVideo } = timestampFor(videos, [null, null]);
+    const { readDuration } = readingsFor(videos, [PENDING, PENDING]);
 
-    assert.strictEqual(
-      countAvailableDurations(videos, { getTimestampFromVideo }),
-      0,
-    );
+    assert.strictEqual(countAvailableDurations(videos, { readDuration }), 0);
+  });
+
+  it("does not count a video that will never carry a duration", () => {
+    const videos = ["video-a", "video-b"];
+    const { readDuration } = readingsFor(videos, [NO_DURATION, DURATION]);
+
+    assert.strictEqual(countAvailableDurations(videos, { readDuration }), 1);
   });
 });
 

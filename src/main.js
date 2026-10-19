@@ -1,4 +1,8 @@
 import { discoverPlaylist } from "./modules/discovery/orchestrator";
+import {
+  DurationReading,
+  readDuration,
+} from "./modules/extraction/duration-reader";
 import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { extractPlaylistCount } from "./modules/extraction/playlist-count-extraction";
@@ -19,10 +23,7 @@ import {
 import { logger } from "./shared/modules/logger";
 import { isOperablePlaylistPage } from "./shared/modules/page-guard";
 import { isSortingEnabledForCount } from "./shared/modules/sort-cap";
-import {
-  convertSecondsToTimestamp,
-  getTimestampFromVideo,
-} from "./shared/modules/timestamp";
+import { convertSecondsToTimestamp } from "./shared/modules/timestamp";
 import {
   getVideoTitle,
   isVideoUnavailable,
@@ -56,7 +57,7 @@ const checkPlaylistReady = () => {
   let lastPathname = window.location.pathname;
 
   const availableDurationCount = () =>
-    countAvailableDurations(getVideos(), { getTimestampFromVideo });
+    countAvailableDurations(getVideos(), { readDuration });
 
   // Starts the bounded watch that recomputes when a duration that was missing
   // becomes readable. It runs after every computation, not only the fallback
@@ -208,7 +209,7 @@ const checkPlaylistReady = () => {
           playlistVisible,
           videoCount: videos.length,
           nullTimestampCount: videos.filter(
-            (video) => getTimestampFromVideo(video) === null,
+            (video) => readDuration(video).kind !== DurationReading.DURATION,
           ).length,
           playlistOffsetHeight: playlistElement?.offsetHeight,
           playlistOffsetWidth: playlistElement?.offsetWidth,
@@ -381,7 +382,7 @@ const isRendererReady = () => {
   const unavailableTitles = getUnavailableVideoTitles();
 
   return !hasLoadingVideo(videos, {
-    getTimestampFromVideo,
+    readDuration,
     isVideoUnavailable: (video) =>
       isVideoUnavailable(video, { unavailableTitles }),
   });

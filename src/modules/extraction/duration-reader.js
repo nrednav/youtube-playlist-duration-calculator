@@ -19,17 +19,14 @@
 import { desyncIndicators } from "../../shared/data/element-selectors";
 import { logger } from "../../shared/modules/logger";
 import { convertTimestampToSeconds } from "../../shared/modules/timestamp";
+import { DurationReading } from "./duration-reading";
 import { strategy as contentPattern } from "./strategy-content-pattern";
 import { strategy as selectorMatch } from "./strategy-selector-match";
 
 const STRATEGIES = [selectorMatch, contentPattern];
 const CONFIDENCE_FLOOR = 0.5;
 
-export const DurationReading = Object.freeze({
-  DURATION: "duration",
-  NO_DURATION: "no-duration",
-  PENDING: "pending",
-});
+export { DurationReading };
 
 const sortStrategiesByPriority = (strategies, variant) => {
   const prioritized = strategies.map((strategy) => {

@@ -1,3 +1,5 @@
+import { DurationReading } from "../extraction/duration-reading";
+
 /**
  * Whether any video is still waiting for its duration text.
  *
@@ -6,15 +8,16 @@
  * would otherwise hold readiness open until the poll budget ran out.
  *
  * @param {Element[]} videos
- * @param {{ getTimestampFromVideo: (video: Element) => number|null, isVideoUnavailable: (video: Element) => boolean }} dependencies
+ * @param {{ readDuration: (video: Element) => { kind: string }, isVideoUnavailable: (video: Element) => boolean }} dependencies
  * @returns {boolean}
  */
 export const hasLoadingVideo = (
   videos,
-  { getTimestampFromVideo, isVideoUnavailable },
+  { readDuration, isVideoUnavailable },
 ) => {
   return videos.some(
     (video) =>
-      !isVideoUnavailable(video) && getTimestampFromVideo(video) === null,
+      readDuration(video).kind === DurationReading.PENDING &&
+      !isVideoUnavailable(video),
   );
 };
