@@ -24,7 +24,7 @@ export const getVideoTitle = (video) => {
 
     const title = titleOf(element);
 
-    if (title && title.trim()) {
+    if (title?.trim()) {
       return title.trim();
     }
   }
