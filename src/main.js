@@ -110,6 +110,7 @@ const checkPlaylistReady = () => {
     if (currentPathname !== lastPathname) {
       lastPathname = currentPathname;
       pollCount = 0;
+      lateDurationWatch = null;
       return;
     }
 

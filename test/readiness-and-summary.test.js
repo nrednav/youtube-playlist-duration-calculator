@@ -368,6 +368,42 @@ describe("playlist readiness and summary accounting", () => {
     );
   });
 
+  it("restarts readiness when a navigation is not announced", () => {
+    startSession(
+      playlistPage([
+        videoRenderer({ title: "A", duration: "1:00" }),
+        videoRenderer({ title: "B", duration: "2:00" }),
+        videoRenderer({ title: "C", duration: "3:00" }),
+      ]),
+    );
+
+    poll(2);
+
+    assert.strictEqual(
+      summaryValues().playlistSummary_totalDuration,
+      "00:06:00",
+    );
+
+    document.querySelector("#contents").innerHTML = [
+      videoRenderer({ title: "D", duration: "5:00" }),
+      videoRenderer({ title: "E", duration: "6:00" }),
+      videoRenderer({ title: "F", duration: "7:00" }),
+    ].join("");
+
+    window.history.pushState({}, "", "/watch");
+    poll(1);
+
+    window.history.pushState({}, "", "/playlist?list=PLintegration");
+    poll(1);
+    poll(1);
+
+    assert.strictEqual(
+      summaryValues().playlistSummary_totalDuration,
+      "00:18:00",
+      "a watch started on the previous page must not suppress readiness",
+    );
+  });
+
   it("stops watching after the window closes", () => {
     startSession(
       playlistPage([
