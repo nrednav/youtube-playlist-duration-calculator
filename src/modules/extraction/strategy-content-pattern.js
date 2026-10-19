@@ -29,6 +29,7 @@ export const strategy = {
       value: result.value,
       confidence: result.confidence,
       strategyName: "content-pattern",
+      presence: result.presence,
     };
   },
 };

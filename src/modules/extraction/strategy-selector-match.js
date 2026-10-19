@@ -30,13 +30,23 @@ export const strategy = {
     );
 
     if (!timestampElement) {
-      return { value: null, confidence: 0, strategyName: "selector-match" };
+      return {
+        value: null,
+        confidence: 0,
+        strategyName: "selector-match",
+        presence: "unknown",
+      };
     }
 
     const text = timestampElement.textContent;
 
-    if (!text) {
-      return { value: null, confidence: 0, strategyName: "selector-match" };
+    if (!text || !text.trim()) {
+      return {
+        value: null,
+        confidence: 0,
+        strategyName: "selector-match",
+        presence: "unknown",
+      };
     }
 
     const sanitized = text.trim().replace(/\n/g, "");
@@ -47,6 +57,7 @@ export const strategy = {
         value: matches[0],
         confidence: 1.0,
         strategyName: "selector-match",
+        presence: "duration",
       };
     }
 
@@ -58,6 +69,7 @@ export const strategy = {
       value: null,
       confidence: 0,
       strategyName: "selector-match",
+      presence: "absent",
     };
   },
 };
