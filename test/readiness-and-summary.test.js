@@ -243,6 +243,27 @@ describe("playlist readiness and summary accounting", () => {
     );
   });
 
+  it("does not throw when the page has no metadata insertion point", () => {
+    startSession(`
+      <ytd-playlist-sidebar-renderer><div class="header"></div></ytd-playlist-sidebar-renderer>
+      <ytd-playlist-video-list-renderer>
+        <div id="contents">
+          ${videoRenderer({ title: "A", duration: "1:00" })}
+        </div>
+      </ytd-playlist-video-list-renderer>`);
+
+    assert.doesNotThrow(
+      () => poll(2),
+      "a missing metadata element must not throw out of the poll tick",
+    );
+
+    assert.strictEqual(
+      summaryValues(),
+      null,
+      "nothing may be inserted without an insertion point",
+    );
+  });
+
   it("stops watching after the window closes", () => {
     startSession(
       playlistPage([

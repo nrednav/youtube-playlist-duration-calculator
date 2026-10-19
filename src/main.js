@@ -979,6 +979,21 @@ const addPlaylistSummaryToPage = ({
   lowConfidenceCount,
   playlistObserver,
 }) => {
+  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
+  const playlistMetadataElement = existingPlaylistSummaryElement
+    ? null
+    : getPlaylistMetadataElement();
+  const insertionPoint = playlistMetadataElement?.parentElement ?? null;
+
+  if (!existingPlaylistSummaryElement && !insertionPoint) {
+    logger.error("summary_insertion_failed", {
+      reason: "no_metadata_insertion_point",
+      pathname: window.location.pathname,
+    });
+
+    return;
+  }
+
   const playlistSummaryElement = createPlaylistSummaryElement({
     timestamps,
     nullTimestamps,
@@ -986,8 +1001,6 @@ const addPlaylistSummaryToPage = ({
     lowConfidenceCount,
     playlistObserver,
   });
-
-  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
 
   if (existingPlaylistSummaryElement) {
     logger.debug("replacing_existing_summary", () => ({
@@ -997,18 +1010,7 @@ const addPlaylistSummaryToPage = ({
 
     existingPlaylistSummaryElement.replaceWith(playlistSummaryElement);
   } else {
-    const playlistMetadataElement = getPlaylistMetadataElement();
-
-    if (!playlistMetadataElement) {
-      throw new Error(
-        [
-          "Cannot add playlist summary to page",
-          "Reason = Cannot find playlist metadata element in document",
-        ].join(", "),
-      );
-    }
-
-    playlistMetadataElement.parentElement.insertBefore(
+    insertionPoint.insertBefore(
       playlistSummaryElement,
       playlistMetadataElement.nextElementSibling,
     );
