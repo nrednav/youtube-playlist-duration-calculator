@@ -101,7 +101,7 @@ const checkPlaylistReady = () => {
     lateDurationWatch.watchTicks += 1;
   };
 
-  activePlaylistInterval = setInterval(() => {
+  const poll = () => {
     // When the pathname changes between ticks (SPA transition), the DOM
     // is still transitioning. Skip this tick to give YouTube's renderer
     // time to stabilise. The next tick runs against the fully-loaded page.
@@ -256,6 +256,16 @@ const checkPlaylistReady = () => {
     }
 
     pollCount++;
+  };
+
+  activePlaylistInterval = setInterval(() => {
+    try {
+      poll();
+    } catch (error) {
+      logger.error("poll_tick_failed", error.message);
+      clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
+    }
   }, 1000);
 };
 

@@ -264,6 +264,34 @@ describe("playlist readiness and summary accounting", () => {
     );
   });
 
+  it("survives a throwing poll tick and stops polling", () => {
+    startSession(
+      playlistPage([videoRenderer({ title: "A", duration: "1:00" })]),
+    );
+
+    const video = document.querySelector("ytd-playlist-video-renderer");
+    const original = video.querySelector;
+
+    video.querySelector = () => {
+      throw new Error("boom");
+    };
+
+    assert.doesNotThrow(
+      () => poll(1),
+      "an exception must not escape the interval callback",
+    );
+
+    video.querySelector = original;
+
+    poll(3);
+
+    assert.strictEqual(
+      summaryValues(),
+      null,
+      "a failed interval must be stopped, not retried every second",
+    );
+  });
+
   it("stops watching after the window closes", () => {
     startSession(
       playlistPage([
