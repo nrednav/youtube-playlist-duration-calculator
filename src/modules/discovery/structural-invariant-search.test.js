@@ -60,9 +60,11 @@ describe("discoverPlaylist", () => {
       children: videoChildren,
     });
 
+    const queried = [];
     const doc = createMockDoc({
       querySelectorAll: (sel) => {
-        if (sel === "*") return [container];
+        queried.push(sel);
+        if (sel === "ytd-playlist-video-list-renderer") return [container];
         return [];
       },
     });
@@ -72,6 +74,10 @@ describe("discoverPlaylist", () => {
       variant: "renderer",
     });
 
+    assert.ok(
+      !queried.includes("*"),
+      "the invariant search must not walk the whole document",
+    );
     assert.ok(result.confidence > 0, "Expected confidence > 0");
     assert.strictEqual(result.container, container);
     assert.strictEqual(result.videos, null);

@@ -2,7 +2,10 @@
 
 ## Environment
 
-- Node.js >=20 (see `.nvmrc`). Engine enforcement is strict (`.npmrc`).
+- Node.js >=22.15. `.nvmrc` and CI both pin the LTS line (24). Engine
+  enforcement is strict (`.npmrc`), so an older Node stops `npm ci`.
+  The 22.15 floor comes from `module.registerHooks`, which the integration test
+  in `test/` uses to shim the CSS import.
 - Package manager: npm. Lock file: `package-lock.json`.
 - Build tool: Vite 7 via `vite-plugin-web-extension`.
 - Linter/formatter: Biome. Ignore `.eslintrc.cjs` and `prettier.config.cjs` (legacy dead weight).
@@ -19,6 +22,7 @@ npm test                 # Unit tests (node:test via tsx)
 npm run lint             # Biome lint --write
 npm run format           # Biome format --write
 npm run check            # Biome lint + format --write
+npm run check:ci         # Biome lint + format, no writes (CI gate)
 ```
 
 ## Testing
@@ -27,6 +31,9 @@ npm run check            # Biome lint + format --write
 - Runner: `tsx --test`.
 - Test files are co-located: `foo.js` -> `foo.test.js` in the same directory.
 - New logic must include a co-located `.test.js` file.
+- Extension-level tests live in `test/`. They import `src/main.js` under jsdom,
+  drive the polling loop with mocked intervals, and read the rendered summary.
+  See `test/readiness-and-summary.test.js` for the harness.
 - Always run `npm test` before committing. Do not commit if tests fail.
 
 ## Project Structure
@@ -103,6 +110,13 @@ names.
 
 - Strategy: squash and merge.
 - Target: `main` only.
+
+### Releases
+
+See [docs/releasing.md](./docs/releasing.md). A release is a separate PR that
+changes only `package.json`, `package-lock.json`, and `CHANGELOG.md`. Feature and
+fix PRs leave the version alone and write their changelog entry under
+`## [Unreleased]`.
 
 ### Pre-commit Hook
 

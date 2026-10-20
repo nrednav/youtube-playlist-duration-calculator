@@ -92,12 +92,17 @@ const resolveDurationBadge = (videoElement) => {
  * and refuse to fall through to text scanning. Only when no badge is
  * present at all do we fall back to the legacy whole-text scan.
  *
+ * `presence` separates two states that both yield a null value: a badge
+ * that rendered a non-duration marker (absent), and a video whose badge
+ * has not rendered at all yet (unknown). Readiness needs that difference
+ * to tell a finished unavailable item from one that is still loading.
+ *
  * @param {Element} videoElement
- * @returns {{ value: string|null, confidence: number }}
+ * @returns {{ value: string|null, confidence: number, presence: "duration"|"absent"|"unknown" }}
  */
 export const extractTimestampByPattern = (videoElement) => {
   if (!videoElement) {
-    return { value: null, confidence: 0 };
+    return { value: null, confidence: 0, presence: "unknown" };
   }
 
   const badge = resolveDurationBadge(videoElement);
@@ -107,14 +112,20 @@ export const extractTimestampByPattern = (videoElement) => {
     const raw = extractDuration(badgeText);
 
     if (raw) {
-      return { value: raw, confidence: 0.9 };
+      return { value: raw, confidence: 0.9, presence: "duration" };
     }
 
     // Badge exists but its text is NOT a duration ("LIVE", "Upcoming",
     // or empty). This is a definitive non-duration signal: refuse to
     // fall through to whole-text scanning, which would otherwise match
     // "4:00" from the scheduled-time metadata on Upcoming videos.
-    return { value: null, confidence: 0 };
+    // Empty text is the exception: the badge is there but its text has
+    // not painted, which is a render in progress, not a marker.
+    return {
+      value: null,
+      confidence: 0,
+      presence: badgeText === "" ? "unknown" : "absent",
+    };
   }
 
   // No badge element present (e.g. unavailable videos have neither
@@ -130,10 +141,10 @@ export const extractTimestampByPattern = (videoElement) => {
     const confidence =
       text.trim() === raw || text.includes(`  ${raw}`) ? 0.9 : 0.6;
 
-    return { value: raw, confidence };
+    return { value: raw, confidence, presence: "duration" };
   }
 
-  return { value: null, confidence: 0 };
+  return { value: null, confidence: 0, presence: "unknown" };
 };
 
 /**

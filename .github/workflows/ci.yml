@@ -1,5 +1,6 @@
-# CI: runs the test suite only. No builds, no artifacts, no secrets.
+# CI: lints, tests, and builds both targets. No artifacts, no secrets.
 # Locked to least privilege: contents: read is sufficient for checkout.
+# Node version comes from .nvmrc, so the local and CI toolchains cannot drift.
 name: CI
 
 on:
@@ -12,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Test (Node 20)
+  check:
+    name: Lint, test, and build
     runs-on: ubuntu-latest
 
     steps:
@@ -25,11 +26,20 @@ jobs:
         # actions/setup-node@v6.4.0
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint and format check
+        run: npm run check:ci
+
       - name: Run tests
         run: npm test
+
+      - name: Build for Chrome
+        run: npm run build:chrome
+
+      - name: Build for Firefox
+        run: npm run build:firefox

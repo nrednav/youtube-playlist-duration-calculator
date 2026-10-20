@@ -1,96 +1,30 @@
 /**
  * Extraction Orchestrator
  *
- * Runs all extraction strategies in priority order based on the detected
- * YouTube layout variant. Strategies designed for the detected variant
- * run first, ensuring fast and accurate extraction. Falls back to
- * variant-agnostic strategies when the primary ones fail.
+ * Adapts the canonical duration reading to the shape the aggregation
+ * layer consumes. The reading itself lives in `duration-reader.js`; this
+ * module exists so callers that only need the summed seconds do not have
+ * to know about the reading states.
  *
- * Adding a new strategy means creating one file and registering it
- * in the EXTRACTION_STRATEGIES array.
+ * Adding a new strategy means creating one file and registering it in the
+ * reader's STRATEGIES array.
  */
 
-import { desyncIndicators } from "../../shared/data/element-selectors";
-import { logger } from "../../shared/modules/logger";
-import { convertTimestampToSeconds } from "../../shared/modules/timestamp";
-import { strategy as contentPattern } from "./strategy-content-pattern";
-import { strategy as selectorMatch } from "./strategy-selector-match";
-
-const EXTRACTION_STRATEGIES = [selectorMatch, contentPattern];
+import { DurationReading, readDuration } from "./duration-reader";
 
 /**
- * Sort strategies by how well they match the current layout variant.
- *
- * @param {Array} strategies
- * @param {{ variant: string }} variant - Result from desyncIndicators.detectVariant()
- * @returns {Array} Sorted copy of the strategies array
- */
-const sortStrategiesByPriority = (strategies, variant) => {
-  const prioritized = strategies.map((s) => {
-    let effectivePriority;
-
-    if (s.designedFor === variant.variant) {
-      effectivePriority = 0;
-    } else if (s.designedFor === "any") {
-      effectivePriority = 5;
-    } else {
-      effectivePriority = 10;
-    }
-
-    return { ...s, effectivePriority };
-  });
-
-  return prioritized.sort((a, b) => a.effectivePriority - b.effectivePriority);
-};
-
-/**
- * Extract a timestamp from a video element by running strategies
- * in priority order based on the detected layout variant.
+ * Extract a timestamp from a video element.
  *
  * @param {Element} videoElement
  * @returns {{ seconds: number|null, confidence: number, strategyName: string }}
  */
 export const extractTimestamp = (videoElement) => {
-  if (!videoElement) {
-    return { seconds: null, confidence: 0, strategyName: "none" };
-  }
-
-  // Use the video element's document for variant detection.
-  // Falls back to global document when called in browser context.
-  const doc = videoElement.ownerDocument || document;
-  const variant = desyncIndicators.detectVariant(doc);
-  const sorted = sortStrategiesByPriority(EXTRACTION_STRATEGIES, variant);
-
-  for (const strategy of sorted) {
-    const result = strategy.extract(videoElement);
-
-    logger.debug("extraction_strategy_result", () => ({
-      strategy: strategy.name,
-      found: !!result.value,
-      confidence: result.confidence,
-    }));
-
-    if (result.value && result.confidence >= 0.5) {
-      const rawToken = result.value;
-      const segmentCount = rawToken.split(":").filter(Boolean).length;
-
-      return {
-        seconds: convertTimestampToSeconds(rawToken),
-        confidence: result.confidence,
-        strategyName: result.strategyName || strategy.name,
-        // Shape of the parsed token (2 = MM:SS, 3 = HH:MM:SS). The
-        // aggregation layer uses this to derive a per-video worst-case
-        // error bound grounded in duration semantics, rather than a flat
-        // constant. See main.js processPlaylist.
-        segmentCount,
-      };
-    }
-  }
+  const reading = readDuration(videoElement);
 
   return {
-    seconds: null,
-    confidence: 0,
-    strategyName: "none",
-    segmentCount: 0,
+    seconds: reading.kind === DurationReading.DURATION ? reading.seconds : null,
+    confidence: reading.confidence,
+    strategyName: reading.strategyName,
+    segmentCount: reading.segmentCount,
   };
 };

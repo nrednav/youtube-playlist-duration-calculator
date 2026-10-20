@@ -1,0 +1,23 @@
+import { DurationReading } from "../extraction/duration-reading";
+
+/**
+ * Whether any video is still waiting for its duration text.
+ *
+ * A normal title plus a missing duration means the badge has not rendered yet.
+ * Unavailable videos are excluded: they have no duration by nature, so they
+ * would otherwise hold readiness open until the poll budget ran out.
+ *
+ * @param {Element[]} videos
+ * @param {{ readDuration: (video: Element) => { kind: string }, isVideoUnavailable: (video: Element) => boolean }} dependencies
+ * @returns {boolean}
+ */
+export const hasLoadingVideo = (
+  videos,
+  { readDuration, isVideoUnavailable },
+) => {
+  return videos.some(
+    (video) =>
+      readDuration(video).kind === DurationReading.PENDING &&
+      !isVideoUnavailable(video),
+  );
+};

@@ -1,8 +1,20 @@
 import { discoverPlaylist } from "./modules/discovery/orchestrator";
+import {
+  DurationReading,
+  readDuration,
+} from "./modules/extraction/duration-reader";
 import { computeMaxError } from "./modules/extraction/error-bound";
 import { extractTimestamp } from "./modules/extraction/orchestrator";
 import { extractPlaylistCount } from "./modules/extraction/playlist-count-extraction";
+import {
+  countAvailableDurations,
+  decideLateDurationWatch,
+  LateDurationWatch,
+  selectPendingVideos,
+} from "./modules/reactivity/late-duration-watch";
 import { isRemovalMutation } from "./modules/reactivity/mutation-shape";
+import { hasLoadingVideo } from "./modules/reactivity/readiness";
+import { deriveSummaryCounts } from "./modules/reactivity/summary-accounting";
 import { buildReportUrl, detectBrowser } from "./modules/reporting/report-url";
 import { PlaylistSorter } from "./modules/sorting";
 import {
@@ -12,10 +24,11 @@ import {
 import { logger } from "./shared/modules/logger";
 import { isOperablePlaylistPage } from "./shared/modules/page-guard";
 import { isSortingEnabledForCount } from "./shared/modules/sort-cap";
+import { convertSecondsToTimestamp } from "./shared/modules/timestamp";
 import {
-  convertSecondsToTimestamp,
-  getTimestampFromVideo,
-} from "./shared/modules/timestamp";
+  getVideoTitle,
+  isVideoUnavailable,
+} from "./shared/modules/video-availability";
 import "./main.css";
 
 let activePlaylistInterval = null;
@@ -39,10 +52,58 @@ const checkPlaylistReady = () => {
   displayLoader();
 
   const maxPollCount = 60;
+  const maxLateDurationWatchTicks = 30;
   let pollCount = 0;
+  let lateDurationWatch = null;
   let lastPathname = window.location.pathname;
 
-  activePlaylistInterval = setInterval(() => {
+  // Starts the bounded watch that recomputes when a duration that was missing
+  // becomes readable. It runs after every computation, not only the fallback
+  // one: the playlist observer watches direct children only, so a badge
+  // changing text inside a video element never reaches it. Without the watch a
+  // row that renders before its duration keeps that duration uncounted until
+  // the user navigates or scrolls, which is exactly what a revealed batch of
+  // videos looks like.
+  const beginLateDurationWatch = () => {
+    lateDurationWatch = {
+      pending: selectPendingVideos(getVideos(), { readDuration }),
+      lastComputedCount: 0,
+      watchTicks: 0,
+    };
+  };
+
+  const watchLateDurations = () => {
+    const availableCount = countAvailableDurations(lateDurationWatch.pending, {
+      readDuration,
+    });
+
+    const decision = decideLateDurationWatch({
+      watchTicks: lateDurationWatch.watchTicks,
+      availableCount,
+      lastComputedCount: lateDurationWatch.lastComputedCount,
+      maxWatchTicks: maxLateDurationWatchTicks,
+    });
+
+    if (decision === LateDurationWatch.RECOMPUTE) {
+      lateDurationWatch.lastComputedCount = availableCount;
+      computeFromAvailableVideos("late_durations_recompute");
+    }
+
+    if (decision === LateDurationWatch.STOP) {
+      logger.debug("late_duration_watch_stopped", () => ({
+        watchTicks: lateDurationWatch.watchTicks,
+      }));
+
+      lateDurationWatch = null;
+      clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
+      return;
+    }
+
+    lateDurationWatch.watchTicks += 1;
+  };
+
+  const poll = () => {
     // When the pathname changes between ticks (SPA transition), the DOM
     // is still transitioning. Skip this tick to give YouTube's renderer
     // time to stabilise. The next tick runs against the fully-loaded page.
@@ -51,18 +112,23 @@ const checkPlaylistReady = () => {
     if (currentPathname !== lastPathname) {
       lastPathname = currentPathname;
       pollCount = 0;
+      lateDurationWatch = null;
       return;
     }
-    // Stop polling once maxPollCount is reached. The first tick at
-    // pollCount === maxPollCount clears the interval. Subsequent ticks
-    // short-circuit before doing any work, so the loop neither fires
-    // readiness checks nor queries the DOM after the budget is
-    // exhausted. Without this guard the interval would keep running
-    // every second forever, re-querying selectors on a page that will
-    // never reach readiness.
+
+    // A computation already happened. Every tick from here watches for
+    // durations that became readable instead of re-running readiness.
+    if (lateDurationWatch) {
+      watchLateDurations();
+      return;
+    }
+
+    // Stop polling for readiness once maxPollCount is reached. Compute once
+    // from whichever durations did render, then let the watch look for the
+    // rest.
     if (pollCount >= maxPollCount) {
-      clearInterval(activePlaylistInterval);
-      activePlaylistInterval = null;
+      computeFromAvailableVideos("readiness_budget_exhausted");
+      beginLateDurationWatch();
       return;
     }
 
@@ -128,30 +194,36 @@ const checkPlaylistReady = () => {
       variant,
     });
 
-    // Renderer-architecture readiness: the playlist element exists, the
-    // timestamp element resolves, and the unavailable counts agree. The
-    // visibility check applies here because `playlistElement` is a real
-    // DOM element that could be rendered hidden (e.g., during a SPA
-    // transition where the selector still resolves but the container
-    // is being torn down).
+    // Renderer-architecture readiness: the playlist element exists and no
+    // video is still waiting for its duration text. The visibility check
+    // applies here because `playlistElement` is a real DOM element that could
+    // be rendered hidden (e.g., during a SPA transition where the selector
+    // still resolves but the container is being torn down).
     if (playlistExists && isRendererReady()) {
-      clearInterval(activePlaylistInterval);
-      activePlaylistInterval = null;
-
       const playlistVisible = isElementVisible(playlistElement);
 
-      logger.debug("playlist_ready_check", () => ({
-        pollCount,
-        playlistVisible,
-        unavailableTimestampsCount: countVideosWithoutExtractableTimestamp(),
-        unavailableVideosCount: countVideosFlaggedUnavailable(),
-        playlistOffsetHeight: playlistElement?.offsetHeight,
-        playlistOffsetWidth: playlistElement?.offsetWidth,
-      }));
+      logger.debug("playlist_ready_check", () => {
+        const videos = getVideos();
+
+        return {
+          pollCount,
+          playlistVisible,
+          videoCount: videos.length,
+          nullTimestampCount: videos.filter(
+            (video) => readDuration(video).kind !== DurationReading.DURATION,
+          ).length,
+          playlistOffsetHeight: playlistElement?.offsetHeight,
+          playlistOffsetWidth: playlistElement?.offsetWidth,
+        };
+      });
 
       if (playlistVisible) {
         processPlaylist();
+        beginLateDurationWatch();
       } else {
+        clearInterval(activePlaylistInterval);
+        activePlaylistInterval = null;
+
         logger.debug("playlist_not_visible_skipping", () => ({
           pollCount,
           offsetParent: playlistElement?.offsetParent?.tagName,
@@ -175,9 +247,6 @@ const checkPlaylistReady = () => {
     // mid-render), we keep polling rather than falling through to the
     // viewmodel path on a potentially stale discoveryResult.
     else if (!playlistExists && isViewmodelReady()) {
-      clearInterval(activePlaylistInterval);
-      activePlaylistInterval = null;
-
       logger.debug("viewmodel_ready_check", () => ({
         pollCount,
         videoCount: discoveryResult?.videos?.length || 0,
@@ -186,9 +255,20 @@ const checkPlaylistReady = () => {
       }));
 
       processPlaylist();
+      beginLateDurationWatch();
     }
 
     pollCount++;
+  };
+
+  activePlaylistInterval = setInterval(() => {
+    try {
+      poll();
+    } catch (error) {
+      logger.error("poll_tick_failed", error.message);
+      clearInterval(activePlaylistInterval);
+      activePlaylistInterval = null;
+    }
   }, 1000);
 };
 
@@ -251,9 +331,10 @@ const isViewmodelDesyncCheckpoint = ({
  * Run the structural-invariant discovery search if applicable on this tick.
  *
  * Invariant search handles viewmodel and any future variant when the
- * known selector misses. Runs at most once: the guard on
- * `window.ytpdc.discoveryResult` prevents re-entry on subsequent ticks.
- * Returns the live `discoveryResult` (existing or newly assigned).
+ * known selector misses. Runs at most once per page load: the guard on
+ * `window.ytpdc.discoveryAttempted` latches the attempt even when it finds
+ * nothing, so a page that never yields a container is not re-scanned every
+ * second. Returns the live `discoveryResult` (existing or newly assigned).
  */
 const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
   if (
@@ -261,8 +342,10 @@ const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
     variant.known &&
     isOperablePlaylistPage() &&
     pollCount >= (variant.variant === "viewmodel" ? 2 : 10) &&
-    !window.ytpdc?.discoveryResult
+    !window.ytpdc?.discoveryAttempted
   ) {
+    window.ytpdc.discoveryAttempted = true;
+
     const discoveryResult = discoverPlaylist(document, variant);
 
     logger.debug("invariant_search", () => ({
@@ -283,22 +366,62 @@ const maybeRunInvariantSearch = ({ pollCount, playlistExists, variant }) => {
 };
 
 /**
- * Renderer-architecture readiness: playlist element exists, timestamp
- * selector resolves, and the "no extractable timestamp" count agrees
- * with the "flagged unavailable" count.
+ * Renderer-architecture readiness: the timestamp selector resolves, the
+ * playlist renders videos, and none of them is still waiting for its
+ * duration text.
  */
 const isRendererReady = () => {
   const timestampElement = document.querySelector(elementSelectors.timestamp);
-  const timestampExists = timestampElement !== null;
 
-  if (!timestampExists) {
+  if (!timestampElement) {
     return false;
   }
 
-  const unavailableTimestampsCount = countVideosWithoutExtractableTimestamp();
-  const unavailableVideosCount = countVideosFlaggedUnavailable();
+  const videos = getVideos();
 
-  return unavailableTimestampsCount === unavailableVideosCount;
+  if (videos.length === 0) {
+    return false;
+  }
+
+  const unavailableTitles = getUnavailableVideoTitles();
+
+  return !hasLoadingVideo(videos, {
+    readDuration,
+    isVideoUnavailable: (video) =>
+      isVideoUnavailable(video, { unavailableTitles }),
+  });
+};
+
+const getUnavailableVideoTitles = () => [
+  chrome.i18n.getMessage("videoTitle_private"),
+  chrome.i18n.getMessage("videoTitle_deleted"),
+  chrome.i18n.getMessage("videoTitle_unavailable_v1"),
+  chrome.i18n.getMessage("videoTitle_unavailable_v2"),
+  chrome.i18n.getMessage("videoTitle_restricted"),
+  chrome.i18n.getMessage("videoTitle_ageRestricted"),
+];
+
+/**
+ * Compute once from whatever durations rendered before the readiness budget ran
+ * out. Leaving the loader on screen forever is a worse answer than an honestly
+ * labelled partial result.
+ *
+ * @param {string} reason
+ */
+const computeFromAvailableVideos = (reason) => {
+  const videos = getVideos();
+
+  if (!isOperablePlaylistPage() || videos.length === 0) {
+    return;
+  }
+
+  logger.info(reason, { videoCount: videos.length });
+
+  try {
+    processPlaylist();
+  } catch (error) {
+    logger.error("fallback_compute_failed", error.message);
+  }
 };
 
 /**
@@ -352,6 +475,7 @@ const setupPage = () => {
   window.ytpdc = {
     pageSetupDone: false,
     playlistObserver: null,
+    discoveryAttempted: false,
     sortDropdown: {
       used: false,
       element: null,
@@ -378,6 +502,7 @@ const setupPage = () => {
     window.ytpdc = {
       pageSetupDone: false,
       playlistObserver: null,
+      discoveryAttempted: false,
       sortDropdown: {
         used: false,
         element: null,
@@ -451,23 +576,6 @@ const isNewDesign = () => {
 };
 
 /**
- * Counts videos whose timestamp could not be extracted.
- *
- * This is the BROAD notion of "unavailable", includes unavailable,
- * live, upcoming, and badge-absent videos. Distinct from
- * `countVideosFlaggedUnavailable`, which is the narrow title-based
- * predicate. The readiness invariant `countWithout === countFlagged`
- * means: every video without an extractable timestamp is also flagged
- * unavailable (no "extraction-failed-but-not-flagged-unavailable"
- * stragglers indicating the page is mid-render).
- */
-const countVideosWithoutExtractableTimestamp = () => {
-  return getVideos()
-    .map(getTimestampFromVideo)
-    .filter((timestamp) => timestamp === null).length;
-};
-
-/**
  * Returns a list of video elements found within the playlist element
  * @returns {Element[]}
  **/
@@ -519,59 +627,6 @@ const getVideos = () => {
 
   const videos = playlistElement.getElementsByTagName(elementSelectors.video);
   return [...videos];
-};
-
-/**
- * Counts videos flagged unavailable by the narrow predicate:
- * no extractable timestamp OR unavailable title.
- *
- * Distinct from `countVideosWithoutExtractableTimestamp` (the broad
- * count). The readiness invariant `countWithout === countFlagged` means:
- * every video without an extractable timestamp is also flagged
- * unavailable.
- */
-const countVideosFlaggedUnavailable = () => {
-  return getVideos().filter(isVideoUnavailable).length;
-};
-
-/**
- * Checks whether a given video element meets the criteria for being considered
- * "unavailable"
- *
- * Criteria:
- * - Has no extractable timestamp (architecture-agnostic check. Works on
- *   both renderer `ytd-*-renderer` and viewmodel `yt-lockup-view-model`
- *   via the shared `getTimestampFromVideo` helper, which has both the
- *   known-selector path and the content-pattern fallback)
- * - Title is unavailable
- *
- * @param {Element} video
- */
-const isVideoUnavailable = (video) => {
-  const hasNoTimestamp = getTimestampFromVideo(video) === null;
-
-  if (hasNoTimestamp) return true;
-
-  const hasUnavailableTitle = [
-    chrome.i18n.getMessage("videoTitle_private"),
-    chrome.i18n.getMessage("videoTitle_deleted"),
-    chrome.i18n.getMessage("videoTitle_unavailable_v1"),
-    chrome.i18n.getMessage("videoTitle_unavailable_v2"),
-    chrome.i18n.getMessage("videoTitle_restricted"),
-    chrome.i18n.getMessage("videoTitle_ageRestricted"),
-  ].includes(getVideoTitle(video));
-
-  if (hasUnavailableTitle) return true;
-
-  return false;
-};
-
-/**
- * @param {Element} video
- * @returns {string | undefined}
- */
-const getVideoTitle = (video) => {
-  return video.querySelector(elementSelectors.videoTitle)?.title;
 };
 
 const signalFailure = (variant, snapshot) => {
@@ -690,6 +745,7 @@ const processPlaylist = () => {
 
   addPlaylistSummaryToPage({
     timestamps,
+    nullTimestamps,
     playlistDuration,
     lowConfidenceCount,
     playlistObserver,
@@ -770,7 +826,13 @@ const setupPlaylistObserver = () => {
     return null;
   }
 
-  const playlistObserver = new MutationObserver(onPlaylistMutated);
+  const playlistObserver = new MutationObserver((mutationList, observer) => {
+    try {
+      onPlaylistMutated(mutationList, observer);
+    } catch (error) {
+      logger.error("playlist_mutation_failed", error.message);
+    }
+  });
 
   playlistObserver.observe(playlistElement, { childList: true });
 
@@ -837,6 +899,12 @@ const onPlaylistMutated = (mutationList, observer) => {
     sortDropdownUsed: window.ytpdc.sortDropdown.used,
     lastVideoInteracted: !!window.ytpdc.lastVideoInteractedWith,
   }));
+
+  if (!playlistElement) {
+    observer.disconnect();
+    main();
+    return;
+  }
 
   if (mutationList.length === 1 && mutationList[0].type === "childList") {
     const mutation = mutationList[0];
@@ -936,18 +1004,33 @@ const displayMessages = (messages) => {
 
 const addPlaylistSummaryToPage = ({
   timestamps,
+  nullTimestamps,
   playlistDuration,
   lowConfidenceCount,
   playlistObserver,
 }) => {
+  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
+  const playlistMetadataElement = existingPlaylistSummaryElement
+    ? null
+    : getPlaylistMetadataElement();
+  const insertionPoint = playlistMetadataElement?.parentElement ?? null;
+
+  if (!existingPlaylistSummaryElement && !insertionPoint) {
+    logger.error("summary_insertion_failed", {
+      reason: "no_metadata_insertion_point",
+      pathname: window.location.pathname,
+    });
+
+    return;
+  }
+
   const playlistSummaryElement = createPlaylistSummaryElement({
     timestamps,
+    nullTimestamps,
     playlistDuration,
     lowConfidenceCount,
     playlistObserver,
   });
-
-  const existingPlaylistSummaryElement = getPlaylistSummaryElement();
 
   if (existingPlaylistSummaryElement) {
     logger.debug("replacing_existing_summary", () => ({
@@ -957,18 +1040,7 @@ const addPlaylistSummaryToPage = ({
 
     existingPlaylistSummaryElement.replaceWith(playlistSummaryElement);
   } else {
-    const playlistMetadataElement = getPlaylistMetadataElement();
-
-    if (!playlistMetadataElement) {
-      throw new Error(
-        [
-          "Cannot add playlist summary to page",
-          "Reason = Cannot find playlist metadata element in document",
-        ].join(", "),
-      );
-    }
-
-    playlistMetadataElement.parentElement.insertBefore(
+    insertionPoint.insertBefore(
       playlistSummaryElement,
       playlistMetadataElement.nextElementSibling,
     );
@@ -991,6 +1063,7 @@ const addPlaylistSummaryToPage = ({
 
 const createPlaylistSummaryElement = ({
   timestamps,
+  nullTimestamps,
   playlistDuration,
   lowConfidenceCount,
   playlistObserver,
@@ -1039,20 +1112,24 @@ const createPlaylistSummaryElement = ({
 
   containerElement.appendChild(totalDuration);
 
+  const totalVideosInPlaylist = countTotalVideosInPlaylist();
+  const { counted, notCounted } = deriveSummaryCounts({
+    timestamps,
+    nullTimestamps,
+    totalVideosInPlaylist,
+  });
+
   const videosCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosCounted"),
-    `${timestamps.length}`,
+    `${counted}`,
     "#fdba74",
   );
 
   containerElement.appendChild(videosCounted);
 
-  const totalVideosInPlaylist = countTotalVideosInPlaylist();
   const videosNotCounted = createSummaryItem(
     chrome.i18n.getMessage("playlistSummary_videosNotCounted"),
-    `${
-      totalVideosInPlaylist ? totalVideosInPlaylist - timestamps.length : "N/A"
-    }`,
+    `${notCounted ?? "N/A"}`,
     "#fca5a5",
   );
 
@@ -1219,7 +1296,12 @@ const countTotalVideosInPlaylist = () => {
   );
 
   if (statsElement) {
-    return Number.parseInt(statsElement.innerText.replace(/\D/g, ""));
+    const parsed = Number.parseInt(
+      statsElement.innerText.replace(/\D/g, ""),
+      10,
+    );
+
+    return Number.isNaN(parsed) ? null : parsed;
   }
 
   const result = extractPlaylistCount(document);

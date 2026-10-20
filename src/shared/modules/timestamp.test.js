@@ -1,10 +1,8 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { elementSelectors } from "src/shared/data/element-selectors.js";
 import {
   convertSecondsToTimestamp,
   convertTimestampToSeconds,
-  getTimestampFromVideo,
 } from "./timestamp.js";
 
 describe("timestamp module", () => {
@@ -71,56 +69,6 @@ describe("timestamp module", () => {
     it("should throw an error if the input is null or undefined", () => {
       assert.throws(() => convertTimestampToSeconds(null), TypeError);
       assert.throws(() => convertTimestampToSeconds(undefined), TypeError);
-    });
-  });
-
-  describe("getTimestampFromVideo()", () => {
-    const createMockElement = (innerText) => ({
-      querySelector: (selector) => {
-        if (selector === elementSelectors.timestamp) {
-          return { innerText };
-        }
-
-        return null;
-      },
-      querySelectorAll: () => [],
-    });
-
-    it("should return null if no video element is provided", () => {
-      assert.strictEqual(getTimestampFromVideo(null), null);
-    });
-
-    it("should return null if the timestamp element is not found", () => {
-      const mockVideo = {
-        querySelector: () => null,
-        querySelectorAll: () => [],
-      };
-      assert.strictEqual(getTimestampFromVideo(mockVideo), null);
-    });
-
-    it("should return null if the timestamp element has no innerText", () => {
-      const mockVideo = createMockElement(null);
-      assert.strictEqual(getTimestampFromVideo(mockVideo), null);
-    });
-
-    it("should extract and convert a valid timestamp", () => {
-      const mockVideo = createMockElement("1:23:45");
-      assert.strictEqual(getTimestampFromVideo(mockVideo), 5025);
-    });
-
-    it("should handle timestamps with extra whitespace and newlines", () => {
-      const mockVideo = createMockElement("  \n2:05 \n ");
-      assert.strictEqual(getTimestampFromVideo(mockVideo), 125);
-    });
-
-    it("should return 0 if the timestamp text is not in a valid format (e.g., 'Live')", () => {
-      const mockVideo = createMockElement("Live");
-      assert.strictEqual(getTimestampFromVideo(mockVideo), 0);
-    });
-
-    it("should correctly parse a timestamp from a real-world example", () => {
-      const mockVideo = createMockElement("9:59");
-      assert.strictEqual(getTimestampFromVideo(mockVideo), 599);
     });
   });
 });

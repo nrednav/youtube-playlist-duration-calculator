@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The summary now waits for duration badges to render before it
+  computes the total. On a slow browser this takes a little longer, and
+  if the durations still have not rendered after about a minute, the
+  extension reports the videos it could read and lists the rest as not
+  counted. It then keeps watching for about half a minute and updates
+  the total when the remaining durations appear, including videos that
+  YouTube reveals only after Show unavailable videos is used.
+- A live or upcoming video is now listed under "Videos not counted"
+  instead of being counted as a zero-second video. The total is
+  unchanged, because a zero added nothing to it.
+
+### Fixed
+
+- Fixed the total duration being computed while duration badges were
+  still rendering, which reported a total for only the videos that had
+  loaded first. Long playlists on a slow browser could show a total for
+  a fraction of their videos while looking complete.
+- Fixed "Videos counted" including videos whose duration was missing.
+  The count now includes only videos whose duration was summed, so the
+  count and the total describe the same set of videos.
+- Fixed "Videos not counted" staying at zero while durations were
+  missing. It now reports how many videos were left out of the total.
+- Fixed availability being decided by the presence of a duration.
+  Availability is now decided by the video's title, so a missing
+  duration means the video is still loading rather than unavailable.
+- Fixed a removed video holding the summary back for a minute. A video
+  YouTube renders without a title, or with a placeholder from a language
+  this build has not seen, is now recognised as unavailable on both
+  layouts instead of waiting for the poll budget to run out.
+- Fixed a summary that stopped following the page after an in-place
+  navigation. Moving between playlists without a full reload now starts
+  the wait again instead of comparing against the previous page.
+- Fixed the extension stopping after an unexpected page shape. A failure
+  while reading or inserting the summary is now logged and contained,
+  instead of leaving the loader on screen and repeating the failure every
+  second.
+
 ## [v2.3.1] - 2026-07-07
 
 ### Fixed
@@ -282,6 +323,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   - Bug where timestamps were not being summed properly
 - Addressed vulnerabilities reported by pnpm audit and dependabot
 
+[Unreleased]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.3.1...HEAD
 [v2.3.1]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.3.0...v2.3.1
 [v2.3.0]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.3...v2.3.0
 [v2.2.3]: https://github.com/nrednav/youtube-playlist-duration-calculator/compare/v2.2.2...v2.2.3

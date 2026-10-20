@@ -13,9 +13,34 @@ import { logger } from "../../shared/modules/logger";
  */
 
 /**
+ * Elements that can hold video renderers as direct children. Scoping the
+ * invariant search to these keeps the scan proportional to the number of
+ * list containers instead of the whole document, which matters because
+ * the search runs while the page is still painting.
+ */
+const CONTAINER_SELECTORS = [
+  "ytd-playlist-video-list-renderer",
+  "yt-section-list-renderer",
+  "[id='contents']",
+];
+
+const collectContainers = (doc) => {
+  const containers = new Set();
+
+  for (const selector of CONTAINER_SELECTORS) {
+    for (const element of doc.querySelectorAll(selector)) {
+      containers.add(element);
+    }
+  }
+
+  return [...containers];
+};
+
+/**
  * Strategy A: Renderer Architecture
- * Find the playlist container by looking for any element whose direct children
- * include multiple CustomElements with "video-renderer" in their tag name.
+ * Find the playlist container by looking for any candidate element whose
+ * direct children include multiple CustomElements with "video-renderer" in
+ * their tag name.
  *
  * @param {Document} doc
  * @returns {DiscoveryResult}
@@ -23,9 +48,7 @@ import { logger } from "../../shared/modules/logger";
 const discoverByRendererInvariant = (doc) => {
   const candidates = [];
 
-  const allElements = doc.querySelectorAll("*");
-
-  for (const element of allElements) {
+  for (const element of collectContainers(doc)) {
     if (element.childElementCount < 3) {
       continue;
     }
